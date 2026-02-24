@@ -7,7 +7,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faLock, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import './Login.css';
 import { useNavigate } from 'react-router-dom';
-import toast from "react-hot-toast";
 import logo from './main.png'
 import vec from './vector3.png'
 import './loginsass.scss'
