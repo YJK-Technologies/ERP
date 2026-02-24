@@ -11,7 +11,7 @@ jobs:
 
     steps:
       # -------------------------------------------------
-      # 0️⃣ CLEAN OLD WORKSPACE (CRITICAL)
+      # 0️⃣ CLEAN OLD WORKSPACE
       # -------------------------------------------------
       - name: Clean runner workspace
         shell: powershell
@@ -22,17 +22,16 @@ jobs:
           }
 
       # -------------------------------------------------
-      # 1️⃣ CAPTURE JOB START TIME (IST)
+      # 1️⃣ JOB START TIME (IST)
       # -------------------------------------------------
       - name: Capture Job Start Time (IST)
         shell: powershell
         run: |
-          $ist = Get-Date
           $log = "D:\Action-Runners\erp-runner\_diag\job-runtime-IST.log"
-          "START | $($ist.ToString('yyyy-MM-dd HH:mm:ss')) | Repo=$env:GITHUB_REPOSITORY | RunId=$env:GITHUB_RUN_ID" | Out-File -Append $log
+          "START | $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') | Repo=$env:GITHUB_REPOSITORY | RunId=$env:GITHUB_RUN_ID" | Out-File -Append $log
 
       # -------------------------------------------------
-      # 2️⃣ CHECKOUT SOURCE (FORCE CLEAN)
+      # 2️⃣ CHECKOUT SOURCE
       # -------------------------------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -41,7 +40,7 @@ jobs:
           fetch-depth: 0
 
       # -------------------------------------------------
-      # 3️⃣ SETUP NODE.JS
+      # 3️⃣ SETUP NODE
       # -------------------------------------------------
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -49,7 +48,7 @@ jobs:
           node-version: 20
 
       # -------------------------------------------------
-      # 4️⃣ SYNC BACKEND CODE TO IIS
+      # 4️⃣ COPY BACKEND TO IIS
       # -------------------------------------------------
       - name: Sync backend code to IIS
         shell: powershell
@@ -57,108 +56,100 @@ jobs:
           $src = "$env:GITHUB_WORKSPACE\backend"
           $dest = "C:\inetpub\wwwroot\YJKerp\server"
 
-          if (!(Test-Path $src)) {
-            Write-Error "Backend source folder not found"
-            exit 1
-          }
+          if (!(Test-Path $src)) { Write-Error "Backend folder missing"; exit 1 }
 
           robocopy $src $dest /MIR /XD node_modules
           if ($LASTEXITCODE -le 7) { exit 0 } else { exit $LASTEXITCODE }
 
       # -------------------------------------------------
-      # 5️⃣ INSTALL NODE BACKEND DEPENDENCIES
+      # 5️⃣ NODE DEPENDENCIES
       # -------------------------------------------------
       - name: Install Node backend dependencies
         shell: powershell
         run: |
           cd C:\inetpub\wwwroot\YJKerp\server
-          if (Test-Path node_modules) {
-            Remove-Item -Recurse -Force node_modules
-          }
+          if (Test-Path node_modules) { Remove-Item -Recurse -Force node_modules }
           npm ci --legacy-peer-deps
 
       # -------------------------------------------------
-      # 6️⃣ INSTALL PYTHON BACKEND DEPENDENCIES
+      # 6️⃣ PYTHON DEPENDENCIES
       # -------------------------------------------------
       - name: Install Python backend dependencies
         shell: powershell
         run: |
           $python = "C:\Users\saraswathi.pv\AppData\Local\Programs\Python\Python311\python.exe"
-          $appDir = "C:\inetpub\wwwroot\YJKerp\server\python"
-
-          cd $appDir
-
+          $dir = "C:\inetpub\wwwroot\YJKerp\server\python"
+          cd $dir
           & $python -m pip install --upgrade pip
-
-          if (Test-Path "requirements.txt") {
-            & $python -m pip install -r requirements.txt
-          }
-          else {
-            Write-Error "requirements.txt not found"
-            exit 1
-          }
+          & $python -m pip install -r requirements.txt
 
       # -------------------------------------------------
-      # 7️⃣ RESTART NODE BACKEND (NSSM)
+      # 7️⃣ NODE BACKEND NSSM (FAIL-SAFE)
       # -------------------------------------------------
-      - name: Restart Node backend (NSSM)
+      - name: Start Node backend (NSSM safe)
         shell: powershell
         run: |
-          $serviceName = "ERP"
+          $name = "ERP"
           $nssm = "C:\Windows\System32\nssm.exe"
           $node = "C:\Program Files\nodejs\node.exe"
           $app = "C:\inetpub\wwwroot\YJKerp\server\https.js"
-          $appDir = "C:\inetpub\wwwroot\YJKerp\server"
+          $dir = "C:\inetpub\wwwroot\YJKerp\server"
 
-          if (Get-Service -Name $serviceName -ErrorAction SilentlyContinue) {
-            Write-Host "Restarting Node service..."
-            & $nssm restart $serviceName
-          }
-          else {
-            Write-Host "Creating Node NSSM service..."
-            & $nssm install $serviceName $node $app
-            & $nssm set $serviceName AppDirectory $appDir
-            & $nssm set $serviceName Start SERVICE_AUTO_START
-            & $nssm set $serviceName AppStdout "$appDir\node-out.log"
-            & $nssm set $serviceName AppStderr "$appDir\node-err.log"
-            & $nssm start $serviceName
+          $svc = Get-Service $name -ErrorAction SilentlyContinue
+
+          if ($svc) {
+            Write-Host "Node service exists. Status: $($svc.Status)"
+            if ($svc.Status -ne "Stopped") {
+              & $nssm stop $name
+              Start-Sleep 3
+            }
+            & $nssm start $name
+          } else {
+            & $nssm install $name $node $app
+            & $nssm set $name AppDirectory $dir
+            & $nssm set $name Start SERVICE_AUTO_START
+            & $nssm set $name AppStdout "$dir\node-out.log"
+            & $nssm set $name AppStderr "$dir\node-err.log"
+            & $nssm start $name
           }
 
       # -------------------------------------------------
-      # 8️⃣ RESTART PYTHON BACKEND (NSSM)
+      # 8️⃣ PYTHON BACKEND NSSM (FAIL-SAFE)
       # -------------------------------------------------
-      - name: Restart Python backend (NSSM)
+      - name: Start Python backend (NSSM safe)
         shell: powershell
         run: |
-          $serviceName = "ERP_PY"
+          $name = "ERP_PY"
           $nssm = "C:\Windows\System32\nssm.exe"
           $python = "C:\Users\saraswathi.pv\AppData\Local\Programs\Python\Python311\python.exe"
           $app = "C:\inetpub\wwwroot\YJKerp\server\python\face_recognition_api.py"
-          $appDir = "C:\inetpub\wwwroot\YJKerp\server\python"
+          $dir = "C:\inetpub\wwwroot\YJKerp\server\python"
 
-          if (Get-Service -Name $serviceName -ErrorAction SilentlyContinue) {
-            Write-Host "Restarting Python service..."
-            & $nssm restart $serviceName
-          }
-          else {
-            Write-Host "Creating Python NSSM service..."
-            & $nssm install $serviceName $python $app
-            & $nssm set $serviceName AppDirectory $appDir
-            & $nssm set $serviceName Start SERVICE_AUTO_START
-            & $nssm set $serviceName AppStdout "$appDir\py-out.log"
-            & $nssm set $serviceName AppStderr "$appDir\py-err.log"
-            & $nssm start $serviceName
+          $svc = Get-Service $name -ErrorAction SilentlyContinue
+
+          if ($svc) {
+            Write-Host "Python service exists. Status: $($svc.Status)"
+            if ($svc.Status -ne "Stopped") {
+              & $nssm stop $name
+              Start-Sleep 3
+            }
+            & $nssm start $name
+          } else {
+            & $nssm install $name $python $app
+            & $nssm set $name AppDirectory $dir
+            & $nssm set $name Start SERVICE_AUTO_START
+            & $nssm set $name AppStdout "$dir\py-out.log"
+            & $nssm set $name AppStderr "$dir\py-err.log"
+            & $nssm start $name
           }
 
       # -------------------------------------------------
-      # 9️⃣ INSTALL FRONTEND DEPENDENCIES
+      # 9️⃣ FRONTEND DEPENDENCIES
       # -------------------------------------------------
       - name: Install frontend dependencies
         shell: powershell
         run: |
-          if (Test-Path node_modules) {
-            Remove-Item -Recurse -Force node_modules
-          }
+          if (Test-Path node_modules) { Remove-Item -Recurse -Force node_modules }
           npm ci --legacy-peer-deps
 
       # -------------------------------------------------
@@ -181,12 +172,11 @@ jobs:
           if ($LASTEXITCODE -le 7) { exit 0 } else { exit $LASTEXITCODE }
 
       # -------------------------------------------------
-      # 1️⃣2️⃣ CAPTURE JOB END TIME (IST)
+      # 1️⃣2️⃣ JOB END TIME (IST)
       # -------------------------------------------------
       - name: Capture Job End Time (IST)
         if: always()
         shell: powershell
         run: |
-          $ist = Get-Date
           $log = "D:\Action-Runners\erp-runner\_diag\job-runtime-IST.log"
-          "END | $($ist.ToString('yyyy-MM-dd HH:mm:ss')) | Repo=$env:GITHUB_REPOSITORY | RunId=$env:GITHUB_RUN_ID | Status=${{ job.status }}" | Out-File -Append $log
+          "END | $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') | Repo=$env:GITHUB_REPOSITORY | RunId=$env:GITHUB_RUN_ID | Status=${{ job.status }}" | Out-File -Append $log
