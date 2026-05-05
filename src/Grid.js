@@ -980,11 +980,11 @@ function Grid() {
                 GST No
               </label>
               <input
-                id="city"
+                id="gstNo"
                 className="exp-input-field form-control"
                 type="text"
                 placeholder=""
-                required title="Please fill the city here"
+                required title="Please fill the GST No here"
                 value={company_gst_no}
                 onChange={(e) => setcompany_gst_no(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -997,7 +997,7 @@ function Grid() {
               <label class="exp-form-labels">
                 Status
               </label>
-               <div title="Select the Status">
+               <div title="Please Select the Status">
               <Select
                 id="status"
                 value={selectedStatus}
