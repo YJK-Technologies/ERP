@@ -347,11 +347,15 @@ function ADDClientInfo({ }) {
       toast.warning('Transaction date must be between April 1st, 2024 and March 31st, 2025.');
     }
   };
- 
 
   const handleNavigate = () => {
-    navigate("/ClientInfo", {}); // Pass selectedRows as props to the Input component
-  };
+  navigate("/ClientInfo", {
+    state: {
+      preservedRowData: location.state?.preservedRowData,
+      preservedInputs: location.state?.preservedInputs
+    }
+  });
+};
 
   const handleInsert = async () => {
     if (
@@ -502,7 +506,7 @@ function ADDClientInfo({ }) {
       if (response.status === 200) {
         console.log("Data inserted successfully");
         setIsUpdated(true);
-        clearInputFields();
+        // clearInputFields();
         toast.success("Data Updated successfully!")
       } else if (response.status === 400) {
         const errorResponse = await response.json();

@@ -81,6 +81,7 @@ function CustomerDetInput({ }) {
   const Address1 = useRef(null);
   const code = useRef(null);
   const Contact = useRef(null);
+  const [status, setStatus] = useState("");
   const [hasValueChanged, setHasValueChanged] = useState(false);
   const created_by = sessionStorage.getItem('selectedUserCode')
 
@@ -124,6 +125,7 @@ function CustomerDetInput({ }) {
     setSelectedBroker('');
     setselectedOffice('');
     setselectedCust('');
+    setStatus('');
   };
 
 
@@ -280,6 +282,7 @@ function CustomerDetInput({ }) {
       setOfficeType(selectedRow.office_type || "");
       setdefaultCust(selectedRow.default_customer || "");
       setkeyfield(selectedRow.keyfield || "");
+      setStatus(selectedRow.status || "");
       setSelectedCode({
         label: selectedRow.customer_code,
         value: selectedRow.customer_code,
@@ -423,8 +426,13 @@ function CustomerDetInput({ }) {
   };
 
   const handleNavigate = () => {
-    navigate("/Customer", { selectedRows }); // Pass selectedRows as props to the Input component
-  };
+  navigate("/Customer", {
+    state: {
+      preservedRowData: location.state?.preservedRowData,
+      preservedInputs: location.state?.preservedInputs
+    }
+  });
+};
 
   const handleInsert = async () => {
     if (
@@ -558,12 +566,13 @@ function CustomerDetInput({ }) {
           office_type,
           default_customer,
           keyfield,
+          status,
           modified_by: sessionStorage.getItem('selectedUserCode')
         }),
       });
        if (response.ok) {
                     toast.success("Data updated successfully", {
-                      onClose: () => clearInputFields()
+                      // onClose: () => clearInputFields()
                     });
       } else if (response.status === 400) {
         const errorResponse = await response.json();

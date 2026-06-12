@@ -181,9 +181,13 @@ function TaxDetInput({ }) {
     navigate("/AddTaxHeader", { selectedRows }); // Pass selectedRows as props to the Input component
   };
   const handleNavigate = () => {
-    navigate("/Tax", { selectedRows }); // Pass selectedRows as props to the Input component
-  };
-
+  navigate("/Tax", {
+    state: {
+      preservedRowData: location.state?.preservedRowData,
+      preservedInputs: location.state?.preservedInputs
+    }
+  });
+};
   const handleInsert = async () => {
     if (
       !tax_type_header ||
@@ -321,7 +325,7 @@ function TaxDetInput({ }) {
       });
        if (response.ok) {
         toast.success("Data updated successfully", {
-        onClose: () => clearInputFields()
+        // onClose: () => clearInputFields()
          });
       } else if (response.status === 400) {
         const errorResponse = await response.json();

@@ -402,8 +402,13 @@ function VenDetInput({ }) {
   };
 
   const handleNavigate = () => {
-    navigate("/Vendor", { selectedRows }); // Pass selectedRows as props to the Input component
-  };
+  navigate("/Vendor", {
+    state: {
+      preservedRowData: location.state?.preservedRowData,
+      preservedInputs: location.state?.preservedInputs
+    }
+  });
+};
 
   const handleInsert = async () => {
     if (
@@ -527,7 +532,7 @@ function VenDetInput({ }) {
       });
      if (response.ok) {
       toast.success("Data updated successfully", {
-      onClose: () => clearInputFields()
+      // onClose: () => clearInputFields()
       });
       } else if (response.status === 400) {
         const errorResponse = await response.json();

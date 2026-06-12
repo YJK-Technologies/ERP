@@ -349,6 +349,7 @@ function AdjustmentGrid() {
     try {
       const Header = {
         company_code: sessionStorage.getItem('selectedCompanyCode'),
+        Location_Code: sessionStorage.getItem('selectedLocationCode'),
         transaction_date: transaction_date,
         transaction_type: transaction_type,
         created_by: sessionStorage.getItem('selectedUserCode')
@@ -397,6 +398,7 @@ function AdjustmentGrid() {
       for (const row of validRows) {
         const Details = {
           company_code: sessionStorage.getItem('selectedCompanyCode'),
+          Location_Code: sessionStorage.getItem('selectedLocationCode'),
           created_by: sessionStorage.getItem('selectedUserCode'),
           transaction_no: transaction_no,
           transaction_date: transaction_date,
@@ -483,7 +485,9 @@ function AdjustmentGrid() {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ company_code: sessionStorage.getItem('selectedCompanyCode'), transaction_no: transaction_no })
+        body: JSON.stringify({ company_code: sessionStorage.getItem('selectedCompanyCode'),
+          Location_Code: sessionStorage.getItem('selectedLocationCode'),
+           transaction_no: transaction_no })
       });
       if (response.ok) {
         return true;
@@ -503,7 +507,9 @@ function AdjustmentGrid() {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ company_code: sessionStorage.getItem('selectedCompanyCode'), transaction_no: transaction_no })
+        body: JSON.stringify({ company_code: sessionStorage.getItem('selectedCompanyCode'),
+          Location_Code: sessionStorage.getItem('selectedLocationCode'),
+          transaction_no: transaction_no })
       });
       if (response.ok) {
         return true;

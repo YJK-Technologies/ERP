@@ -4,7 +4,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import "ag-grid-enterprise";
 import "../apps.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "../test.css";
@@ -48,6 +48,8 @@ function VisitorMasterGrid() {
   const [fromExpiryDate, setFromExpiryDate] = useState('');
   const [toExpiryDate, setToExpiryDate] = useState('');
 
+  const location = useLocation();
+
   //code added by Harish purpose of set user permisssion
   const permissions = JSON.parse(sessionStorage.getItem("permissions")) || {};
   const visitorMasterPermission = permissions
@@ -57,6 +59,60 @@ function VisitorMasterGrid() {
   const reloadGridData = () => {
     window.location.reload();
   };
+
+  const clearInputFields = () => {
+    setVisitorId("");
+    setVisitorName("");
+    setVisitorNo("");
+    setIdProofType("");
+    setIdProofNo("");
+    setFromExpiryDate("");
+    setToExpiryDate("");
+    setCustomerType("");
+    setStatus("");
+    setCompanyName("");
+setRowData([]);
+  };
+
+
+
+  useEffect(() => {
+      if (location.state?.preservedRowData) {
+        setRowData(location.state.preservedRowData);
+      }
+    
+      if (location.state?.preservedInputs) {
+        setVisitorId(location.state.preservedInputs.visitorId || "");
+        setVisitorName(location.state.preservedInputs.visitorName || "");
+        setVisitorNo(location.state.preservedInputs.visitorNo || "");
+        setIdProofType(location.state.preservedInputs.idProofType || "");
+        setIdProofNo(location.state.preservedInputs.idProofNo || "");
+        setFromExpiryDate(location.state.preservedInputs.fromExpiryDate || "");
+        setToExpiryDate(location.state.preservedInputs.toExpiryDate || "");
+        setCustomerType(location.state.preservedInputs.customerType || "");
+        setStatus(location.state.preservedInputs.status || "");
+        setCompanyName(location.state.preservedInputs.companyName || "");
+    
+        if (location.state.preservedInputs.idProofType) {
+          setSelectedIdProofType({
+            label: location.state.preservedInputs.idProofType,
+            value: location.state.preservedInputs.idProofType,
+          });
+        }
+        if (location.state.preservedInputs.customerType) {
+          setSelectedCustomerType({
+            label: location.state.preservedInputs.customerType,
+            value: location.state.preservedInputs.customerType,
+          });
+        }
+        if (location.state.preservedInputs.status) {
+          setSelectedStatus({
+            label: location.state.preservedInputs.status,
+            value: location.state.preservedInputs.status,
+          });
+        }
+      }
+    }, [location.state]);
 
   useEffect(() => {
     const company_code = sessionStorage.getItem("selectedCompanyCode");
@@ -253,6 +309,7 @@ function VisitorMasterGrid() {
       checkboxSelection: true,
       headerName: "Visitor Id",
       field: "Visitor_ID",
+      cellClass: "ag-link-cell",
       cellStyle: { textAlign: "center" },
       cellEditorParams: {
         maxLength: 18,
@@ -483,9 +540,30 @@ function VisitorMasterGrid() {
   const handleNavigatesToForm = () => {
     navigate("/AddVisitorMaster", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
   };
+  
   const handleNavigateWithRowData = (selectedRow) => {
-    navigate("/AddVisitorMaster", { state: { mode: "update", selectedRow } });
-  };
+  navigate("/AddVisitorMaster", {
+    state: {
+      mode: "update",
+      selectedRow,
+
+      preservedRowData: rowData,
+
+      preservedInputs: {
+        visitorId,
+        visitorName,
+        visitorNo,
+        idProofType,
+        idProofNo,
+        fromExpiryDate,
+        toExpiryDate,
+        customerType,
+        status,
+        companyName
+      },
+    },
+  });
+};
 
   const onSelectionChanged = () => {
     const selectedNodes = gridApi.getSelectedNodes();
@@ -1023,7 +1101,7 @@ function VisitorMasterGrid() {
                   <div>
                     <icon
                       className="popups-btn fs-6 p-3"
-                      onClick={reloadGridData}
+                      onClick={clearInputFields}
                       required
                       title="Refresh"
                     >

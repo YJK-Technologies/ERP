@@ -452,8 +452,13 @@ function Input({ }) {
   }
 
   const handleNavigate = () => {
-    navigate("/Company");
-  };
+  navigate("/Company", {
+    state: {
+      preservedRowData: location.state?.preservedRowData,
+      preservedInputs: location.state?.preservedInputs
+    }
+  });
+};
 
   const handleKeyDown = async (e, nextFieldRef, value, hasValueChanged, setHasValueChanged) => {
     if (e.key === 'Enter') {
@@ -541,7 +546,7 @@ function Input({ }) {
       if (response.status === 200) {
         console.log("Data Updated successfully");
         setIsUpdated(true);
-        clearInputFields();
+        // clearInputFields();
         toast.success("Data Updated successfully!")
       } else {
         const errorResponse = await response.json();
