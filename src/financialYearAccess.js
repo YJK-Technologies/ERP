@@ -58,6 +58,8 @@ function Grid() {
   const [selectedCompanyLogo, setSelectedCompanyLogo] = useState(null);
   const [open, setOpen] = React.useState(false);
 
+  const location = useLocation();
+
   const handleClose = () => {
     setOpen(false);
   };
@@ -70,6 +72,32 @@ const handleChangeLockType = (selectedLockType) => {
     value: option.attributedetails_name,
     label: option.attributedetails_name,
   }));
+  
+  useEffect(() => {
+        if (location.state?.preservedRowData) {
+          setRowData(location.state.preservedRowData);
+        }
+      
+        if (location.state?.preservedInputs) {
+          setstart_year(location.state.preservedInputs.start_year || "");
+          setend_year(location.state.preservedInputs.end_year || "");
+          setTransactionType(location.state.preservedInputs.transactionType || "");
+          setLockType(location.state.preservedInputs.LockType || "");
+      
+          if (location.state.preservedInputs.transactionType) {
+            setSelectedTransaction({
+              label: location.state.preservedInputs.transactionType,
+              value: location.state.preservedInputs.transactionType,
+            });
+          }
+          if (location.state.preservedInputs.LockType) {
+            setSelectedLockType({
+              label: location.state.preservedInputs.LockType,
+              value: location.state.preservedInputs.LockType,
+            });
+          }
+        }
+      }, [location.state]);
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
@@ -309,6 +337,16 @@ useEffect(() => {
     window.location.reload();
   };
 
+  const clearInputFields = () => {
+setstart_year("");
+setend_year("");
+setTransactionType("");
+setLockType("");
+setSelectedTransaction("");
+setSelectedLockType("");
+    setRowData([]);
+  };
+
 
   const arrayBufferToBase64 = (buffer) => {
     let binary = '';
@@ -380,6 +418,7 @@ useEffect(() => {
     {
   headerName: "Start Year",
   field: "start_year",
+  cellClass: "ag-link-cell",  
   editable: true,
   cellStyle: { textAlign: "left" },
   checkboxSelection: true,
@@ -603,8 +642,22 @@ useEffect(() => {
   };
 
   const handleNavigateWithRowData = (selectedRow) => {
-    navigate("/AddFYA", { state: { mode: "update", selectedRow } });
-  };
+  navigate("/AddFYA", {
+    state: {
+      mode: "update",
+      selectedRow,
+
+      preservedRowData: rowData,
+
+      preservedInputs: {
+        start_year,
+        end_year,
+        transactionType,
+        LockType,
+      },
+    },
+  });
+};
 
   const onSelectionChanged = () => {
     const selectedNodes = gridApi.getSelectedNodes();
@@ -948,7 +1001,7 @@ useEffect(() => {
               <div class=" d-flex  justify-content-center">
 
                 <div class=''><icon className=" text-dark popups-btn fs-6" onClick={handleSearch} required title="Search"><i class="fa-solid fa-magnifying-glass"></i></icon></div>
-                <div><icon className=" popups-btn text-dark fs-6" onClick={reloadGridData} required title="Refresh"><FontAwesomeIcon icon="fa-solid fa-arrow-rotate-right" /></icon></div>
+                <div><icon className=" popups-btn text-dark fs-6" onClick={clearInputFields} required title="Refresh"><FontAwesomeIcon icon="fa-solid fa-arrow-rotate-right" /></icon></div>
               </div>
               
                </div>

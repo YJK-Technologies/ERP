@@ -4,7 +4,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import "ag-grid-enterprise";
 import "./apps.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Dropdown, DropdownButton } from "react-bootstrap";
@@ -55,13 +55,45 @@ function ClientInfo() {
     const [ Payment_Type, setpaymettype] = useState('');
      const [paymenttypedrop, setPaymenttypeDrop] = useState([]);
 
+     const location = useLocation();
+
   //code added by Harish purpose of set user permisssion
   const permissions = JSON.parse(sessionStorage.getItem('permissions')) || {};
   const customerdetPermission = permissions
     .filter(permission => permission.screen_type === 'Customer')
     .map(permission => permission.permission_type.toLowerCase());
 
+  useEffect(() => {
+          if (location.state?.preservedRowData) {
+            setRowData(location.state.preservedRowData);
+          }
+        
+          if (location.state?.preservedInputs) {
+            setClient_code(location.state.preservedInputs.Client_code || "");
+            setCompany_or_Personal(location.state.preservedInputs.Company_or_Personal || "");
+            setCompanyName(location.state.preservedInputs.CompanyName || "");
+            setProduct(location.state.preservedInputs.Product || "");
+            setPayment(location.state.preservedInputs.Payment || 0);
+            setaddress1(location.state.preservedInputs.address1 || "");
+            setLast_Payment(location.state.preservedInputs.Last_Payment || "");
+            setPhone(location.state.preservedInputs.Phone || "");
+            setPaymentmode(location.state.preservedInputs.Payment_Mode || "");
+            setpaymettype(location.state.preservedInputs.Payment_Type || "");
 
+            if (location.state.preservedInputs.Payment_Mode) {
+              setSelectedPaymentMode({
+                label: location.state.preservedInputs.Payment_Mode,
+                value: location.state.preservedInputs.Payment_Mode,
+              });
+            }
+            if (location.state.preservedInputs.Payment_Type) {
+              setselectedpaymettype({
+                label: location.state.preservedInputs.Payment_Type,
+                value: location.state.preservedInputs.Payment_Type,
+              });
+            }
+          }
+        }, [location.state]);
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
@@ -245,6 +277,22 @@ function ClientInfo() {
     }
   };
 
+  const clearInputFields = () => {
+setClient_code("");
+setCompany_or_Personal("");
+setCompanyName("");
+setProduct("");
+setPayment("");
+setaddress1("");
+setLast_Payment("");
+setPhone("");
+setPaymentmode("");
+setpaymettype("");
+setSelectedPaymentMode("");
+setselectedpaymettype("");
+    setRowData([]);
+  };
+
   const handleSearch = async () => {
     setLoading(true);
 
@@ -286,6 +334,7 @@ function ClientInfo() {
       checkboxSelection: true,
       headerName: "Client Code",
       field: "Client_code",
+      cellClass: "ag-link-cell",
       //editable: true,
       cellStyle: { textAlign: "left" },
       // minWidth: 250,
@@ -785,9 +834,32 @@ function ClientInfo() {
   const handleNavigatesToForm = () => {
     navigate("/ADDClientInfo", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
   };
+  // const handleNavigateWithRowData = (selectedRow) => {
+  //   navigate("/ADDClientInfo", { state: { mode: "update", selectedRow } });
+  // };
   const handleNavigateWithRowData = (selectedRow) => {
-    navigate("/ADDClientInfo", { state: { mode: "update", selectedRow } });
-  };
+  navigate("/ADDClientInfo", {
+    state: {
+      mode: "update",
+      selectedRow,
+
+      preservedRowData: rowData,
+
+      preservedInputs: {
+        Client_code,
+        Company_or_Personal,
+        CompanyName,
+        Product,
+        Payment,
+        address1,
+        Last_Payment,
+        Phone,
+        Payment_Mode,
+        Payment_Type,
+      },
+    },
+  });
+};
 
   const onSelectionChanged = () => {
     const selectedNodes = gridApi.getSelectedNodes();
@@ -1313,7 +1385,7 @@ const deleteSelectedRows = async () => {
                 <div class=" d-flex  justify-content-center">
 
                   <div class=''><icon className="popups-btn fs-6 p-3" onClick={handleSearch} required title="Search"><i className="fas fa-search"></i></icon></div>
-                  <div><icon className="popups-btn fs-6 p-3" onClick={reloadGridData} required title="Refresh"><FontAwesomeIcon icon="fa-solid fa-arrow-rotate-right" /></icon></div>
+                  <div><icon className="popups-btn fs-6 p-3" onClick={clearInputFields} required title="Refresh"><FontAwesomeIcon icon="fa-solid fa-arrow-rotate-right" /></icon></div>
                 </div> </div></div>
 
 
