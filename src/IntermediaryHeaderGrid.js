@@ -4,7 +4,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import "ag-grid-enterprise";
 import "./apps.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import labels from "./Labels";
@@ -40,6 +40,8 @@ function IntermediaryGrid() {
   const [createdDate, setCreatedDate] = useState("");
   const [modifiedDate, setModifiedDate] = useState("");
 
+  const location = useLocation();
+
 
   //code added by Harish purpose of set user permisssion
   const permissions = JSON.parse(sessionStorage.getItem('permissions')) || {};
@@ -47,10 +49,42 @@ function IntermediaryGrid() {
     .filter(permission => permission.screen_type === 'Intermediary')
     .map(permission => permission.permission_type.toLowerCase());
 
+  useEffect(() => {
+        if (location.state?.preservedRowData) {
+          setRowData(location.state.preservedRowData);
+        }
+      
+        if (location.state?.preservedInputs) {
+          setcode(location.state.preservedInputs.Code || "");
+          setcodeDetails(location.state.preservedInputs.codeDetails || "");
+          setintermediary_addr_1(location.state.preservedInputs.intermediary_addr_1 || "");
+          setintermediary_area_code(location.state.preservedInputs.intermediary_area_code || "");
+          setintermediary_stat_code(location.state.preservedInputs.intermediary_stat_code || "");
+          setintermediary_cnty_code(location.state.preservedInputs.intermediary_cnty_code || "");
+          setintermediary_imex_no(location.state.preservedInputs.intermediary_imex_no || "");
+          setintermediary_office_no(location.state.preservedInputs.intermediary_office_no || "");
+          setintermediary_fax_no(location.state.preservedInputs.intermediary_fax_no || "");
+          setintermediary_email_id(location.state.preservedInputs.intermediary_email_id || "");
+        }
+      }, [location.state]); 
 
   const reloadGridData = () => {
     window.location.reload();
   };
+
+  const clearInputFields = () => {
+setcode("");
+    setcodeDetails("");
+    setintermediary_addr_1("");
+    setintermediary_area_code("");
+    setintermediary_stat_code("");
+    setintermediary_cnty_code("");
+    setintermediary_imex_no("");
+    setintermediary_office_no("");
+    setintermediary_fax_no("");
+    setintermediary_email_id("");
+    setRowData([]);
+  };
 
   const handleSearch = async () => {
     setLoading(true);
@@ -97,6 +131,7 @@ function IntermediaryGrid() {
       checkboxSelection: true,
       headerName: "Header Code",
       field: "Code",
+      cellClass: "ag-link-cell",
       //editable: true,
       cellStyle: { textAlign: "center" },
       // minWidth: 250,
@@ -428,8 +463,28 @@ function IntermediaryGrid() {
     navigate("/AddIntermedDetails", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
   };
   const handleNavigateWithRowData = (selectedRow) => {
-    navigate("/AddIntermedDetails", { state: { mode: "update", selectedRow } });
-  };
+  navigate("/AddIntermedDetails", {
+    state: {
+      mode: "update",
+      selectedRow,
+
+      preservedRowData: rowData,
+
+      preservedInputs: {
+        Code,
+        codeDetails,
+        intermediary_addr_1,
+        intermediary_area_code,
+        intermediary_stat_code,
+        intermediary_cnty_code,
+        intermediary_imex_no,
+        intermediary_office_no,
+        intermediary_fax_no,
+        intermediary_email_id
+      },
+    },
+  });
+};
 
   const onSelectionChanged = () => {
     const selectedNodes = gridApi.getSelectedNodes();
@@ -921,7 +976,7 @@ function IntermediaryGrid() {
                   <div>
                     <icon
                       className="popups-btn fs-6 p-3"
-                      onClick={reloadGridData}
+                      onClick={clearInputFields}
                       required
                       title="Refresh"
                     >

@@ -5,7 +5,7 @@ import "ag-grid-community/styles/ag-theme-quartz.css";
 import "ag-grid-enterprise";
 import "./apps.css";
 import Select from 'react-select';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import labels from "./Labels";
@@ -39,6 +39,8 @@ function WarehouseGrid() {
   const [createdDate, setCreatedDate] = useState("");
   const [modifiedDate, setModifiedDate] = useState("");
 
+  const location = useLocation();
+
   //code added by Harish purpose of set user permisssion
   const permissions = JSON.parse(sessionStorage.getItem('permissions')) || {};
   const warehouseGridPermision = permissions
@@ -50,6 +52,26 @@ function WarehouseGrid() {
    const [editedData, setEditedData] = useState([]);
    const [startDate, setStartDate] = useState("");
    const [endDate, setEndDate] = useState("");*/
+
+   useEffect(() => {
+            if (location.state?.preservedRowData) {
+              setRowData(location.state.preservedRowData);
+            }
+          
+            if (location.state?.preservedInputs) {
+              setwarehouse_code(location.state.preservedInputs.warehouse_code || "");
+              setwarehouse_name(location.state.preservedInputs.warehouse_name || "");
+              setstatus(location.state.preservedInputs.status || "");
+              setlocation_no(location.state.preservedInputs.location_no || "");
+          
+              if (location.state.preservedInputs.status) {
+                setSelectedStatus({
+                  label: location.state.preservedInputs.status,
+                  value: location.state.preservedInputs.status,
+                });
+              }
+            }
+          }, [location.state]);
 
   useEffect(() => {
     fetch(`${config.apiBaseUrl}/locationno`)
@@ -145,6 +167,15 @@ function WarehouseGrid() {
     window.location.reload();
   };
 
+  const clearInputFields = () => {
+setwarehouse_code("");
+setwarehouse_name("");
+setstatus("");
+setlocation_no("");
+setSelectedStatus("");
+    setRowData([]);
+  };
+
 
   const columnDefs = [
 
@@ -154,6 +185,7 @@ function WarehouseGrid() {
       checkboxSelection: true,
       headerName: "Warehouse Code",
       field: "warehouse_code",
+      cellClass: "ag-link-cell",
       cellStyle: { textAlign: "left" },
       // minWidth: 250,
       // maxWidth: 250,
@@ -189,14 +221,14 @@ function WarehouseGrid() {
       cellEditorParams: {
         maxLength: 250,
       },
-      valueFormatter: (params) =>
-        params.value
-          ? params.value
-            .toLowerCase()
-            .split(' ')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ')
-          : '',
+      // valueFormatter: (params) =>
+      //   params.value
+      //     ? params.value
+      //       .toLowerCase()
+      //       .split(' ')
+      //       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      //       .join(' ')
+      //     : '',
     },
     {
       headerName: "Status",
@@ -374,8 +406,22 @@ function WarehouseGrid() {
     navigate("/AddWarehouse", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
   };
   const handleNavigateWithRowData = (selectedRow) => {
-    navigate("/AddWarehouse", { state: { mode: "update", selectedRow } });
-  };
+  navigate("/AddWarehouse", {
+    state: {
+      mode: "update",
+      selectedRow,
+
+      preservedRowData: rowData,
+
+      preservedInputs: {
+        warehouse_code,
+        warehouse_name,
+        status,
+        location_no,
+      },
+    },
+  });
+};
 
   const onSelectionChanged = () => {
     const selectedNodes = gridApi.getSelectedNodes();
@@ -752,7 +798,7 @@ function WarehouseGrid() {
                 <div class=" d-flex  justify-content-center">
 
                   <div class=''><icon className="popups-btn fs-6 p-3" onClick={handleSearch} required title="Search"><i className="fas fa-search"></i></icon></div>
-                  <div><icon className="popups-btn fs-6 p-3" onClick={reloadGridData} required title="Refresh"><FontAwesomeIcon icon="fa-solid fa-arrow-rotate-right" /></icon></div>
+                  <div><icon className="popups-btn fs-6 p-3" onClick={clearInputFields} required title="Refresh"><FontAwesomeIcon icon="fa-solid fa-arrow-rotate-right" /></icon></div>
                 </div> </div></div>
 
 
