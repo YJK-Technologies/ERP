@@ -1043,6 +1043,7 @@ function DeliveryChallan() {
 
             const Header = {
                 company_code: sessionStorage.getItem('selectedCompanyCode'),
+                Location_Code: sessionStorage.getItem('selectedLocationCode'),
                 transport_charges: Totaltransport,
                 bill_to_customer_code: billToData['Customer Code'],
                 customer_name: billToData['Customer Name'],
@@ -1149,6 +1150,7 @@ function DeliveryChallan() {
 
             const Header = {
                 company_code: sessionStorage.getItem('selectedCompanyCode'),
+                Location_Code: sessionStorage.getItem('selectedLocationCode'),
                 bill_to_customer_code: billToData['Customer Code'],
                 customer_name: billToData['Customer Name'],
                 customer_addr_1: billToData['Address 1'],
@@ -1230,6 +1232,7 @@ function DeliveryChallan() {
                 const Details = {
                     created_by: sessionStorage.getItem('selectedUserCode'),
                     company_code: sessionStorage.getItem('selectedCompanyCode'),
+                    Location_Code: sessionStorage.getItem('selectedLocationCode'),
                     transaction_no: transaction_no,
                     transaction_date: transactionDate,
                     code: row.productItemCode,
@@ -1279,6 +1282,7 @@ function DeliveryChallan() {
                 const Details = {
                     created_by: sessionStorage.getItem('selectedUserCode'),
                     company_code: sessionStorage.getItem('selectedCompanyCode'),
+                    Location_Code: sessionStorage.getItem('selectedLocationCode'),
                     transaction_no: transaction_no,
                     Terms_conditions: row.Terms_conditions,
                 };
@@ -1630,6 +1634,7 @@ function DeliveryChallan() {
                 body: JSON.stringify({
                     transaction_no: new_running_no,
                     company_code: sessionStorage.getItem("selectedCompanyCode"),
+                    Location_Code: sessionStorage.getItem('selectedLocationCode'),
                     modified_by: sessionStorage.getItem("selectedUserCode")
                 })
             });
@@ -1653,7 +1658,8 @@ function DeliveryChallan() {
                 },
                 body: JSON.stringify({
                     transaction_no: new_running_no.toString(),
-                    company_code: sessionStorage.getItem("selectedCompanyCode")
+                    company_code: sessionStorage.getItem("selectedCompanyCode"),
+                    Location_Code: sessionStorage.getItem('selectedLocationCode'),
                 })
             });
             if (response.ok) {
@@ -1676,7 +1682,8 @@ function DeliveryChallan() {
                 },
                 body: JSON.stringify({
                     transaction_no: new_running_no.toString(),
-                    company_code: sessionStorage.getItem("selectedCompanyCode")
+                    company_code: sessionStorage.getItem("selectedCompanyCode"),
+                    Location_Code: sessionStorage.getItem('selectedLocationCode'),
                 })
             });
             if (response.ok) {
@@ -3189,7 +3196,7 @@ function DeliveryChallan() {
                                         <div className="exp-form-floating">
                                             <label htmlFor="">Pay Type</label>
                                             <div title="Please select a paytype">
-                                            <Select
+                                            <input
                                                 id="PayType"
                                                 value={PayType}
                                                 onChange={(e) => setPaytype(e.target.value)}
@@ -3206,7 +3213,7 @@ function DeliveryChallan() {
                                         <div className="exp-form-floating">
                                             <label htmlFor="">Sales Type </label>
                                             <div title="Please select a sales type">
-                                            <Select
+                                            <input
                                                 id="SalesType"
                                                 value={SalesType}
                                                 onChange={(e) => setSalestype(e.target.value)}
