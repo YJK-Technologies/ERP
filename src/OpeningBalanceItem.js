@@ -323,6 +323,7 @@ function OpeningbalanceGrid() {
     try {
       const Header = {
         company_code: sessionStorage.getItem("selectedCompanyCode"),
+        Location_Code: sessionStorage.getItem('selectedLocationCode'),
         transaction_date,
         created_by: sessionStorage.getItem("selectedUserCode"),
       };
@@ -445,7 +446,8 @@ function OpeningbalanceGrid() {
         },
         body: JSON.stringify({
           transaction_no,
-          company_code: sessionStorage.getItem("selectedCompanyCode")
+          company_code: sessionStorage.getItem("selectedCompanyCode"),
+          Location_Code: sessionStorage.getItem('selectedLocationCode'),
         }),
       });
 
@@ -471,7 +473,8 @@ function OpeningbalanceGrid() {
         },
         body: JSON.stringify({
           transaction_no,
-          company_code: sessionStorage.getItem("selectedCompanyCode")
+          company_code: sessionStorage.getItem("selectedCompanyCode"),
+          Location_Code: sessionStorage.getItem('selectedLocationCode'),
         }),
       });
 
