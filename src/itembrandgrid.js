@@ -967,6 +967,10 @@ setSelectedStatus("");
     }
   };
 
+    const handleOpenSettings = () => {
+    navigate("/ItemSettings"); 
+  };
+
 
 
   return (
@@ -1008,6 +1012,10 @@ setSelectedStatus("");
                   <i class="fa-solid fa-print"></i>
                 </printbutton>
               )}
+              <printbutton className="purbut" onClick={handleOpenSettings} required title="Settings" >
+                <i className="fa-solid fa-gear"></i>
+              </printbutton>
+
             </div>
 
 
@@ -1071,6 +1079,11 @@ setSelectedStatus("");
                             <i class="fa-solid fa-print"></i>
                           </icon>
                         )}
+                    </li>
+                    <li class="iconbutton  d-flex justify-content-center ">
+                          <icon class="icon" onClick={handleOpenSettings}>
+                            <i className="fa-solid fa-gear"></i>
+                          </icon>
                     </li>
                   </ul>
                 </div>

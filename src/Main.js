@@ -228,6 +228,7 @@ import VisitorMaster from "./Master/VisitorMasterGrid.js";
 import AddVisitorMaster from "./Master/AddVisitorMaster.js";
 import GatePass from "./GatePass.js";
 import FaceAttendance from "./Attendance.js";
+import ItemSettings from "./ItemSettings.js";
 
 function Main() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -494,6 +495,7 @@ function Main() {
      { path: "/AddVisitorMaster", component: <AddVisitorMaster /> },
      { path: "/GatePass", component: <GatePass /> },
      { path: "/FaceAttendance", component: <FaceAttendance /> },
+     { path: "/ItemSettings", component: <ItemSettings /> },
   ];
  
   return (
