@@ -362,7 +362,12 @@ function UserInput({ }) {
   }
 
   const handleNavigate = () => {
-    navigate("/User"); // Pass selectedRows as props to the Input component
+    navigate("/User", {
+      state: {
+        preservedRowData: location.state?.preservedRowData,
+        preservedInputs: location.state?.preservedInputs,
+      },
+    });
   };
 
   // const handleKeyDown = async (e, nextFieldRef, value, hasValueChanged, setHasValueChanged) => {
@@ -453,7 +458,7 @@ function UserInput({ }) {
 
        if (response.ok) {
                     toast.success("Data updated successfully", {
-                      onClose: () => clearInputFields()
+                      // onClose: () => clearInputFields()
                     });
       } else if (response.status === 400) {
         const errorResponse = await response.json();

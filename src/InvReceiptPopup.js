@@ -119,7 +119,8 @@ export default function InvReceiptPopup({ open, handleClose, InvReceiptData }) {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({  company_code : sessionStorage.getItem('selectedCompanyCode'),ReceiptID, DateReceived, Receipt_Type })
+        body: JSON.stringify({  company_code : sessionStorage.getItem('selectedCompanyCode'),
+          Location_Code: sessionStorage.getItem('selectedLocationCode'), ReceiptID, DateReceived, Receipt_Type })
       });
       if (response.ok) {
         const searchData = await response.json();

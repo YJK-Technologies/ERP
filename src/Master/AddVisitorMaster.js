@@ -385,7 +385,7 @@ function AddVisitorMaster({ }) {
       });
       if (response.ok) {
         toast.success("Data Updated Successfully", {
-          onClose: () => clearInputFields(),
+          // onClose: () => clearInputFields(),
         });
       } else {
         const errorResponse = await response.json();
@@ -400,9 +400,14 @@ function AddVisitorMaster({ }) {
     }
   };
 
-  const handleNavigatesToForm = () => {
-    navigate("/VisitorMaster");
-  };
+  const handleNavigate = () => {
+  navigate("/VisitorMaster", {
+    state: {
+      preservedRowData: location.state?.preservedRowData,
+      preservedInputs: location.state?.preservedInputs
+    }
+  });
+};
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -432,7 +437,7 @@ function AddVisitorMaster({ }) {
               </h1>
 
               <button
-                onClick={handleNavigatesToForm}
+                onClick={handleNavigate}
                 className=" btn btn-danger shadow-none rounded-0 h-70 fs-5"
                 required
                 title="Close"

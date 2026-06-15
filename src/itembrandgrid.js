@@ -5,7 +5,7 @@ import "ag-grid-community/styles/ag-theme-quartz.css";
 import "ag-grid-enterprise";
 import "./apps.css";
 import Select from 'react-select';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ItemImagePopup from './ItemImageHelp'
@@ -52,6 +52,8 @@ function ItemBrandGrid() {
 
   const [open, setOpen] = React.useState(false);
 
+  const location = useLocation();
+
   const handleClose = () => {
     setOpen(false);
   };
@@ -70,6 +72,34 @@ function ItemBrandGrid() {
   const itemBrandPermission = permissions
     .filter(permission => permission.screen_type === 'Item')
     .map(permission => permission.permission_type.toLowerCase());
+
+    useEffect(() => {
+            if (location.state?.preservedRowData) {
+              setRowData(location.state.preservedRowData);
+            }
+        
+            if (location.state?.preservedInputs) {
+              setItem_code(location.state.preservedInputs.Item_code || "");
+              setItem_variant(location.state.preservedInputs.Item_variant || "");
+              setItem_name(location.state.preservedInputs.Item_name || "");
+              setItem_short_name(location.state.preservedInputs.Item_short_name || "");
+              setItem_Our_Brand(location.state.preservedInputs.Item_Our_Brand || "");
+              setstatus(location.state.preservedInputs.status || "");
+        
+              if (location.state.preservedInputs.Item_Our_Brand) {
+                setSelectedBrand({
+                  label: location.state.preservedInputs.Item_Our_Brand,
+                  value: location.state.preservedInputs.Item_Our_Brand,
+                });
+              }
+              if (location.state.preservedInputs.status) {
+                setSelectedStatus({
+                  label: location.state.preservedInputs.status,
+                  value: location.state.preservedInputs.status,
+                });
+              }
+            }
+          }, [location.state]);
 
  useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
@@ -221,6 +251,18 @@ function ItemBrandGrid() {
     window.location.reload();
   };
 
+  const clearInputFields = () => {
+setItem_code("");
+setItem_variant("");
+setItem_name("");
+setItem_short_name("");
+setItem_Our_Brand("");
+setstatus("");
+setSelectedBrand("");
+setSelectedStatus("");
+    setRowData([]);
+  };
+
   const handleSearch = async () => {
     const company_code = sessionStorage.getItem('selectedCompanyCode')
     setLoading(true);
@@ -272,6 +314,7 @@ function ItemBrandGrid() {
       checkboxSelection: true,
       headerName: "Code",
       field: "Item_code",
+      cellClass: "ag-link-cell",
       //editable: true,
       cellStyle: { textAlign: "center" },
       // minWidth: 250,
@@ -748,7 +791,23 @@ function ItemBrandGrid() {
     navigate("/AddItem", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
   };
   const handleNavigateWithRowData = (selectedRow) => {
-    navigate("/AddItem", { state: { mode: "update", selectedRow } });
+    navigate("/AddItem", {
+      state: {
+        mode: "update",
+        selectedRow,
+
+        preservedRowData: rowData,
+
+        preservedInputs: {
+          Item_code,
+          Item_variant,
+          Item_name,
+          Item_short_name,
+          Item_Our_Brand,
+          status,
+        },
+      },
+    });
   };
 
   const onSelectionChanged = () => {
@@ -908,6 +967,10 @@ function ItemBrandGrid() {
     }
   };
 
+    const handleOpenSettings = () => {
+    navigate("/ItemSettings"); 
+  };
+
 
 
   return (
@@ -949,6 +1012,10 @@ function ItemBrandGrid() {
                   <i class="fa-solid fa-print"></i>
                 </printbutton>
               )}
+              <printbutton className="purbut" onClick={handleOpenSettings} required title="Settings" >
+                <i className="fa-solid fa-gear"></i>
+              </printbutton>
+
             </div>
 
 
@@ -1012,6 +1079,11 @@ function ItemBrandGrid() {
                             <i class="fa-solid fa-print"></i>
                           </icon>
                         )}
+                    </li>
+                    <li class="iconbutton  d-flex justify-content-center ">
+                          <icon class="icon" onClick={handleOpenSettings}>
+                            <i className="fa-solid fa-gear"></i>
+                          </icon>
                     </li>
                   </ul>
                 </div>
@@ -1140,7 +1212,7 @@ function ItemBrandGrid() {
                 <div class=" d-flex  justify-content-center">
 
                   <div class=''><icon className="popups-btn fs-6 p-3" onClick={handleSearch} required title="Search"><i className="fas fa-search"></i></icon></div>
-                  <div><icon className="popups-btn fs-6 p-3" onClick={reloadGridData} required title="Refresh"><FontAwesomeIcon icon="fa-solid fa-arrow-rotate-right" /></icon></div>
+                  <div><icon className="popups-btn fs-6 p-3" onClick={clearInputFields} required title="Refresh"><FontAwesomeIcon icon="fa-solid fa-arrow-rotate-right" /></icon></div>
                 </div> </div></div></div>
 
           {/* <p>Result Set</p> */}

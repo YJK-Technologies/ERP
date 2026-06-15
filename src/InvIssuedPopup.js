@@ -119,7 +119,9 @@ export default function InvIssuedPopup({ open, handleClose, InvIssuedData }) {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ company_code: sessionStorage.getItem('selectedCompanyCode'), IssuanceID, DateIssued, Issued_Type })
+        body: JSON.stringify({ company_code: sessionStorage.getItem('selectedCompanyCode'), 
+          Location_Code: sessionStorage.getItem('selectedLocationCode'),
+          IssuanceID, DateIssued, Issued_Type })
       });
       if (response.ok) {
         const searchData = await response.json();

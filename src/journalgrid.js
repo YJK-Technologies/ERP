@@ -425,6 +425,7 @@ function JournalGrid() {
 
       const Header = {
         company_code: sessionStorage.getItem('selectedCompanyCode'),
+        Location_Code: sessionStorage.getItem('selectedLocationCode'),
         transaction_date: transaction_date,
         created_by: sessionStorage.getItem('selectedUserCode')
       };
@@ -465,6 +466,7 @@ function JournalGrid() {
       for (const row of rowData) {
         const Details = {
           company_code: sessionStorage.getItem('selectedCompanyCode'),
+          Location_Code: sessionStorage.getItem('selectedLocationCode'),
           created_by: sessionStorage.getItem('selectedUserCode'),
           journal_no:journal_no,
           transaction_date:transaction_date,
@@ -561,7 +563,8 @@ function JournalGrid() {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ company_code: sessionStorage.getItem('selectedCompanyCode'),journal_no: journal_no })
+        body: JSON.stringify({ company_code: sessionStorage.getItem('selectedCompanyCode'),
+          Location_Code: sessionStorage.getItem('selectedLocationCode'),journal_no: journal_no })
       });
       if (response.ok) {
         return true
@@ -579,15 +582,19 @@ function JournalGrid() {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ company_code: sessionStorage.getItem('selectedCompanyCode'),journal_no: journal_no })
+        body: JSON.stringify({ company_code: sessionStorage.getItem('selectedCompanyCode'),
+          Location_Code: sessionStorage.getItem('selectedLocationCode'),journal_no: journal_no })
       });
-      if (response.ok) {
-        return true
+       if (response.ok) {
+        return true;
       } else {
-        console.log("Failed to fetch some data");
+        const errorResponse = await response.json();
+        console.error(errorResponse.details || errorResponse.message);
+        return errorResponse.message || errorResponse.details;
       }
     } catch (error) {
       console.error("Error executing API calls:", error);
+      return "Error occurred during detail deletion.";
     }
   };
 
