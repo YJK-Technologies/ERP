@@ -723,7 +723,12 @@ function ItemInput({ }) {
 
 
   const handleNavigate = () => {
-    navigate("/Item"); // Pass selectedRows as props to the Input component
+    navigate("/Item", {
+      state: {
+        preservedRowData: location.state?.preservedRowData,
+        preservedInputs: location.state?.preservedInputs
+      }
+    });
   };
 
 
@@ -790,7 +795,7 @@ function ItemInput({ }) {
 
       if (response.ok) {
         toast.success("Data updated successfully", {
-          onClose: () => clearInputFields()
+          // onClose: () => clearInputFields()
         });
       } else if (response.status === 400) {
         const errorResponse = await response.json();

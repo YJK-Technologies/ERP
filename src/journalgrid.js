@@ -585,13 +585,16 @@ function JournalGrid() {
         body: JSON.stringify({ company_code: sessionStorage.getItem('selectedCompanyCode'),
           Location_Code: sessionStorage.getItem('selectedLocationCode'),journal_no: journal_no })
       });
-      if (response.ok) {
-        return true
+       if (response.ok) {
+        return true;
       } else {
-        console.log("Failed to fetch some data");
+        const errorResponse = await response.json();
+        console.error(errorResponse.details || errorResponse.message);
+        return errorResponse.message || errorResponse.details;
       }
     } catch (error) {
       console.error("Error executing API calls:", error);
+      return "Error occurred during detail deletion.";
     }
   };
 

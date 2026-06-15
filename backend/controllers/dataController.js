@@ -16101,7 +16101,7 @@ const VendorUpdate = async (req, res) => {
 // Code Added By Harish
 
 const addadjustmenthdr = async (req, res) => {
-  const { company_code, transaction_no, transaction_date, transaction_type, Data_deleted, created_by, modified_by,
+  const { company_code, Location_Code,transaction_no, transaction_date, transaction_type, Data_deleted, created_by, modified_by,
     tempstr1, tempstr2, tempstr3, tempstr4, datetime1, datetime2, datetime3, datetime4,
 
   } = req.body;
@@ -16113,6 +16113,7 @@ const addadjustmenthdr = async (req, res) => {
       .input("mode", sql.NVarChar, "I") // Insert mode
       .input("transaction_no", sql.NVarChar, transaction_no)
       .input("company_code", sql.NVarChar, company_code)
+      .input("Location_Code", sql.NVarChar, Location_Code)
       .input("transaction_date", sql.Date, transaction_date)
       .input("transaction_type", sql.NVarChar, transaction_type)
       .input("Data_deleted", sql.NVarChar, Data_deleted)
@@ -16126,7 +16127,7 @@ const addadjustmenthdr = async (req, res) => {
       .input("datetime2", sql.NVarChar, datetime2)
       .input("datetime3", sql.NVarChar, datetime3)
       .input("datetime4", sql.NVarChar, datetime4)
-      .query(`EXEC [sp_adjustment_hdr] @mode,@transaction_no,@company_code,@transaction_date,@transaction_type,
+      .query(`EXEC sp_adjustment_hdr_DG @mode,@transaction_no,@company_code,@Location_Code,@transaction_date,@transaction_type,
         @Data_deleted,@created_by,@modified_by,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL`)
 
     if (result.recordset.length > 0) {
@@ -16140,7 +16141,7 @@ const addadjustmenthdr = async (req, res) => {
 
 
 const Adjustmnetdelhdr = async (req, res) => {
-  const { transaction_no, company_code } = req.body;
+  const { transaction_no, company_code, Location_Code } = req.body;
 
   try {
     const pool = await connection.connectToDatabase();
@@ -16149,7 +16150,8 @@ const Adjustmnetdelhdr = async (req, res) => {
     await pool.request()
       .input("transaction_no", transaction_no)
       .input("company_code", company_code)
-      .query(`EXEC [sp_adjustment_hdr] 'D', @transaction_no, @company_code, '', '', '', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL`);
+      .input("Location_Code", Location_Code)
+      .query(`EXEC sp_adjustment_hdr_DG 'D', @transaction_no, @company_code, @Location_Code, '', '', '', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL`);
 
     res.status(200).json("Adjustment Header deleted successfully");
   } catch (err) {
@@ -16160,7 +16162,7 @@ const Adjustmnetdelhdr = async (req, res) => {
 
 
 const adjustmentupdatehdr = async (req, res) => {
-  const { transaction_no, company_code, transaction_date, transaction_type, Data_deleted, modified_by, created_by } = req.body;
+  const { transaction_no, company_code, Location_Code, transaction_date, transaction_type, Data_deleted, modified_by, created_by } = req.body;
   try {
     const pool = await connection.connectToDatabase();
 
@@ -16169,13 +16171,14 @@ const adjustmentupdatehdr = async (req, res) => {
       .input("mode", sql.NVarChar, "U")
       .input("transaction_no", sql.NVarChar, transaction_no)
       .input("company_code", sql.NVarChar, company_code)
+      .input("Location_Code", sql.NVarChar, Location_Code)
       .input("transaction_date", sql.NVarChar, transaction_date)
       .input("transaction_type", sql.NVarChar, transaction_type)
       .input("Data_deleted", sql.NVarChar, Data_deleted)
       .input("created_by", sql.NVarChar, created_by)
       .input("modified_by", sql.NVarChar, modified_by)
 
-      .query(`EXEC [sp_adjustment_hdr] @mode,@transaction_no,@company_code,@transaction_date,@transaction_type,@Data_deleted,@created_by,	@modified_by,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL
+      .query(`EXEC sp_adjustment_hdr_DG @mode,@transaction_no,@company_code,@Location_Code,@transaction_date,@transaction_type,@Data_deleted,@created_by,	@modified_by,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL
 `);
     res.json({ success: true, message: "Data inserted successfully" });
   } catch (err) {
@@ -16188,7 +16191,7 @@ const adjustmentupdatehdr = async (req, res) => {
 const getalladjustmnethdr = async (req, res) => {
   try {
     await connection.connectToDatabase();
-    const result = await sql.query(`EXEC [sp_adjustment_hdr] 'A','','','','','','','',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL
+    const result = await sql.query(`EXEC sp_adjustment_hdr_DG 'A','','','','','','','','',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL
 `);
 
     res.json(result.recordset);
@@ -16200,7 +16203,7 @@ const getalladjustmnethdr = async (req, res) => {
 
 const addadjustmnetdetails = async (req, res) => {
   const {
-    transaction_no, company_code, transaction_date, transaction_type, item_code, qty, Item_SNo, created_by, modified_by,
+    transaction_no, company_code, Location_Code, transaction_date, transaction_type, item_code, qty, Item_SNo, created_by, modified_by,
     tempstr1, tempstr2, tempstr3, tempstr4, datetime1, datetime2, datetime3, datetime4
   } = req.body;
 
@@ -16214,6 +16217,7 @@ const addadjustmnetdetails = async (req, res) => {
       .input("mode", sql.NVarChar, "I")
       .input("transaction_no", sql.NVarChar, transaction_no)
       .input("company_code", sql.NVarChar, company_code)
+      .input("Location_Code", sql.NVarChar, Location_Code)
       .input("transaction_date", sql.Date, transaction_date)
       .input("transaction_type", sql.NVarChar, transaction_type)
       .input("item_code", sql.NVarChar, item_code)
@@ -16229,7 +16233,7 @@ const addadjustmnetdetails = async (req, res) => {
       .input("datetime2", sql.DateTime, datetime2)
       .input("datetime3", sql.DateTime, datetime3)
       .input("datetime4", sql.DateTime, datetime4)
-      .query(`EXEC [sp_adjustment_details] @mode, @transaction_no, @company_code, @transaction_date, @transaction_type, @item_code, @qty,@Item_SNo, '', @created_by, '', 
+      .query(`EXEC sp_adjustment_details_DG @mode, @transaction_no, @company_code, @Location_Code, @transaction_date, @transaction_type, @item_code, @qty,@Item_SNo, '', @created_by, '', 
         @tempstr1, @tempstr2, @tempstr3, @tempstr4, @datetime1, @datetime2, @datetime3, @datetime4`);
 
     // Respond with a success message
@@ -16245,7 +16249,7 @@ const addadjustmnetdetails = async (req, res) => {
 
 
 const adjustmnetdeletedetails = async (req, res) => {
-  const { transaction_no, company_code } = req.body;
+  const { transaction_no, company_code, Location_Code } = req.body;
 
   try {
     const pool = await connection.connectToDatabase();
@@ -16253,7 +16257,8 @@ const adjustmnetdeletedetails = async (req, res) => {
     await pool.request()
       .input("transaction_no", transaction_no)
       .input("company_code", company_code)
-      .query(`EXEC [sp_adjustment_details] 'D',@transaction_no,@company_code,'','','',0,0,'','','',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL`);
+      .input("Location_Code", Location_Code)
+      .query(`EXEC sp_adjustment_details_DG 'D',@transaction_no,@company_code, @Location_Code, '','','',0,0,'','','',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL`);
 
     res.status(200).json("purchase deleted successfully");
   } catch (err) {
@@ -16265,7 +16270,7 @@ const adjustmnetdeletedetails = async (req, res) => {
 const getalladjustmnetdetails = async (req, res) => {
   try {
     await connection.connectToDatabase();
-    const result = await sql.query(`EXEC [sp_adjustment_details] 'A','','','','','',0,0,'','','',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL
+    const result = await sql.query(`EXEC sp_adjustment_details_DG 'A','','','','','','',0,0,'','','',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL
 
 `);
 
@@ -17214,7 +17219,7 @@ const ObDetailPrint = async (req, res) => {
 
 // code added by Harish 09/10/2024
 const AdjustmentSearch = async (req, res) => {
-  const { transaction_no, transaction_date, transaction_type } = req.body;
+  const { transaction_no, transaction_date, transaction_type, company_code, Location_Code } = req.body;
 
   try {
     const pool = await connection.connectToDatabase();
@@ -17224,7 +17229,9 @@ const AdjustmentSearch = async (req, res) => {
       .input("transaction_no", sql.NVarChar, transaction_no)
       .input("transaction_date", sql.NVarChar, transaction_date)
       .input("transaction_type", sql.NVarChar, transaction_type)
-      .query(`EXEC sp_adjustment_hdr @mode,@transaction_no,'',  @transaction_date,@transaction_type,'','','',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL`);
+      .input("company_code", sql.NVarChar, company_code)
+      .input("Location_Code", sql.NVarChar, Location_Code)
+      .query(`EXEC sp_adjustment_hdr_DG @mode,@transaction_no,@company_code,@Location_Code,@transaction_date,@transaction_type,'','','',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL`);
     if (result.recordset.length > 0) {
       res.status(200).json(result.recordset);
     } else {

@@ -135,8 +135,13 @@ function AttriDetInput({ }) {
     navigate("/AddAttributeHeader", { selectedRows }); // Pass selectedRows as props to the Input component
   };
   const handleNavigate = () => {
-    navigate("/Attribute"); // Pass selectedRows as props to the Input component
-  };
+  navigate("/Attribute", {
+    state: {
+      preservedRowData: location.state?.preservedRowData,
+      preservedInputs: location.state?.preservedInputs
+    }
+  });
+};
 
   const handleKeyDown = async (e, nextFieldRef, value, hasValueChanged, setHasValueChanged) => {
     if (e.key === 'Enter') {
@@ -192,6 +197,7 @@ function AttriDetInput({ }) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          company_code: sessionStorage.getItem('selectedCompanyCode'),
           attributeheader_code,
           attributedetails_code,
           attributedetails_name,
@@ -202,7 +208,7 @@ function AttriDetInput({ }) {
       });
       if (response.ok) {
                    toast.success("Data updated successfully", {
-                     onClose: () => clearInputFields()
+                    //  onClose: () => clearInputFields()
                    });
       } else if (response.status === 400) {
         const errorResponse = await response.json();

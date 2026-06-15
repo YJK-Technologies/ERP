@@ -5,7 +5,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import "ag-grid-enterprise";
 import "./apps.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ToastContainer, toast } from 'react-toastify';
@@ -37,6 +37,8 @@ function UserScreenMapGrid() {
   const [createdDate, setCreatedDate] = useState("");
   const [modifiedDate, setModifiedDate] = useState("");
 
+  const location = useLocation();
+
   //code added by Harish purpose of set user permisssion
   const permissions = JSON.parse(sessionStorage.getItem('permissions')) || {};
   const UserScreenPermission = permissions
@@ -46,6 +48,25 @@ function UserScreenMapGrid() {
   const reloadGridData = () => {
     window.location.reload();
   };
+
+  const clearInputFields = () => {
+    setrole_id("");
+    setscreen_type("");
+    setpermission_type("");
+    setRowData([]);
+  };
+
+  useEffect(() => {
+        if (location.state?.preservedRowData) {
+          setRowData(location.state.preservedRowData);
+        }
+        if (location.state?.preservedInputs) {
+          const inputs = location.state.preservedInputs;
+          setrole_id(inputs.role_id || "");
+          setscreen_type(inputs.screen_type || "");
+          setpermission_type(inputs.permission_type || "");
+        }
+      }, [location.state]);
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
@@ -151,6 +172,7 @@ function UserScreenMapGrid() {
       checkboxSelection: true,
       headerName: "Role Id",
       field: "role_id",
+      cellClass: "ag-link-cell",
       editable: true,
       cellStyle: { textAlign: "left" },
       cellEditor: "agSelectCellEditor",
@@ -323,8 +345,11 @@ function UserScreenMapGrid() {
   };
 
   const handleNavigateWithRowData = (selectedRow) => {
-    navigate("/AddUserRights", { state: { mode: "update", selectedRow } });
-  };
+    navigate("/AddUserRights", { 
+      state: { mode: "update", selectedRow, preservedRowData: rowData, 
+        preservedInputs: { role_id, screen_type, permission_type, }, }, 
+    }); 
+  }; 
 
   const onSelectionChanged = () => {
     const selectedNodes = gridApi.getSelectedNodes();
@@ -653,7 +678,7 @@ function UserScreenMapGrid() {
                     </icon>
                   </div>
                   <div>
-                    <icon className="popups-btn fs-6 p-3" onClick={reloadGridData} required title="Reload">
+                    <icon className="popups-btn fs-6 p-3" onClick={clearInputFields} required title="Reload">
                       <FontAwesomeIcon icon="fa-solid fa-arrow-rotate-right" />
                     </icon>
                   </div>

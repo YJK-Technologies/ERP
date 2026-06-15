@@ -5,7 +5,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import "ag-grid-enterprise";
 import "./apps.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Select from 'react-select';
@@ -42,17 +42,53 @@ function TaxDetGrid() {
   const [createdDate, setCreatedDate] = useState("");
   const [modifiedDate, setModifiedDate] = useState("");
 
+  const location = useLocation();
+  
+
   //code added by Harish purpose of set user permisssion
   const permissions = JSON.parse(sessionStorage.getItem('permissions')) || {};
   const taxDetGrid = permissions
     .filter(permission => permission.screen_type === 'Tax')
     .map(permission => permission.permission_type.toLowerCase());
 
-
+  useEffect(() => {
+        if (location.state?.preservedRowData) {
+          setRowData(location.state.preservedRowData);
+        }
+      
+        if (location.state?.preservedInputs) {
+          settax_type_header(location.state.preservedInputs.tax_type_header || "");
+          settax_name_details(location.state.preservedInputs.tax_name_details || "");
+          settax_percentage(location.state.preservedInputs.tax_percentage || 0);
+          settax_shortname(location.state.preservedInputs.tax_shortname || "");
+          settax_accountcode(location.state.preservedInputs.tax_accountcode || "");
+          settransaction_type(location.state.preservedInputs.transaction_type || "");
+          setstatus(location.state.preservedInputs.status || "");
+      
+          if (location.state.preservedInputs.status) {
+            setSelectedStatus({
+              label: location.state.preservedInputs.status,
+              value: location.state.preservedInputs.status,
+            });
+          }
+        }
+      }, [location.state]);
+  
 
   const reloadGridData = () => {
     window.location.reload();
   };
+
+  const clearInputFields = () => {
+settax_type_header("");
+settax_name_details("");
+    settax_percentage(0);
+    settax_shortname("");
+    settax_accountcode("");
+    settransaction_type("");
+    setstatus("");
+    setRowData([]);
+  };
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
@@ -159,6 +195,7 @@ function TaxDetGrid() {
       checkboxSelection: true,
       headerName: "Tax Type Header",
       field: "tax_type_header",
+      cellClass: "ag-link-cell",
       //  editable: true,
       cellStyle: { textAlign: "center" },
       cellRenderer: (params) => {
@@ -409,8 +446,25 @@ function TaxDetGrid() {
     navigate("/AddTaxDetails", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
   };
   const handleNavigateWithRowData = (selectedRow) => {
-    navigate("/addTaxDetails", { state: { mode: "update", selectedRow } });
-  };
+  navigate("/addTaxDetails", {
+    state: {
+      mode: "update",
+      selectedRow,
+
+      preservedRowData: rowData,
+
+      preservedInputs: {
+        tax_type_header,
+        tax_name_details,
+        tax_percentage,
+        tax_shortname,
+        tax_accountcode,
+        transaction_type,
+        status
+      },
+    },
+  });
+};
   const onSelectionChanged = () => {
     const selectedNodes = gridApi.getSelectedNodes();
     const selectedData = selectedNodes.map((node) => node.data);
@@ -864,7 +918,7 @@ function TaxDetGrid() {
                   <div>
                     <icon
                       className="popups-btn fs-6 p-3"
-                      onClick={reloadGridData}
+                      onClick={clearInputFields}
                       required
                       title="Refresh"
                     >

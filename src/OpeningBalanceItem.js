@@ -365,6 +365,7 @@ function OpeningbalanceGrid() {
       for (const row of validRows) {
         const Details = {
           company_code: sessionStorage.getItem("selectedCompanyCode"),
+          Location_Code: sessionStorage.getItem('selectedLocationCode'),
           created_by: sessionStorage.getItem("selectedUserCode"),
           transaction_date,
           transaction_no,

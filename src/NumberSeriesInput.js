@@ -142,7 +142,7 @@ function NumberSeriesInput({ }) {
       });
      if (response.ok) {
                         toast.success("Data updated successfully", {
-                          onClose: () => clearInputFields()
+                          // onClose: () => clearInputFields()
                         });
       }
        else if (response.status === 400) {
@@ -329,8 +329,13 @@ function NumberSeriesInput({ }) {
     }
   };
   const handleNavigate = () => {
-    navigate("/NumberSeries"); // Pass selectedRows as props to the Input component
-  };
+  navigate("/NumberSeries", {
+    state: {
+      preservedRowData: location.state?.preservedRowData,
+      preservedInputs: location.state?.preservedInputs
+    }
+  });
+};
 
 
 
