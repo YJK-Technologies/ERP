@@ -123,7 +123,9 @@ export default function InvReturnPopup({ open, handleClose, InvReturnData }) {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ company_code : sessionStorage.getItem('selectedCompanyCode'),ReturnID, DateReturned, Return_Type}) // Send company_no and company_name as search criteria
+        body: JSON.stringify({ company_code : sessionStorage.getItem('selectedCompanyCode'),
+          Location_Code: sessionStorage.getItem('selectedLocationCode'),
+          ReturnID, DateReturned, Return_Type}) // Send company_no and company_name as search criteria
       });
       if (response.ok) {
         const searchData = await response.json();

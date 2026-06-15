@@ -250,7 +250,9 @@ export default function ItemPopup({ open, handleClose, handleDcData }) {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ transaction_no, transaction_date, customer_name, ShipTo_customer_name, company_code: sessionStorage.getItem("selectedCompanyCode") })
+        body: JSON.stringify({ transaction_no, transaction_date, customer_name, ShipTo_customer_name, company_code: sessionStorage.getItem("selectedCompanyCode"),
+          Location_Code: sessionStorage.getItem('selectedLocationCode'),
+         })
       });
       if (response.ok) {
         const searchData = await response.json();
