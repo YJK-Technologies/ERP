@@ -101,6 +101,11 @@ function ItemInput({ }) {
   const location = useLocation();
   const { mode, selectedRow } = location.state || {};
 
+  const [barcodeSetting, setBarcodeSetting] = useState('')
+  
+  const company_code = sessionStorage.getItem("selectedCompanyCode");
+  const Location_Code = sessionStorage.getItem("selectedLocationCode");
+
   console.log(selectedRow);
 
   const clearInputFields = () => {
@@ -232,6 +237,39 @@ function ItemInput({ }) {
     }
   }, [mode, selectedRow, isUpdated]);
 
+  const getItemBarcodeSetting = async () => {
+    try {
+      const response = await fetch(`${config.apiBaseUrl}/getItemSettings`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            company_code,
+            Location_Code,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.length > 0) {
+        setBarcodeSetting(
+          data[0].Generate_Barcode_From_ItemCode
+        );
+      } else {
+        setBarcodeSetting("No");
+      }
+    } catch (err) {
+      console.error(err);
+      setBarcodeSetting("No");
+    }
+  };
+
+  useEffect(() => {
+    getItemBarcodeSetting();
+  }, []);
 
   const base64ToFile = (base64Data, fileName) => {
     if (!base64Data || !base64Data.startsWith("data:")) {
@@ -569,7 +607,7 @@ function ItemInput({ }) {
   const handleChangeUom = (selectedUom) => {
     setSelectedUom(selectedUom);
     setItem_BaseUOM(selectedUom ? selectedUom.value : '');
-      setItem_wigh(1000);
+    setItem_wigh(1000);
   };
 
   const handleChangeSuom = (selectedSuom) => {
@@ -852,6 +890,17 @@ function ItemInput({ }) {
     };
   }, []);
 
+  const handleItemCodeChange = (e) => {
+    const value = e.target.value;
+
+    setItem_code(value);
+
+    if (barcodeSetting === "yes") {
+      setBarcode(value);
+      setBarcodeValue(value.trim() !== "");
+    }
+  };
+
   return (
     <div class="container-fluid Topnav-screen ">
       <div className="">
@@ -898,7 +947,7 @@ function ItemInput({ }) {
                       placeholder=""
                       required title="Please enter the code"
                       value={Item_code}
-                      onChange={(e) => setItem_code(e.target.value)}
+                      onChange={handleItemCodeChange}
                       maxLength={18}
                       ref={inputRef}
                       readOnly={mode === "update"}
@@ -1587,6 +1636,7 @@ function ItemInput({ }) {
                       placeholder=""
                       required title="Please enter the barcode value"
                       value={barcode}
+                      readOnly={barcodeSetting === "yes"}
                       onChange={handleInputChange}
                       maxLength={18}
                       ref={barCode}
