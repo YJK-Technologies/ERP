@@ -34830,6 +34830,51 @@ const Expired = async (req, res) => {
   }
 };
 
+///code added by Ramya on 15/06/2026
+const getItemSettings = async (req, res) => {
+  const { Location_Code, company_code } = req.body;
+
+  try {
+    const pool = await connection.connectToDatabase();
+
+    const result = await pool.request()
+      .input("mode", sql.NVarChar, "S")
+      .input("company_code", sql.NVarChar, company_code)
+      .input("Location_Code", sql.NVarChar, Location_Code)
+      .query(`EXEC sp_Item_Settings @mode,@company_code,@Location_Code,'','','','',''`);
+
+    if (result.recordset.length > 0) {
+      res.status(200).json(result.recordset);
+    } else {
+      res.status(404).json("Data not found");
+    }
+  } catch (err) {
+    console.error("Error", err);
+    res.status(500).json({ message: err.message || 'Internal Server Error' });
+  }
+};
+
+const itemSettingsInsert = async (req, res) => {
+  const { Location_Code, company_code, Generate_Barcode_From_ItemCode, created_by } = req.body;
+
+  try {
+    const pool = await connection.connectToDatabase();
+
+    await pool.request()
+    .input("mode", sql.NVarChar, "I")
+    .input("company_code", sql.NVarChar, company_code)
+    .input("Location_Code", sql.NVarChar, Location_Code)
+    .input("Generate_Barcode_From_ItemCode", sql.NVarChar, Generate_Barcode_From_ItemCode)
+    .input("created_by", sql.NVarChar, created_by)
+    .query(`EXEC sp_Item_Settings @mode,@company_code,@Location_Code,@Generate_Barcode_From_ItemCode,@created_by,'','',''`);
+
+    res.status(200).json("Item Settings Inserted Successfully");
+  } catch (err) {
+    console.error("Error", err);
+    res.status(500).json({ message: err.message || 'Internal Server Error' });
+  }
+};
+///code ended by Ramya on 15/06/2026
 
 module.exports = {
   login,
@@ -35966,7 +36011,9 @@ module.exports = {
   FaceVerify,
   getPurpose,
   AttendanceTransaction,
-  Expired
+  Expired,
+  getItemSettings,
+  itemSettingsInsert
 
 
 };

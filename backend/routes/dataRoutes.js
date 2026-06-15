@@ -1166,6 +1166,8 @@ router.post("/AttendanceTransaction", dataController.AttendanceTransaction)
 router.post("/Expired", dataController.Expired)
 router.post("/Gate_Pass_TransactionLoopUpdate", dataController.Gate_Pass_TransactionLoopUpdate)
 router.post("/Gate_Pass_TransactionLoopDelete", dataController.Gate_Pass_TransactionLoopDelete)
+router.post("/getItemSettings", dataController.getItemSettings)
+router.post("/itemSettingsInsert", dataController.itemSettingsInsert)
 
 
 module.exports = router;
