@@ -54,8 +54,14 @@ function LocInfoInput({ }) {
 
   const [isUpdated, setIsUpdated] = useState(false);
 
+  // const location = useLocation();
+  // const { mode, selectedRow } = location.state || {};
+
   const location = useLocation();
-  const { mode, selectedRow } = location.state || {};
+  const locationState = location.state || {};
+  const mode = locationState.mode || "create"; // ✅ default fallback
+  const selectedRow = locationState.selectedRow || null;
+  const locationNo = location.state?.location_no;
 
   const clearInputFields = () => {
     setlocation_no("");

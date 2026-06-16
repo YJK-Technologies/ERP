@@ -1177,6 +1177,14 @@ router.post("/getOB_data", dataController.getOB_data)
 router.post("/opening_balanceInsert", dataController.opening_balanceInsert)
 router.post("/opening_balanceUpdate", dataController.opening_balanceUpdate)
 router.post("/opening_balanceDelete", dataController.opening_balanceDelete)
+router.post("/getCompanyData",dataController.getCompanyData)
+router.post("/getCompanyMappingData",dataController.getCompanyMappingData)
+router.post("/getLocationData",dataController.getLocationData)
+router.post("/getRoleData",dataController.getRoleData)
+router.post("/getRoleMappingData",dataController.getRoleMappingData)
+router.post("/getRoleRightsData",dataController.getRoleRightsData)
+router.post("/getUserData",dataController.getUserData)
+router.post("/getAttributeData",dataController.getAttributeData)
 
 
 module.exports = router;
