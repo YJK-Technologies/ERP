@@ -45,28 +45,51 @@ function UserScreenMapGrid() {
     .filter(permission => permission.screen_type === 'UserRights')
     .map(permission => permission.permission_type.toLowerCase());
 
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      const isReloadShortcut =
+        (event.ctrlKey && event.key.toLowerCase() === "r") ||
+        (event.altKey && event.key.toLowerCase() === "r") ||
+        event.key === "F5";
+
+      if (isReloadShortcut) {
+        event.preventDefault();
+        clearInputFields();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   const reloadGridData = () => {
     window.location.reload();
   };
 
   const clearInputFields = () => {
-    setrole_id("");
-    setscreen_type("");
-    setpermission_type("");
-    setRowData([]);
-  };
+    setrole_id("");
+    setscreen_type("");
+    setpermission_type("");
+    setRowData([]);
+  };
 
   useEffect(() => {
-        if (location.state?.preservedRowData) {
-          setRowData(location.state.preservedRowData);
-        }
-        if (location.state?.preservedInputs) {
-          const inputs = location.state.preservedInputs;
-          setrole_id(inputs.role_id || "");
-          setscreen_type(inputs.screen_type || "");
-          setpermission_type(inputs.permission_type || "");
-        }
-      }, [location.state]);
+    // if (location.state?.preservedRowData) {
+    //   setRowData(location.state.preservedRowData);
+    // }
+
+    if (location.state?.preservedInputs) {
+      const inputs = location.state.preservedInputs;
+      setrole_id(inputs.role_id || "");
+      setscreen_type(inputs.screen_type || "");
+      setpermission_type(inputs.permission_type || "");
+
+      if (location.state?.refreshGrid) {
+        handleSearch(inputs);
+      }
+    }
+  }, [location.state]);
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
@@ -133,7 +156,7 @@ function UserScreenMapGrid() {
   }, []);
 
 
-  const handleSearch = async () => {
+  const handleSearch = async (searchParams = null) => {
     setLoading(true);
     try {
       const company_code = sessionStorage.getItem('selectedCompanyCode');
@@ -143,7 +166,12 @@ function UserScreenMapGrid() {
           "Content-Type": "application/json",
           "company_code": company_code
         },
-        body: JSON.stringify({ company_code: company_code, role_id, screen_type, permission_type }) // Send company_no and company_name as search criteria
+        body: JSON.stringify({ 
+          company_code: company_code, 
+          role_id: searchParams?.role_id ?? role_id,
+          screen_type: searchParams?.screen_type ?? screen_type,
+          permission_type: searchParams?.permission_type ?? permission_type,
+        }) 
       });
       if (response.ok) {
         const searchData = await response.json();
@@ -344,12 +372,28 @@ function UserScreenMapGrid() {
     navigate("/AddUserRights", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
   };
 
+  // const handleNavigateWithRowData = (selectedRow) => {
+  //   navigate("/AddUserRights", {
+  //     state: {
+  //       mode: "update", selectedRow, preservedRowData: rowData,
+  //       preservedInputs: { role_id, screen_type, permission_type, },
+  //     },
+  //   });
+  // };
+
   const handleNavigateWithRowData = (selectedRow) => {
-    navigate("/AddUserRights", { 
-      state: { mode: "update", selectedRow, preservedRowData: rowData, 
-        preservedInputs: { role_id, screen_type, permission_type, }, }, 
-    }); 
-  }; 
+    navigate("/AddUserRights", {
+      state: {
+        mode: "update", 
+        keyfield: selectedRow.keyfield,
+        preservedInputs: { 
+          role_id, 
+          screen_type, 
+          permission_type, 
+        },
+      },
+    });
+  };
 
   const onSelectionChanged = () => {
     const selectedNodes = gridApi.getSelectedNodes();
@@ -357,21 +401,6 @@ function UserScreenMapGrid() {
     setSelectedRows(selectedData);
   };
 
-
-  // Assuming you have a unique identifier for each row, such as 'id'
-  // const onCellValueChanged = (params) => {
-  //   const updatedRowData = [...rowData];
-  //   const rowIndex = updatedRowData.findIndex(
-  //     (row) => row.keyfield === params.data.keyfield // Use the unique identifier 
-  //   );
-  //   if (rowIndex !== -1) {
-  //     updatedRowData[rowIndex][params.colDef.field] = params.newValue;
-  //     setRowData(updatedRowData);
-
-  //     // Add the edited row data to the state
-  //     setEditedData((prevData) => [...prevData, updatedRowData[rowIndex]]);
-  //   }
-  // };
 
   const onCellValueChanged = (params) => {
     const updatedRowData = [...rowData];

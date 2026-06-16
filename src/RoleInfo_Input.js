@@ -23,33 +23,80 @@ function Role_input({ }) {
   const keyfield = useRef(null);
   const [hasValueChanged, setHasValueChanged] = useState(false);
   const [loading, setLoading] = useState(false);
-  
-
   const created_by = sessionStorage.getItem('selectedUserCode')
-
+  const modified_by = sessionStorage.getItem('selectedUserCode')
   const [isUpdated, setIsUpdated] = useState(false);
+
   const location = useLocation();
-  const { mode, selectedRow } = location.state || {};
-  const modified_by = sessionStorage.getItem("selectedUserCode");
-  console.log(selectedRow);
+  const locationState = location.state || {};
+  const mode = locationState.mode || "create";
+  const selectedRow = locationState.selectedRow || null;
+  const keyfields = location.state?.Keyfield;
+  const company_code = sessionStorage.getItem('selectedCompanyCode');
 
   const clearInputFields = () => {
     setRole_id("");
     setRole_name("");
     setDescription("");
+    setKeyfield("");
   };
 
   useEffect(() => {
-    if (mode === "update" && selectedRow && !isUpdated) {
-      setRole_id(selectedRow.role_id || "");
-      setRole_name(selectedRow.role_name || "");
-      setDescription(selectedRow.description || "");
-      setKeyfield(selectedRow.Keyfield || "");
-    }
-    else if (mode === "create") {
+    if (!location.state) {
       clearInputFields();
     }
-  }, [mode, selectedRow, isUpdated]);
+  }, []);
+
+  useEffect(() => {
+    if (mode === "update" && keyfields) {
+      fetchRoleData();
+    }
+  }, [mode, keyfields]);
+
+  const fetchRoleData = async () => {
+    try {
+      setLoading(true);
+
+      const response = await fetch(`${config.apiBaseUrl}/getRoleData`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          Keyfield: keyfields,
+          company_code
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.length > 0) {
+        const role = data[0];
+
+        setRole_id(role.role_id || "");
+        setRole_name(role.role_name || "");
+        setDescription(role.description || "");
+        setKeyfield(role.Keyfield || "");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch role details");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // useEffect(() => {
+  //   if (mode === "update" && selectedRow && !isUpdated) {
+  //     setRole_id(selectedRow.role_id || "");
+  //     setRole_name(selectedRow.role_name || "");
+  //     setDescription(selectedRow.description || "");
+  //     setKeyfield(selectedRow.Keyfield || "");
+  //   }
+  //   else if (mode === "create") {
+  //     clearInputFields();
+  //   }
+  // }, [mode, selectedRow, isUpdated]);
 
   const handleInsert = async () => {
     if (
@@ -77,10 +124,10 @@ function Role_input({ }) {
           created_by: sessionStorage.getItem('selectedUserCode')
         }),
       });
-       if (response.ok) {
-                        toast.success("Data inserted Successfully", {
-                          onClose: () => clearInputFields()
-                        });
+      if (response.ok) {
+        toast.success("Data inserted Successfully", {
+          onClose: () => clearInputFields()
+        });
       } else if (response.status === 400) {
         const errorResponse = await response.json();
         console.error(errorResponse.message);
@@ -100,7 +147,8 @@ function Role_input({ }) {
   const handleNavigate = () => {
     navigate("/Role", {
       state: {
-        preservedRowData: location.state?.preservedRowData,
+        refreshGrid: true,
+        // preservedRowData: location.state?.preservedRowData,
         preservedInputs: location.state?.preservedInputs,
       },
     });
@@ -157,10 +205,10 @@ function Role_input({ }) {
           Keyfield
         }),
       });
-    if (response.ok) {
-    toast.success("Data updated successfully", {
-    //  onClose: () => clearInputFields()
-     });
+      if (response.ok) {
+        toast.success("Data updated successfully", {
+          //  onClose: () => clearInputFields()
+        });
       } else if (response.status === 400) {
         const errorResponse = await response.json();
         console.error(errorResponse.message);

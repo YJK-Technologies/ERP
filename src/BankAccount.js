@@ -71,11 +71,115 @@ function BankAccInput({ }) {
   const [defaultBankDrop, setDefaultBankDrop] = useState([]);
   const [selectedDefaultBank, setselectedDefaultBank] = useState('');
   const [defaultBank, setDefaultBank] = useState('');
-  const location = useLocation();
-  const { mode, selectedRow } = location.state || {};
+  // const location = useLocation();
+  // const { mode, selectedRow } = location.state || {};
   const [isUpdated, setIsUpdated] = useState(false);
   const [base_accgroup_code, setbase_accgroup_code] = useState('');
   const [standard_accgroup_code, setstandard_accgroup_code] = useState('');
+
+  const location = useLocation();
+  const locationState = location.state || {};
+  const mode = locationState.mode || "create"; // ✅ default fallback
+  const selectedRow = locationState.selectedRow || null;
+  const accountCode = location.state?.account_code;
+  const company_code = sessionStorage.getItem('selectedCompanyCode');
+
+  useEffect(() => {
+    if (!location.state) {
+      clearInputFields(); // ensure fresh create mode
+    }
+  }, []);
+
+  useEffect(() => {
+    if (mode === "update" && accountCode && Userdrop) {
+      fetchBankAccountData();
+    }
+  }, [mode, accountCode, Userdrop]);
+
+  const fetchBankAccountData = async () => {
+    try {
+      setLoading(true);
+
+      const response = await fetch(`${config.apiBaseUrl}/getBankAccountData`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          account_code: accountCode,
+          company_code
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.length > 0) {
+        const bankAccount = data[0];
+
+        setaccount_code(bankAccount.account_code || "");
+        setuser_accgroup_code(bankAccount.user_accgroup_code || "");
+        setaccount_name(bankAccount.account_name || "");
+        setaccount_number(bankAccount.account_number || "");
+        setIFSC_code(bankAccount.IFSC_code || "");
+        setbase_accgroup_code(bankAccount.base_accgroup_code || "");
+        setstandard_accgroup_code(bankAccount.standard_accgroup_code || "");
+        setacc_area_code(bankAccount.acc_area_code || "");
+        setSelectedCity({
+          label: bankAccount.acc_area_code,
+          value: bankAccount.acc_area_code,
+        });
+        setacc_country_code(bankAccount.acc_country_code || "");
+        setselectedCountry({
+          label: bankAccount.acc_country_code,
+          value: bankAccount.acc_country_code,
+        });
+        setacc_state_code(bankAccount.acc_state_code || "");
+        setselectedState({
+          label: bankAccount.acc_state_code,
+          value: bankAccount.acc_state_code,
+        });
+        setDefaultBank(bankAccount.default_bank || "");
+        setselectedDefaultBank({
+          label: bankAccount.default_bank,
+          value: bankAccount.default_bank,
+        });
+        setaccount_type(bankAccount.Account_type || "");
+        setselectedAcctype({
+          label: bankAccount.Account_type,
+          value: bankAccount.Account_type,
+        });
+        const matchedUser = filteredOptionUser.find(
+          (option) => option.value === bankAccount.user_accgroup_code
+        );
+        setSelectedUser(matchedUser || "");
+        setSelectedUserCode(bankAccount.user_accgroup_code || "");
+        setDefaultBank(bankAccount.default_bank)
+        setacc_state_code(bankAccount.acc_state_code)
+        setacc_country_code(bankAccount.acc_country_code)
+        setacc_area_code(bankAccount.acc_area_code)
+        setaccount_type(bankAccount.Account_type || "");
+        setbranch(bankAccount.branch || "");
+        setacc_addr_1(bankAccount.acc_addr_1 || "");
+        setacc_addr_2(bankAccount.acc_addr_2 || "");
+        setacc_addr_3(bankAccount.acc_addr_3 || "");
+        setacc_addr_4(bankAccount.acc_addr_4 || "");
+
+        if (bankAccount.bank_paymentQRCode && bankAccount.bank_paymentQRCode.data) {
+          const base64Image = arrayBufferToBase64(bankAccount.bank_paymentQRCode.data);
+          const file = base64ToFile(`data:image/jpeg;base64,${base64Image}`, 'Images.jpg');
+          setSelectedImage(`data:image/jpeg;base64,${base64Image}`);
+          setQRImage(file)
+        } else {
+          setSelectedImage(null);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch bank accounts details");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   console.log(selectedRow)
   const clearInputFields = () => {
@@ -174,63 +278,63 @@ function BankAccInput({ }) {
     return new File([fileBlob], fileName, { type: mime[1] });
   };
 
-  useEffect(() => {
-    if (mode === "update" && selectedRow && !isUpdated && Userdrop) {
-      setaccount_code(selectedRow.account_code || "");
-      setuser_accgroup_code(selectedRow.user_accgroup_code || "");
-      setaccount_name(selectedRow.account_name || "");
-      setaccount_number(selectedRow.account_number || "");
-      setIFSC_code(selectedRow.IFSC_code || "");
-      setbase_accgroup_code(selectedRow.base_accgroup_code || "");
-      setstandard_accgroup_code(selectedRow.standard_accgroup_code || "");
-      setSelectedCity({
-        label: selectedRow.acc_area_code,
-        value: selectedRow.acc_area_code,
-      });
-      setselectedCountry({
-        label: selectedRow.acc_country_code,
-        value: selectedRow.acc_country_code,
-      });
-      setselectedState({
-        label: selectedRow.acc_state_code,
-        value: selectedRow.acc_state_code,
-      });
-      setselectedDefaultBank({
-        label: selectedRow.default_bank,
-        value: selectedRow.default_bank,
-      });
-      setselectedAcctype({
-        label: selectedRow.Account_type,
-        value: selectedRow.Account_type,
-      });
-      const matchedUser = filteredOptionUser.find(
-        (option) => option.value === selectedRow.user_accgroup_code
-      );
-      setSelectedUser(matchedUser || "");
-      console.log(selectedUser)
-      setDefaultBank(selectedRow.default_bank)
-      setacc_state_code(selectedRow.acc_state_code)
-      setacc_country_code(selectedRow.acc_country_code)
-      setacc_area_code(selectedRow.acc_area_code)
-      setaccount_type(selectedRow.Account_type || "");
-      setbranch(selectedRow.branch || "");
-      setacc_addr_1(selectedRow.acc_addr_1 || "");
-      setacc_addr_2(selectedRow.acc_addr_2 || "");
-      setacc_addr_3(selectedRow.acc_addr_3 || "");
-      setacc_addr_4(selectedRow.acc_addr_4 || "");
+  // useEffect(() => {
+  //   if (mode === "update" && selectedRow && !isUpdated && Userdrop) {
+  //     setaccount_code(selectedRow.account_code || "");
+  //     setuser_accgroup_code(selectedRow.user_accgroup_code || "");
+  //     setaccount_name(selectedRow.account_name || "");
+  //     setaccount_number(selectedRow.account_number || "");
+  //     setIFSC_code(selectedRow.IFSC_code || "");
+  //     setbase_accgroup_code(selectedRow.base_accgroup_code || "");
+  //     setstandard_accgroup_code(selectedRow.standard_accgroup_code || "");
+  //     setSelectedCity({
+  //       label: selectedRow.acc_area_code,
+  //       value: selectedRow.acc_area_code,
+  //     });
+  //     setselectedCountry({
+  //       label: selectedRow.acc_country_code,
+  //       value: selectedRow.acc_country_code,
+  //     });
+  //     setselectedState({
+  //       label: selectedRow.acc_state_code,
+  //       value: selectedRow.acc_state_code,
+  //     });
+  //     setselectedDefaultBank({
+  //       label: selectedRow.default_bank,
+  //       value: selectedRow.default_bank,
+  //     });
+  //     setselectedAcctype({
+  //       label: selectedRow.Account_type,
+  //       value: selectedRow.Account_type,
+  //     });
+  //     const matchedUser = filteredOptionUser.find(
+  //       (option) => option.value === selectedRow.user_accgroup_code
+  //     );
+  //     setSelectedUser(matchedUser || "");
+  //     console.log(selectedUser)
+  //     setDefaultBank(selectedRow.default_bank)
+  //     setacc_state_code(selectedRow.acc_state_code)
+  //     setacc_country_code(selectedRow.acc_country_code)
+  //     setacc_area_code(selectedRow.acc_area_code)
+  //     setaccount_type(selectedRow.Account_type || "");
+  //     setbranch(selectedRow.branch || "");
+  //     setacc_addr_1(selectedRow.acc_addr_1 || "");
+  //     setacc_addr_2(selectedRow.acc_addr_2 || "");
+  //     setacc_addr_3(selectedRow.acc_addr_3 || "");
+  //     setacc_addr_4(selectedRow.acc_addr_4 || "");
 
-      if (selectedRow.bank_paymentQRCode && selectedRow.bank_paymentQRCode.data) {
-        const base64Image = arrayBufferToBase64(selectedRow.bank_paymentQRCode.data);
-        const file = base64ToFile(`data:image/jpeg;base64,${base64Image}`, 'Images.jpg');
-        setSelectedImage(`data:image/jpeg;base64,${base64Image}`);
-        setQRImage(file)
-      } else {
-        setSelectedImage(null);
-      }
-    } else if (mode === "create") {
-      clearInputFields();
-    }
-  }, [mode, selectedRow, isUpdated, Userdrop]);
+  //     if (selectedRow.bank_paymentQRCode && selectedRow.bank_paymentQRCode.data) {
+  //       const base64Image = arrayBufferToBase64(selectedRow.bank_paymentQRCode.data);
+  //       const file = base64ToFile(`data:image/jpeg;base64,${base64Image}`, 'Images.jpg');
+  //       setSelectedImage(`data:image/jpeg;base64,${base64Image}`);
+  //       setQRImage(file)
+  //     } else {
+  //       setSelectedImage(null);
+  //     }
+  //   } else if (mode === "create") {
+  //     clearInputFields();
+  //   }
+  // }, [mode, selectedRow, isUpdated, Userdrop]);
 
   useEffect(() => {
     fetch(`${config.apiBaseUrl}/getStdAccGrp`)
@@ -374,10 +478,20 @@ function BankAccInput({ }) {
   //   }
   // };
 
-  const handleNavigate = () => {
+//   const handleNavigate = () => {
+//   navigate("/BankAccount", {
+//     state: {
+//       preservedRowData: location.state?.preservedRowData,
+//       preservedInputs: location.state?.preservedInputs
+//     }
+//   });
+// };
+
+const handleNavigate = () => {
   navigate("/BankAccount", {
     state: {
-      preservedRowData: location.state?.preservedRowData,
+        refreshGrid: true,
+        // preservedRowData: location.state?.preservedRowData,
       preservedInputs: location.state?.preservedInputs
     }
   });

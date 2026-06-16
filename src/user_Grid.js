@@ -65,9 +65,28 @@ function UserGrid() {
     .map((permission) => permission.permission_type.toLowerCase());
 
   useEffect(() => {
-    if (location.state?.preservedRowData) {
-      setRowData(location.state.preservedRowData);
-    }
+    const handleKeyDown = (event) => {
+      const isReloadShortcut =
+        (event.ctrlKey && event.key.toLowerCase() === "r") ||
+        (event.altKey && event.key.toLowerCase() === "r") ||
+        event.key === "F5";
+
+      if (isReloadShortcut) {
+        event.preventDefault();
+        clearInputFields();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    // if (location.state?.preservedRowData) {
+    //   setRowData(location.state.preservedRowData);
+    // }
+
     if (location.state?.preservedInputs) {
       const inputs = location.state.preservedInputs;
       setuser_code(inputs.user_code || "");
@@ -80,8 +99,6 @@ function UserGrid() {
           label: inputs.user_status,
           value: inputs.user_status,
         });
-      } else {
-        setSelectedStatus(null);
       }
       setuser_type(inputs.user_type || "");
       setdob(inputs.dob || "");
@@ -91,8 +108,10 @@ function UserGrid() {
           label: inputs.gender,
           value: inputs.gender,
         });
-      } else {
-        setSelectedGender(null);
+      }
+
+      if (location.state?.refreshGrid) {
+        handleSearch(inputs); 
       }
     }
   }, [location.state]);
@@ -274,11 +293,30 @@ function UserGrid() {
     navigate("/AddUser", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
   };
 
+  // const handleNavigateWithRowData = (selectedRow) => {
+  //   navigate("/AddUser", {
+  //     state: {
+  //       mode: "update", selectedRow, preservedRowData: rowData,
+  //       preservedInputs: { user_code, user_name, first_name, last_name, user_status, user_type, dob, gender, },
+  //     },
+  //   });
+  // };
+
   const handleNavigateWithRowData = (selectedRow) => {
     navigate("/AddUser", {
       state: {
-        mode: "update", selectedRow, preservedRowData: rowData,
-        preservedInputs: { user_code, user_name, first_name, last_name, user_status, user_type, dob, gender, },
+        mode: "update", 
+        user_code: selectedRow.user_code,
+        preservedInputs: { 
+          user_code, 
+          user_name, 
+          first_name, 
+          last_name, 
+          user_status, 
+          user_type, 
+          dob, 
+          gender, 
+        },
       },
     });
   };
@@ -304,7 +342,7 @@ function UserGrid() {
     setRowData([]);
   };
 
-  const handleSearch = async () => {
+  const handleSearch = async (searchParams = null) => {
     setLoading(true);
     try {
       const company_code = sessionStorage.getItem("selectedCompanyCode");
@@ -316,16 +354,16 @@ function UserGrid() {
         },
         body: JSON.stringify({
           company_code: company_code,
-          user_code,
-          user_name,
-          first_name,
-          last_name,
-          user_status,
-          user_type,
-          dob,
-          gender,
-          created_by:sessionStorage.getItem("selectedUserCode")
-        }), // Send company_no and company_name as search criteria
+          user_code: searchParams?.user_code ?? user_code,
+          user_name: searchParams?.user_name ?? user_name,
+          first_name: searchParams?.first_name ?? first_name,
+          last_name: searchParams?.last_name ?? last_name,
+          user_status: searchParams?.user_status ?? user_status,
+          user_type: searchParams?.user_type ?? user_type,
+          dob: searchParams?.dob ?? dob,
+          gender: searchParams?.gender ?? gender,
+          created_by: sessionStorage.getItem("selectedUserCode")
+        }),
       });
 
       if (response.ok) {
