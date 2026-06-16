@@ -44,11 +44,17 @@ function VenDetGrid() {
   const [error, setError] = useState("");
   const [selectedStatus, setSelectedStatus] = useState(null);
   const config = require('./Apiconfig');
-  const [loading, setLoading] = useState(false);    
+  const [loading, setLoading] = useState(false);
   const [createdBy, setCreatedBy] = useState("");
   const [modifiedBy, setModifiedBy] = useState("");
   const [createdDate, setCreatedDate] = useState("");
   const [modifiedDate, setModifiedDate] = useState("");
+
+  const [opening_balanceSC, setopening_balanceSC] = useState("");
+  const [selectedBT, setSelectedBT] = useState("");
+  const [balance_type, setbalance_type] = useState("");
+  const [balance_typeDrop, setbalance_typeDrop] = useState([]);
+  const [balance_typeAGDrop, setbalance_typeAGDrop] = useState([]);
 
   const location = useLocation();
 
@@ -58,42 +64,100 @@ function VenDetGrid() {
     .filter(permission => permission.screen_type === 'Vendor')
     .map(permission => permission.permission_type.toLowerCase());
 
-    useEffect(() => {
-              if (location.state?.preservedRowData) {
-                setRowData(location.state.preservedRowData);
-              }
-            
-              if (location.state?.preservedInputs) {
-                setvendor_code(location.state.preservedInputs.vendor_code || "");
-                setvendor_name(location.state.preservedInputs.vendor_name || "");
-                setpanno(location.state.preservedInputs.panno || "");
-                setvendor_gst_no(location.state.preservedInputs.vendor_gst_no || "");
-                setvendor_addr_1(location.state.preservedInputs.vendor_addr_1 || "");
-                setvendor_area_code(location.state.preservedInputs.vendor_area_code || "");
-                setvendor_state_code(location.state.preservedInputs.vendor_state_code || "");
-                setvendor_country_code(location.state.preservedInputs.vendor_country_code || "");
-                setvendor_mobile_no(location.state.preservedInputs.vendor_mobile_no || "");
-                setstatus(location.state.preservedInputs.status || "");
-            
-                if (location.state.preservedInputs.status) {
-                  setSelectedStatus({
-                    label: location.state.preservedInputs.status,
-                    value: location.state.preservedInputs.status,
-                  });
-                }
-              }
-            }, [location.state]);
+  useEffect(() => {
+    if (location.state?.preservedRowData) {
+      setRowData(location.state.preservedRowData);
+    }
+
+    if (location.state?.preservedInputs) {
+      setvendor_code(location.state.preservedInputs.vendor_code || "");
+      setvendor_name(location.state.preservedInputs.vendor_name || "");
+      setpanno(location.state.preservedInputs.panno || "");
+      setvendor_gst_no(location.state.preservedInputs.vendor_gst_no || "");
+      setvendor_addr_1(location.state.preservedInputs.vendor_addr_1 || "");
+      setvendor_area_code(location.state.preservedInputs.vendor_area_code || "");
+      setvendor_state_code(location.state.preservedInputs.vendor_state_code || "");
+      setvendor_country_code(location.state.preservedInputs.vendor_country_code || "");
+      setvendor_mobile_no(location.state.preservedInputs.vendor_mobile_no || "");
+      setstatus(location.state.preservedInputs.status || "");
+      setopening_balanceSC(location.state.preservedInputs.opening_balanceSC || "");
+      setbalance_type(location.state.preservedInputs.balance_type || "");
+
+      if (location.state.preservedInputs.balance_type) {
+        setSelectedBT({
+          label: location.state.preservedInputs.balance_type,
+          value: location.state.preservedInputs.balance_type,
+        });
+      }
+
+      if (location.state.preservedInputs.status) {
+        setSelectedStatus({
+          label: location.state.preservedInputs.status,
+          value: location.state.preservedInputs.status,
+        });
+      }
+    }
+  }, [location.state]);
+
+  const filteredOptionBT = Array.isArray(balance_typeDrop)
+    ? balance_typeDrop.map((option) => ({
+      value: option.attributedetails_code,
+      label: `${option.attributedetails_code} - ${option.attributedetails_name}`,
+    }))
+    : [];
+
+  useEffect(() => {
+    const company_code = sessionStorage.getItem("selectedCompanyCode");
+    fetch(`${config.apiBaseUrl}/getbalance_type`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ company_code }),
+    })
+      .then((data) => data.json())
+      .then((data) => {
+        setbalance_typeDrop(data);
+      })
+      .catch((error) => console.error("Error fetching data:", error));
+  }, []);
+
+  useEffect(() => {
+    const company_code = sessionStorage.getItem("selectedCompanyCode");
+
+    fetch(`${config.apiBaseUrl}/getbalance_type`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ company_code }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const balanceTypeOptions = data.map(
+          (option) =>
+            `${option.attributedetails_code} - ${option.attributedetails_name}`,
+        );
+        setbalance_typeAGDrop(balanceTypeOptions);
+      })
+      .catch((error) => console.error("Error fetching data:", error));
+  }, []);
+
+  const handleChangeBT = (selectedBT) => {
+    setSelectedBT(selectedBT);
+    setbalance_type(selectedBT ? selectedBT.value : "");
+  };
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-     
-     fetch(`${config.apiBaseUrl}/status`, {
-       method: 'POST',
-       headers: {
-         'Content-Type': 'application/json',
-       },
-       body: JSON.stringify({ company_code })
-     })
+
+    fetch(`${config.apiBaseUrl}/status`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ company_code })
+    })
       .then((response) => response.json())
       .then((data) => {
         // Extract city names from the fetched data
@@ -147,23 +211,23 @@ function VenDetGrid() {
       .catch((error) => console.error('Error fetching data:', error));
   }, []);
 
-   useEffect(() => {
-     const company_code = sessionStorage.getItem('selectedCompanyCode');
-     
-     fetch(`${config.apiBaseUrl}/status`, {
-       method: 'POST',
-       headers: {
-         'Content-Type': 'application/json',
-       },
-       body: JSON.stringify({ company_code })
-     })
-       .then((data) => data.json())
-       .then((val) => setStatusdrop(val));
-   }, []);
- 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-     
+
+    fetch(`${config.apiBaseUrl}/status`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ company_code })
+    })
+      .then((data) => data.json())
+      .then((val) => setStatusdrop(val));
+  }, []);
+
+  useEffect(() => {
+    const company_code = sessionStorage.getItem('selectedCompanyCode');
+
     fetch(`${config.apiBaseUrl}/city`, {
       method: 'POST',
       headers: {
@@ -182,7 +246,7 @@ function VenDetGrid() {
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-     
+
     fetch(`${config.apiBaseUrl}/country`, {
       method: 'POST',
       headers: {
@@ -201,7 +265,7 @@ function VenDetGrid() {
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-     
+
     fetch(`${config.apiBaseUrl}/state`, {
       method: 'POST',
       headers: {
@@ -226,7 +290,7 @@ function VenDetGrid() {
   const handleChangeStatus = (selectedStatus) => {
     setSelectedStatus(selectedStatus);
     setstatus(selectedStatus ? selectedStatus.value : '');
-       
+
   };
 
 
@@ -240,19 +304,22 @@ function VenDetGrid() {
   };
 
   const clearInputFields = () => {
-setvendor_code("");
-setvendor_name("");
-setpanno("");
-setvendor_gst_no("");
-setvendor_addr_1("");
-setvendor_area_code("");
-setvendor_state_code("");
-setvendor_country_code("");
-setvendor_mobile_no("");
-setstatus("");
-setSelectedStatus("");
-    setRowData([]);
-  };
+    setvendor_code("");
+    setvendor_name("");
+    setpanno("");
+    setvendor_gst_no("");
+    setvendor_addr_1("");
+    setvendor_area_code("");
+    setvendor_state_code("");
+    setvendor_country_code("");
+    setvendor_mobile_no("");
+    setstatus("");
+    setSelectedStatus("");
+    setopening_balanceSC("");
+    setbalance_type("");
+    setSelectedBT("");
+    setRowData([]);
+  };
 
   const handleSearch = async () => {
     setLoading(true);
@@ -262,7 +329,23 @@ setSelectedStatus("");
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ company_code: sessionStorage.getItem('selectedCompanyCode'), vendor_code, vendor_name, panno, vendor_gst_no, vendor_addr_1, vendor_area_code, vendor_state_code, vendor_country_code, vendor_mobile_no, status })
+        body: JSON.stringify({
+          company_code: sessionStorage.getItem('selectedCompanyCode'),
+          vendor_code,
+          vendor_name,
+          panno,
+          vendor_gst_no,
+          vendor_addr_1,
+          vendor_area_code,
+          vendor_state_code,
+          vendor_country_code,
+          vendor_mobile_no,
+          status,
+          opening_balance: opening_balanceSC
+            ? parseFloat(opening_balanceSC)
+            : 0,
+          balance_type,
+        })
       });
       if (response.ok) {
         const searchData = await response.json();
@@ -279,16 +362,14 @@ setSelectedStatus("");
     } catch (error) {
       console.error("Error saving data:", error);
       toast.error("Error updating data: " + error.message);
-    }finally {
+    } finally {
       setLoading(false);
     }
-
   };
 
 
 
   const columnDefs = [
-
     {
       headerCheckboxSelection: true,
       checkboxSelection: true,
@@ -341,7 +422,7 @@ setSelectedStatus("");
     //   },
     // },
     {
-      headerName: "Address1",
+      headerName: "Address 1",
       field: "vendor_addr_1",
       editable: true,
       cellStyle: { textAlign: "left" },
@@ -352,7 +433,7 @@ setSelectedStatus("");
       },
     },
     {
-      headerName: "Address2",
+      headerName: "Address 2",
       field: "vendor_addr_2",
       editable: true,
       cellStyle: { textAlign: "left" },
@@ -363,7 +444,7 @@ setSelectedStatus("");
       },
     },
     {
-      headerName: "Address3",
+      headerName: "Address 3",
       field: "vendor_addr_3",
       editable: true,
       cellStyle: { textAlign: "left" },
@@ -374,7 +455,7 @@ setSelectedStatus("");
       },
     },
     {
-      headerName: "Address4",
+      headerName: "Address 4",
       field: "vendor_addr_4",
       editable: true,
       cellStyle: { textAlign: "left" },
@@ -393,9 +474,7 @@ setSelectedStatus("");
       cellEditor: "agSelectCellEditor",
       cellEditorParams: {
         values: drop,
-
       },
-
     },
     {
       headerName: "State",
@@ -406,8 +485,6 @@ setSelectedStatus("");
       cellEditor: "agSelectCellEditor",
       cellEditorParams: {
         values: statedrop,
-
-
       },
     },
     {
@@ -521,13 +598,34 @@ setSelectedStatus("");
       },
     },
     {
-
       headerName: "Credit Limit",
       field: "vendor_credit_limit",
       editable: true,
       cellStyle: { textAlign: "left" },
       // minWidth: 150,
       cellEditorParams: {
+        maxLength: 250,
+      },
+    },
+    {
+      headerName: "Opening Balance",
+      field: "opening_balance",
+      editable: true,
+      cellStyle: { textAlign: "left" },
+      // minWidth: 150,
+      cellEditorParams: {
+        maxLength: 250,
+      },
+    },
+    {
+      headerName: "Balance Type",
+      field: "balance_type",
+      editable: true,
+      cellStyle: { textAlign: "left" },
+      // minWidth: 150,
+      cellEditor: "agSelectCellEditor",
+      cellEditorParams: {
+        values: balance_typeAGDrop,
         maxLength: 250,
       },
     },
@@ -639,6 +737,8 @@ setSelectedStatus("");
         "Fax No": row.vendor_fax_no,
         "Email ID": row.vendor_email_id,
         "Credit Limit": row.vendor_credit_limit,
+        "Opening Balance": row.opening_balance,
+        "Balance Type": row.balance_type,
         "Transport Code": row.vendor_transport_code,
         "Salesman Code": row.vendor_salesman_code,
         "Break Code": row.vendor_broker_code,
@@ -747,28 +847,30 @@ setSelectedStatus("");
     navigate("/AddVendorDetails", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
   };
   const handleNavigateWithRowData = (selectedRow) => {
-  navigate("/AddVendorDetails", {
-    state: {
-      mode: "update",
-      selectedRow,
+    navigate("/AddVendorDetails", {
+      state: {
+        mode: "update",
+        selectedRow,
 
-      preservedRowData: rowData,
+        preservedRowData: rowData,
 
-      preservedInputs: {
-        vendor_code,
-        vendor_name,
-        panno,
-        vendor_gst_no,
-        vendor_addr_1,
-        vendor_area_code,
-        vendor_state_code,
-        vendor_country_code,
-        vendor_mobile_no,
-        status,
+        preservedInputs: {
+          vendor_code,
+          vendor_name,
+          panno,
+          vendor_gst_no,
+          vendor_addr_1,
+          vendor_area_code,
+          vendor_state_code,
+          vendor_country_code,
+          vendor_mobile_no,
+          status,
+          opening_balanceSC,
+          balance_type,
+        },
       },
-    },
-  });
-};
+    });
+  };
 
   const onSelectionChanged = () => {
     const selectedNodes = gridApi.getSelectedNodes();
@@ -782,16 +884,16 @@ setSelectedStatus("");
     const rowIndex = updatedRowData.findIndex(
       (row) => row.vendor_code === params.data.vendor_code && row.company_code === params.data.company_code && row.keyfield == params.data.keyfield
     );
-  
+
     if (rowIndex !== -1) {
       updatedRowData[rowIndex][params.colDef.field] = params.newValue;
       setRowData(updatedRowData);
-  
+
       setEditedData((prevData) => {
         const existingIndex = prevData.findIndex(
           (item) => item.vendor_code === params.data.vendor_code && item.company_code === params.data.company_code && item.keyfield == params.data.keyfield
         );
-  
+
         if (existingIndex !== -1) {
           const updatedEdited = [...prevData];
           updatedEdited[existingIndex] = updatedRowData[rowIndex];
@@ -853,10 +955,10 @@ setSelectedStatus("");
         } catch (error) {
           console.error("Error saving data:", error);
           toast.error("Error Updating Data: " + error.message);
-        }finally {
+        } finally {
           setLoading(false);
         }
-    
+
       },
       () => {
         toast.info("Data updated cancelled.");
@@ -907,10 +1009,10 @@ setSelectedStatus("");
         } catch (error) {
           console.error("Error deleting rows:", error);
           toast.error('Error Deleting Data: ' + error.message);
-        }finally {
+        } finally {
           setLoading(false);
         }
-    
+
       },
       () => {
         toast.info("Data Delete cancelled.");
@@ -952,7 +1054,7 @@ setSelectedStatus("");
   return (
     <div className="container-fluid Topnav-screen">
       <div>
-      {loading && <LoadingScreen />}
+        {loading && <LoadingScreen />}
         <ToastContainer position="top-right" className="toast-design" theme="colored" />
         <div className="shadow-lg p-1 bg-body-tertiary rounded  mb-2 mt-2">
           <div className=" d-flex justify-content-between  ">
@@ -1241,20 +1343,56 @@ setSelectedStatus("");
             </div>
             <div className="col-md-3 form-group">
               <div class="exp-form-floating">
+                <label for="contactno" class="exp-form-labels">
+                  Opening Balance
+                </label>
+                <input
+                  id="contactno"
+                  className="exp-input-field form-control"
+                  type="number"
+                  placeholder=""
+                  required
+                  title="Please fill the opening balance here"
+                  value={opening_balanceSC}
+                  onChange={(e) => setopening_balanceSC(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                  maxLength={20}
+                />
+              </div>
+            </div>
+            <div className="col-md-3 form-group">
+              <div class="exp-form-floating">
+                <label class="exp-form-labels">Balance Type</label>
+                <div title="Select the Status">
+                  <Select
+                    id="status"
+                    value={selectedBT}
+                    isClearable
+                    onChange={handleChangeBT}
+                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                    options={filteredOptionBT}
+                    className="exp-input-field"
+                    placeholder=""
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="col-md-3 form-group">
+              <div class="exp-form-floating">
                 <label class="exp-form-labels">
                   Status
                 </label>
                 <div title="Select the Status">
-                <Select
-                  id="status"
-                  value={selectedStatus}
-                  onChange={handleChangeStatus}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  options={filteredOptionStatus}
-                  className="exp-input-field"
-                  placeholder=""
-                />
-</div>
+                  <Select
+                    id="status"
+                    value={selectedStatus}
+                    onChange={handleChangeStatus}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                    options={filteredOptionStatus}
+                    className="exp-input-field"
+                    placeholder=""
+                  />
+                </div>
               </div>
             </div>
             <div className="col-md-3 form-group mt-4">

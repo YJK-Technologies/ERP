@@ -62,28 +62,76 @@ function BankAccGrid() {
     .map(permission => permission.permission_type.toLowerCase());
 
     useEffect(() => {
-          if (location.state?.preservedRowData) {
-            setRowData(location.state.preservedRowData);
-          }
+    const handleKeyDown = (event) => {
+      const isReloadShortcut =
+        (event.ctrlKey && event.key.toLowerCase() === "r") ||
+        (event.altKey && event.key.toLowerCase() === "r") ||
+        event.key === "F5";
+
+      if (isReloadShortcut) {
+        event.preventDefault();
+        clearInputFields();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    // if (location.state?.preservedRowData) {
+    //   setRowData(location.state.preservedRowData);
+    // }
+
+    if (location.state?.preservedInputs) {
+      const inputs = location.state.preservedInputs;
+
+      setaccount_code(inputs.account_code || "");
+      setaccount_name(inputs.account_name || "");
+      setacc_addr_1(inputs.acc_addr_1 || "");
+      setacc_area_code(inputs.acc_area_code || "");
+      setacc_state_code(inputs.acc_state_code || "");
+      setacc_country_code(inputs.acc_country_code || "");
+      setbranch(inputs.branch || "");
+      setaccount_type(inputs.account_type || "");
+
+      if (inputs.account_type) {
+        setselectedAcctype({
+          label: inputs.account_type,
+          value: inputs.account_type,
+        });
+      }
+
+      if (location.state?.refreshGrid) {
+        handleSearch(inputs); 
+      }
+    }
+  }, [location.state]);
+
+    // useEffect(() => {
+    //       if (location.state?.preservedRowData) {
+    //         setRowData(location.state.preservedRowData);
+    //       }
         
-          if (location.state?.preservedInputs) {
-            setaccount_code(location.state.preservedInputs.account_code || "");
-            setaccount_name(location.state.preservedInputs.account_name || "");
-            setacc_addr_1(location.state.preservedInputs.acc_addr_1 || "");
-            setacc_area_code(location.state.preservedInputs.acc_area_code || "");
-            setacc_state_code(location.state.preservedInputs.acc_state_code || "");
-            setacc_country_code(location.state.preservedInputs.acc_country_code || "");
-            setbranch(location.state.preservedInputs.branch || "");
-            setaccount_type(location.state.preservedInputs.account_type || "");
+    //       if (location.state?.preservedInputs) {
+    //         setaccount_code(location.state.preservedInputs.account_code || "");
+    //         setaccount_name(location.state.preservedInputs.account_name || "");
+    //         setacc_addr_1(location.state.preservedInputs.acc_addr_1 || "");
+    //         setacc_area_code(location.state.preservedInputs.acc_area_code || "");
+    //         setacc_state_code(location.state.preservedInputs.acc_state_code || "");
+    //         setacc_country_code(location.state.preservedInputs.acc_country_code || "");
+    //         setbranch(location.state.preservedInputs.branch || "");
+    //         setaccount_type(location.state.preservedInputs.account_type || "");
         
-            if (location.state.preservedInputs.account_type) {
-              setselectedAcctype({
-                label: location.state.preservedInputs.account_type,
-                value: location.state.preservedInputs.account_type,
-              });
-            }
-          }
-        }, [location.state]);
+    //         if (location.state.preservedInputs.account_type) {
+    //           setselectedAcctype({
+    //             label: location.state.preservedInputs.account_type,
+    //             value: location.state.preservedInputs.account_type,
+    //           });
+    //         }
+    //       }
+    //     }, [location.state]);
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
@@ -218,7 +266,40 @@ function BankAccGrid() {
   };
 
 
-  const handleSearch = async () => {
+  // const handleSearch = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const response = await fetch(`${config.apiBaseUrl}/getbankaccSearch`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json"
+  //       },
+  //       body: JSON.stringify({
+  //         company_code: sessionStorage.getItem('selectedCompanyCode'), account_code, account_name, acc_addr_1, acc_area_code, acc_state_code, acc_country_code, account_type, branch
+  //       })
+  //     });
+  //     if (response.ok) {
+  //       const searchData = await response.json();
+  //       setRowData(searchData);
+  //       console.log("Data fetched successfully");
+  //     } else if (response.status === 404) {
+  //       console.log("Data not found");
+  //       toast.warning("Data not found");
+  //       setRowData([]);
+  //     } else {
+  //       const errorResponse = await response.json();
+  //       toast.warning(errorResponse.message || "Failed to insert sales data");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error saving data:", error);
+  //     toast.error("Error updating data: " + error.message);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+
+  // };
+
+  const handleSearch = async (searchParams = null) => {
     setLoading(true);
     try {
       const response = await fetch(`${config.apiBaseUrl}/getbankaccSearch`, {
@@ -227,7 +308,15 @@ function BankAccGrid() {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          company_code: sessionStorage.getItem('selectedCompanyCode'), account_code, account_name, acc_addr_1, acc_area_code, acc_state_code, acc_country_code, account_type, branch
+          company_code: sessionStorage.getItem('selectedCompanyCode'), 
+          account_code: searchParams?.account_code ?? account_code,  
+          account_name: searchParams?.account_name ?? account_name, 
+          acc_addr_1: searchParams?.acc_addr_1 ?? acc_addr_1, 
+          acc_area_code: searchParams?.acc_area_code ?? acc_area_code,  
+          acc_state_code: searchParams?.acc_state_code ?? acc_state_code,  
+          acc_country_code: searchParams?.acc_country_code ?? acc_country_code, 
+          account_type: searchParams?.account_type ?? account_type,  
+          branch: searchParams?.branch ?? branch, 
         })
       });
       if (response.ok) {
@@ -248,10 +337,7 @@ function BankAccGrid() {
     } finally {
       setLoading(false);
     }
-
   };
-
-
 
   const columnDefs = [
 
@@ -621,27 +707,47 @@ function BankAccGrid() {
   const handleNavigatesToForm = () => {
     navigate("/AddBankAccount", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
   };
-  const handleNavigateWithRowData = (selectedRow) => {
-  navigate("/AddBankAccount", {
-    state: {
-      mode: "update",
-      selectedRow,
+//   const handleNavigateWithRowData = (selectedRow) => {
+//   navigate("/AddBankAccount", {
+//     state: {
+//       mode: "update",
+//       selectedRow,
 
-      preservedRowData: rowData,
+//       preservedRowData: rowData,
 
-      preservedInputs: {
-        account_code,
-        account_name,
-        acc_addr_1,
-        acc_area_code,
-        acc_state_code,
-        acc_country_code,
-        branch,
-        account_type
+//       preservedInputs: {
+//         account_code,
+//         account_name,
+//         acc_addr_1,
+//         acc_area_code,
+//         acc_state_code,
+//         acc_country_code,
+//         branch,
+//         account_type
+//       },
+//     },
+//   });
+// };
+
+const handleNavigateWithRowData = (selectedRow) => {
+    navigate("/AddBankAccount", {
+      state: {
+        mode: "update",
+        account_code: selectedRow.account_code,
+
+        preservedInputs: {
+          account_code,
+          account_name,
+          acc_addr_1,
+          acc_area_code,
+          acc_state_code,
+          acc_country_code,
+          branch,
+          account_type
+        },
       },
-    },
-  });
-};
+    });
+  };
 
   const onSelectionChanged = () => {
     const selectedNodes = gridApi.getSelectedNodes();

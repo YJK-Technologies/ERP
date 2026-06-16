@@ -29,19 +29,83 @@ function UserScreenInput({ }) {
   const [hasValueChanged, setHasValueChanged] = useState(false);
   const [roleiddrop, setroleiddrop] = useState([]);
   const created_by = sessionStorage.getItem('selectedUserCode');
-  const [loading, setLoading] = useState(false);  
+  const [loading, setLoading] = useState(false);
   const [keyfield, setKeyfield] = useState('');
   const [isUpdated, setIsUpdated] = useState(false);
 
   console.log(selectedRows);
   const modified_by = sessionStorage.getItem("selectedUserCode");
-  const location = useLocation()
-  const { mode, selectedRow } = location.state || {};
+  const location = useLocation();
+  const locationState = location.state || {};
+  const mode = locationState.mode || "create"; // ✅ default fallback
+  const selectedRow = locationState.selectedRow || null;
+  const keyfields = location.state?.keyfield;
+  const company_code = sessionStorage.getItem('selectedCompanyCode');
+
+  useEffect(() => {
+    if (!location.state) {
+      clearInputFields(); // ensure fresh create mode
+    }
+  }, []);
+
+  useEffect(() => {
+    if (mode === "update" && keyfields) {
+      fetchRoleRightsData();
+    }
+  }, [mode, keyfields]);
+
+  const fetchRoleRightsData = async () => {
+    try {
+      setLoading(true);
+
+      const response = await fetch(`${config.apiBaseUrl}/getRoleRightsData`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          keyfield: keyfields,
+          company_code
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.length > 0) {
+        const roleRights = data[0];
+
+        setKeyfield(roleRights.keyfield || "");
+        setselectedpermissions({
+          label: roleRights.permission_type,
+          value: roleRights.permission_type,
+        });
+        setpermission_type(roleRights.permission_type);
+        setSelectedRole({
+          label: roleRights.role_id,
+          value: roleRights.role_id,
+        });
+        setrole_id(roleRights.role_id);
+        setselectedscreens({
+          label: roleRights.screen_type,
+          value: roleRights.screen_type,
+        });
+        setscreen_type(roleRights.screen_type);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch role rights details");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const clearInputFields = () => {
     setselectedpermissions("");
     setSelectedRole("");
-    setselectedscreens("")
+    setselectedscreens("");
+    setscreen_type("");
+    setpermission_type("");
+    setrole_id("");
   };
 
   useEffect(() => {
@@ -206,7 +270,7 @@ function UserScreenInput({ }) {
       !permission_type
     ) {
       setError(" ");
-       toast.warning("Error: Missing required fields");
+      toast.warning("Error: Missing required fields");
       return;
     }
     setLoading(true);
@@ -249,7 +313,8 @@ function UserScreenInput({ }) {
   const handleNavigate = () => {
     navigate("/UserRights", {
       state: {
-        preservedRowData: location.state?.preservedRowData,
+        refreshGrid: true,
+        // preservedRowData: location.state?.preservedRowData,
         preservedInputs: location.state?.preservedInputs,
       },
     });
@@ -258,21 +323,21 @@ function UserScreenInput({ }) {
   const handleKeyDown = async (e, nextFieldRef, value, hasValueChanged, setHasValueChanged) => {
     if (e.key === 'Enter') {
       if (hasValueChanged) {
-        await handleKeyDownStatus(e); 
-        setHasValueChanged(false); 
+        await handleKeyDownStatus(e);
+        setHasValueChanged(false);
       }
 
       if (value) {
         nextFieldRef.current.focus();
       } else {
-        e.preventDefault(); 
+        e.preventDefault();
       }
     }
   };
 
   const handleKeyDownStatus = async (e) => {
-    if (e.key === 'Enter' && hasValueChanged) { 
-      setHasValueChanged(false); 
+    if (e.key === 'Enter' && hasValueChanged) {
+      setHasValueChanged(false);
     }
   };
 
@@ -280,8 +345,8 @@ function UserScreenInput({ }) {
     <div class="container-fluid Topnav-screen ">
       <div className="">
         <div class=""  >
-        {loading && <LoadingScreen />}
-          <ToastContainer position="top-right" className="toast-design" theme="colored"/>
+          {loading && <LoadingScreen />}
+          <ToastContainer position="top-right" className="toast-design" theme="colored" />
           <div class="row ">
             <div class="col-md-12 text-center" >
               <div >
@@ -298,8 +363,8 @@ function UserScreenInput({ }) {
                     </div>
                   </div>
                 </div>
-                </div>
-                </div>
+              </div>
+            </div>
             <div class="pt-2 mb-4">
               <div className="shadow-lg p-3 bg-body-tertiary rounded  mb-2">
                 <div class="row">
@@ -313,19 +378,19 @@ function UserScreenInput({ }) {
                         </div>
                       </div>
                       <div title="Select the Role ID">
-                      <Select
-                        id="roleid"
-                        value={selectedRole}
-                        onChange={handleChangeRole}
-                        options={filteredOptionRole}
-                        className="exp-input-field"
-                        placeholder=""
-                        maxLength={18}
-                        ref={roleId}
-                        onKeyDown={(e) => handleKeyDown(e, screentype, roleId)}
-                      />
-                      {/* {error && !role_id && <div className="text-danger">User Code should not be blank</div>} */}
-                    </div>
+                        <Select
+                          id="roleid"
+                          value={selectedRole}
+                          onChange={handleChangeRole}
+                          options={filteredOptionRole}
+                          className="exp-input-field"
+                          placeholder=""
+                          maxLength={18}
+                          ref={roleId}
+                          onKeyDown={(e) => handleKeyDown(e, screentype, roleId)}
+                        />
+                        {/* {error && !role_id && <div className="text-danger">User Code should not be blank</div>} */}
+                      </div>
                     </div>
                   </div>
                   <div className="col-md-3 form-group">
@@ -338,19 +403,19 @@ function UserScreenInput({ }) {
                         </div>
                       </div>
                       <div title="Select the Screen Type">
-                      <Select
-                        id="status"
-                        value={selectedscreens}
-                        onChange={handleChangescreens}
-                        options={filteredOptionscreens}
-                        className="exp-input-field"
-                        placeholder=""
-                        ref={screentype}
-                        onKeyDown={(e) => handleKeyDown(e, permissiontype, screentype)}
-                        required title="Please select a screen type here"
-                      />
-                      {/* {error && !screen_type && <div className="text-danger">Screen Type should not be blank</div>} */}
-                    </div>
+                        <Select
+                          id="status"
+                          value={selectedscreens}
+                          onChange={handleChangescreens}
+                          options={filteredOptionscreens}
+                          className="exp-input-field"
+                          placeholder=""
+                          ref={screentype}
+                          onKeyDown={(e) => handleKeyDown(e, permissiontype, screentype)}
+                          required title="Please select a screen type here"
+                        />
+                        {/* {error && !screen_type && <div className="text-danger">Screen Type should not be blank</div>} */}
+                      </div>
                     </div>
                   </div>
                   <div className="col-md-3 form-group">
@@ -363,28 +428,28 @@ function UserScreenInput({ }) {
                         </div>
                       </div>
                       <div title="Select the Permission Type">
-                      <Select
-                        id="status"
-                        value={selectedpermissions}
-                        onChange={handleChangePermissions}
-                        options={filteredOptionPermissions}
-                        className="exp-input-field"
-                        placeholder=""
-                        ref={permissiontype}
-                        // onKeyDown={(e) => handleKeyDown(e, permissiontype)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            if (mode === "create") {
-                              handleInsert();
-                            } else {
-                              handleUpdate();
+                        <Select
+                          id="status"
+                          value={selectedpermissions}
+                          onChange={handleChangePermissions}
+                          options={filteredOptionPermissions}
+                          className="exp-input-field"
+                          placeholder=""
+                          ref={permissiontype}
+                          // onKeyDown={(e) => handleKeyDown(e, permissiontype)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              if (mode === "create") {
+                                handleInsert();
+                              } else {
+                                handleUpdate();
+                              }
                             }
-                          }
-                        }}
-                        required title="Please select a permission type here"
-                      />
-                      {/* {error && !permission_type && <div className="text-danger">Permission Type should not be blank</div>} */}
-                    </div></div>
+                          }}
+                          required title="Please select a permission type here"
+                        />
+                        {/* {error && !permission_type && <div className="text-danger">Permission Type should not be blank</div>} */}
+                      </div></div>
                   </div>
                   {/* <div className="col-md-3 form-group">
                     {mode === "create" ? (
@@ -441,7 +506,7 @@ function UserScreenInput({ }) {
                 </div>
               </div>
             </div>
-            </div>
+          </div>
         </div>
       </div>
     </div>

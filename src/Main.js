@@ -229,6 +229,7 @@ import AddVisitorMaster from "./Master/AddVisitorMaster.js";
 import GatePass from "./GatePass.js";
 import FaceAttendance from "./Attendance.js";
 import ItemSettings from "./ItemSettings.js";
+import Openingbalance from "./Transaction/Openingbalance.js";
 
 function Main() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -339,7 +340,7 @@ function Main() {
     { path: "/Customer", component: <CustomerDetGrid /> },
     { path: "/AddCustomerHeader", component: <CustomerHdrInput /> },
     { path: "/AddCustomerDetails", component: <CustomerDetInput /> },
-    { path: "/OpeningBalance", component: <OpeningbalanceGrid /> },
+    // { path: "/OpeningBalance", component: <OpeningbalanceGrid /> },
     { path: "/OpeningItem", component: <OpeningBalanceItem /> },
     { path: "/AddOpeningBalance", component: <OpeningbalanceInput /> },
     { path: "/Adjustment", component: <AdjustmentGrid /> },
@@ -496,6 +497,7 @@ function Main() {
      { path: "/GatePass", component: <GatePass /> },
      { path: "/FaceAttendance", component: <FaceAttendance /> },
      { path: "/ItemSettings", component: <ItemSettings /> },
+     { path: "/OpeningBalance", component: <Openingbalance /> },
   ];
  
   return (
