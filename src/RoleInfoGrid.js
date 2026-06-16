@@ -40,18 +40,41 @@ function RoleInfoGrid() {
     .map(permission => permission.permission_type.toLowerCase());
 
   useEffect(() => {
-        if (location.state?.preservedRowData) {
-          setRowData(location.state.preservedRowData);
-        }
-        if (location.state?.preservedInputs) {
-          const inputs = location.state.preservedInputs;
-          setrole_id(inputs.role_id || "");
-          setrole_name(inputs.role_name || "");
-    
-        }
-      }, [location.state]);
+    const handleKeyDown = (event) => {
+      const isReloadShortcut =
+        (event.ctrlKey && event.key.toLowerCase() === "r") ||
+        (event.altKey && event.key.toLowerCase() === "r") ||
+        event.key === "F5";
 
-  const handleSearch = async () => {
+      if (isReloadShortcut) {
+        event.preventDefault();
+        clearInputFields();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    // if (location.state?.preservedRowData) {
+    //   setRowData(location.state.preservedRowData);
+    // }
+
+    if (location.state?.preservedInputs) {
+      const inputs = location.state.preservedInputs;
+      setrole_id(inputs.role_id || "");
+      setrole_name(inputs.role_name || "");
+
+      if (location.state?.refreshGrid) {
+        handleSearch(inputs);
+      }
+
+    }
+  }, [location.state]);
+
+  const handleSearch = async (searchParams = null) => {
     setLoading(true);
     try {
       const company_code = sessionStorage.getItem('selectedCompanyCode');
@@ -61,7 +84,11 @@ function RoleInfoGrid() {
           "Content-Type": "application/json",
           "company_code": company_code
         },
-        body: JSON.stringify({ company_code: company_code, role_id, role_name }) // Send company_no and company_name as search criteria
+        body: JSON.stringify({
+          company_code: company_code,
+          role_id: searchParams?.role_id ?? role_id,
+          role_name: searchParams?.role_name ?? role_name
+        })
       });
       if (response.ok) {
         const searchData = await response.json();
@@ -89,10 +116,10 @@ function RoleInfoGrid() {
   };
 
   const clearInputFields = () => {
-    setrole_id("");
-    setrole_name("");
-    setRowData([]);
-  };
+    setrole_id("");
+    setrole_name("");
+    setRowData([]);
+  };
 
   const columnDefs = [
     {
@@ -150,7 +177,7 @@ function RoleInfoGrid() {
     {
       headerName: "Keyfield",
       field: "Keyfield",
-       hide: true, 
+      hide: true,
       editable: false,
       cellStyle: { textAlign: "left" },
       cellEditorParams: {
@@ -282,12 +309,27 @@ function RoleInfoGrid() {
     navigate("/AddRole", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
   };
 
+  // const handleNavigateWithRowData = (selectedRow) => {
+  //   navigate("/AddRole", {
+  //     state: {
+  //       mode: "update", selectedRow, preservedRowData: rowData,
+  //       preservedInputs: { role_id, role_name, },
+  //     },
+  //   });
+  // };
+
   const handleNavigateWithRowData = (selectedRow) => {
     navigate("/AddRole", {
-      state: { mode: "update", selectedRow, preservedRowData: rowData, 
-        preservedInputs: { role_id, role_name, }, }, 
-    }); 
-  }; 
+      state: {
+        mode: "update",
+        Keyfield: selectedRow.Keyfield,
+        preservedInputs: {
+          role_id,
+          role_name,
+        },
+      },
+    });
+  };
 
   const onSelectionChanged = () => {
     const selectedNodes = gridApi.getSelectedNodes();
@@ -435,52 +477,52 @@ function RoleInfoGrid() {
   // };
 
   const deleteSelectedRows = async () => {
-  const selectedRows = gridApi.getSelectedRows();
+    const selectedRows = gridApi.getSelectedRows();
 
-  if (selectedRows.length === 0) {
-    toast.warning("Please select at least one row to delete");
-    return;
-  }
-
-  const company_code = sessionStorage.getItem("selectedCompanyCode");
-  const modified_by = sessionStorage.getItem("selectedUserCode");
-
-  // ?? Build payload exactly as Node expects
-  const keyfieldsToDelete = selectedRows.map(row => ({
-    Keyfield: row.Keyfield,
-    modified_by: modified_by,
-    company_code: company_code
-  }));
-
-  showConfirmationToast(
-    "Are you sure you want to delete the selected rows?",
-    async () => {
-      try {
-        const response = await fetch(`${config.apiBaseUrl}/roledelete`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ keyfieldsToDelete })
-        });
-
-        if (response.ok) {
-          toast.success("Data Deleted Successfully");
-          handleSearch();
-        } else {
-          const errorResponse = await response.json();
-          toast.warning(errorResponse.message || "Delete failed");
-        }
-      } catch (error) {
-        console.error("Delete error:", error);
-        toast.error("Error Deleting Data: " + error.message);
-      }
-    },
-    () => {
-      toast.info("Data delete cancelled.");
+    if (selectedRows.length === 0) {
+      toast.warning("Please select at least one row to delete");
+      return;
     }
-  );
-};
+
+    const company_code = sessionStorage.getItem("selectedCompanyCode");
+    const modified_by = sessionStorage.getItem("selectedUserCode");
+
+    // ?? Build payload exactly as Node expects
+    const keyfieldsToDelete = selectedRows.map(row => ({
+      Keyfield: row.Keyfield,
+      modified_by: modified_by,
+      company_code: company_code
+    }));
+
+    showConfirmationToast(
+      "Are you sure you want to delete the selected rows?",
+      async () => {
+        try {
+          const response = await fetch(`${config.apiBaseUrl}/roledelete`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ keyfieldsToDelete })
+          });
+
+          if (response.ok) {
+            toast.success("Data Deleted Successfully");
+            handleSearch();
+          } else {
+            const errorResponse = await response.json();
+            toast.warning(errorResponse.message || "Delete failed");
+          }
+        } catch (error) {
+          console.error("Delete error:", error);
+          toast.error("Error Deleting Data: " + error.message);
+        }
+      },
+      () => {
+        toast.info("Data delete cancelled.");
+      }
+    );
+  };
 
 
   const formatDate = (dateString) => {

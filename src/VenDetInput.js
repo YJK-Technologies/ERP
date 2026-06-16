@@ -65,6 +65,11 @@ function VenDetInput({ }) {
   const [keyfield, setkeyfield] = useState("");
   const created_by = sessionStorage.getItem('selectedUserCode')
 
+  const [opening_balance, setopening_balance] = useState("0");
+  const [balance_type, setbalance_type] = useState("");
+  const [selectedBT, setSelectedBT] = useState("");
+  const [balance_typeDrop, setbalance_typeDrop] = useState([]);
+
   //Enter Key Reference Code
   const code = useRef(null);
   const Address1 = useRef(null);
@@ -87,6 +92,8 @@ function VenDetInput({ }) {
   const OfficeT = useRef(null);
   const Email = useRef(null);
   const Contact = useRef(null);
+  const openingbalance = useRef(null);
+  const BalanceType = useRef(null);
   const [hasValueChanged, setHasValueChanged] = useState(false);
   const modified_by = sessionStorage.getItem("selectedUserCode");
   const [isUpdated, setIsUpdated] = useState(false);
@@ -111,7 +118,7 @@ function VenDetInput({ }) {
     setvendor_mobile_no("");
     setvendor_fax_no('');
     setvendor_email_id('');
-    setvendor_credit_limit(0);
+    setvendor_credit_limit("0");
     setvendor_transport_code('');
     setvendor_salesman_code('');
     setvendor_broker_code('');
@@ -126,6 +133,9 @@ function VenDetInput({ }) {
     setvendor_salesman_code('');
     setvendor_broker_code('');
     setOfficeType('');
+    setSelectedBT('');
+    setopening_balance('0');
+    setbalance_type('')
   };
 
   useEffect(() => {
@@ -152,7 +162,7 @@ function VenDetInput({ }) {
       setOfficeType(selectedRow.office_type || "");
       setContact_person(selectedRow.contact_person || "");
       setkeyfield(selectedRow.keyfield || "");
-       setvendor_area_code(selectedRow.vendor_area_code || "");
+      setvendor_area_code(selectedRow.vendor_area_code || "");
       setvendor_state_code(selectedRow.vendor_state_code || "");
       setvendor_country_code(selectedRow.vendor_country_code || "");
       setvendor_code(selectedRow.vendor_code || "");
@@ -160,7 +170,13 @@ function VenDetInput({ }) {
       setvendor_salesman_code(selectedRow.vendor_salesman_code || "");
       setvendor_broker_code(selectedRow.vendor_broker_code || "");
       setOfficeType(selectedRow.office_type || "");
+      setbalance_type(selectedRow.balance_type || "");
+      setopening_balance(selectedRow.opening_balance || 0);
 
+      setSelectedBT({
+        label: selectedRow.balance_type,
+        value: selectedRow.balance_type,
+      });
       setSelectedCity({
         label: selectedRow.vendor_area_code,
         value: selectedRow.vendor_area_code,
@@ -225,6 +241,22 @@ function VenDetInput({ }) {
     if (company_code) {
       fetchVendor();
     }
+  }, []);
+
+  useEffect(() => {
+    const company_code = sessionStorage.getItem("selectedCompanyCode");
+    fetch(`${config.apiBaseUrl}/getbalance_type`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ company_code }),
+    })
+      .then((data) => data.json())
+      .then((data) => {
+        setbalance_typeDrop(data);
+      })
+      .catch((error) => console.error("Error fetching data:", error));
   }, []);
 
   useEffect(() => {
@@ -311,6 +343,12 @@ function VenDetInput({ }) {
     label: `${option.vendor_code} - ${option.vendor_name}`,
   }));
 
+  const filteredOptionBT = Array.isArray(balance_typeDrop)
+    ? balance_typeDrop.map((option) => ({
+      value: option.attributedetails_code,
+      label: `${option.attributedetails_code} - ${option.attributedetails_name}`,
+    }))
+    : [];
 
   const filteredOptionTransaction = TRcodedrop.map((option) => ({
     value: option.keyfield,
@@ -347,54 +385,49 @@ function VenDetInput({ }) {
     label: option.attributedetails_name,
   }));
 
-
   const handleChangeCode = (selectedCode) => {
     setSelectedCode(selectedCode);
     setvendor_code(selectedCode ? selectedCode.value : '');
-
   };
 
-
+  const handleChangeBT = (selectedBT) => {
+    setSelectedBT(selectedBT);
+    setbalance_type(selectedBT ? selectedBT.value : "");
+  };
 
   const handleChangeTransport = (selectedTransport) => {
     setSelectedTransport(selectedTransport);
     setvendor_transport_code(selectedTransport ? selectedTransport.value : '');
-
   };
 
   const handleChangeSales = (selectedSales) => {
     setSelectedSales(selectedSales);
     setvendor_salesman_code(selectedSales ? selectedSales.value : '');
-
   };
 
   const handleChangeBroker = (selectedBroker) => {
     setSelectedBroker(selectedBroker);
     setvendor_broker_code(selectedBroker ? selectedBroker.value : '');
-
   };
+
   const handleChangeCity = (selectedCity) => {
     setSelectedCity(selectedCity);
     setvendor_area_code(selectedCity ? selectedCity.value : '');
-
   };
 
   const handleChangeState = (selectedState) => {
     setselectedState(selectedState);
     setvendor_state_code(selectedState ? selectedState.value : '');
-
   };
 
   const handleChangeCountry = (selectedCountry) => {
     setselectedCountry(selectedCountry);
     setvendor_country_code(selectedCountry ? selectedCountry.value : '');
-
   };
 
   const handleChangeOffice = (selectedOffice) => {
     setselectedOffice(selectedOffice);
     setOfficeType(selectedOffice ? selectedOffice.value : '');
-
   };
 
   const handleNavigateToForm = () => {
@@ -402,13 +435,13 @@ function VenDetInput({ }) {
   };
 
   const handleNavigate = () => {
-  navigate("/Vendor", {
-    state: {
-      preservedRowData: location.state?.preservedRowData,
-      preservedInputs: location.state?.preservedInputs
-    }
-  });
-};
+    navigate("/Vendor", {
+      state: {
+        preservedRowData: location.state?.preservedRowData,
+        preservedInputs: location.state?.preservedInputs
+      }
+    });
+  };
 
   const handleInsert = async () => {
     if (
@@ -419,10 +452,12 @@ function VenDetInput({ }) {
       !vendor_email_id ||
       !vendor_credit_limit ||
       !vendor_country_code ||
-      !vendor_state_code
+      !vendor_state_code ||
+      !opening_balance ||
+      !balance_type
     ) {
       setError(" ");
-       toast.warning("Error: Missing required fields");
+      toast.warning("Error: Missing required fields");
       return;
     }
 
@@ -461,13 +496,15 @@ function VenDetInput({ }) {
           vendor_weekday_code,
           contact_person,
           office_type,
+          opening_balance,
+          balance_type,
           created_by: sessionStorage.getItem('selectedUserCode')
         }),
       });
-       if (response.ok) {
-       toast.success("Data inserted Successfully", {
-      onClose: () => clearInputFields()
-      });
+      if (response.ok) {
+        toast.success("Data inserted Successfully", {
+          onClose: () => clearInputFields()
+        });
       } else {
         const errorResponse = await response.json();
         console.error(errorResponse.message);
@@ -488,7 +525,7 @@ function VenDetInput({ }) {
   const handleUpdate = async () => {
     if (!vendor_code) {
       setError(" ");
-       toast.warning("Error: Missing required fields");
+      toast.warning("Error: Missing required fields");
       return;
     }
 
@@ -527,13 +564,15 @@ function VenDetInput({ }) {
           contact_person,
           office_type,
           keyfield,
+          opening_balance,
+          balance_type,
           modified_by: sessionStorage.getItem('selectedUserCode')
         }),
       });
-     if (response.ok) {
-      toast.success("Data updated successfully", {
-      // onClose: () => clearInputFields()
-      });
+      if (response.ok) {
+        toast.success("Data updated successfully", {
+          // onClose: () => clearInputFields()
+        });
       } else if (response.status === 400) {
         const errorResponse = await response.json();
         console.error(errorResponse.message);
@@ -625,7 +664,7 @@ function VenDetInput({ }) {
                     </div>
 
                     <div className="input-group" title="Select the Code">
-                
+
                       <Select
                         id="venco"
                         value={selectedCode}
@@ -637,16 +676,16 @@ function VenDetInput({ }) {
                         ref={code}
                         onKeyDown={(e) => handleKeyDown(e, Address1, code)}
                       /><button onClick={handleClickOpen} class="vendorhdrcode position-absolute me-5 pt-2" required title="Add Header"><i class="fa-solid fa-plus"></i></button>
-                    
-                    {error && !vendor_code && <div className="text-danger">Code should not be blank</div>}
-                  </div>
-                </div>      </div>
+
+                      {error && !vendor_code && <div className="text-danger">Code should not be blank</div>}
+                    </div>
+                  </div>      </div>
 
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
                     <div class="d-flex justify-content-start">
                       <div><label for="rid" class="exp-form-labels">
-                        Address1
+                        Address 1
                       </label></div>
                       <div> <span className="text-danger">*</span></div>
                     </div><input
@@ -669,7 +708,7 @@ function VenDetInput({ }) {
                   <div class="exp-form-floating">
                     <div class="d-flex justify-content-start">
                       <div><label for="rid" class="exp-form-labels">
-                        Address2
+                        Address 2
                       </label></div>
                       <div> <span className="text-danger">*</span></div>
                     </div><input
@@ -692,7 +731,7 @@ function VenDetInput({ }) {
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
                     <label for="venad3" class="exp-form-labels">
-                      Address3
+                      Address 3
                     </label>  <input
                       id="venad3"
                       class="exp-input-field form-control"
@@ -712,7 +751,7 @@ function VenDetInput({ }) {
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
                     <label for="venad4" class="exp-form-labels">
-                      Address4
+                      Address 4
                     </label><input
                       id="venad4"
                       class="exp-input-field form-control"
@@ -738,20 +777,20 @@ function VenDetInput({ }) {
                       </label></div>
                       <div> <span className="text-danger">*</span></div>
                     </div>
-  <div title="Select the City">  
-                    <Select
-                      id="city"
-                      value={selectedCity}
-                      onChange={handleChangeCity}
-                      options={filteredOptionCity}
-                      className="exp-input-field"
-                      placeholder=""
-                      ref={City}
-                      onKeyDown={(e) => handleKeyDown(e, State, City)}
-                    />
-                    {error && !vendor_area_code && <div className="text-danger">City should not be blank</div>}
-                  </div>
-                </div>     </div>
+                    <div title="Select the City">
+                      <Select
+                        id="city"
+                        value={selectedCity}
+                        onChange={handleChangeCity}
+                        options={filteredOptionCity}
+                        className="exp-input-field"
+                        placeholder=""
+                        ref={City}
+                        onKeyDown={(e) => handleKeyDown(e, State, City)}
+                      />
+                      {error && !vendor_area_code && <div className="text-danger">City should not be blank</div>}
+                    </div>
+                  </div>     </div>
 
                 <div className="col-md-3 form-group mb-2">
 
@@ -762,20 +801,20 @@ function VenDetInput({ }) {
                       </label></div>
                       <div> <span className="text-danger">*</span></div>
                     </div>
- <div title="Select the State">       
-                    <Select
-                      id="state"
-                      value={selectedState}
-                      onChange={handleChangeState}
-                      options={filteredOptionState}
-                      className="exp-input-field"
-                      placeholder=""
-                      ref={State}
-                      onKeyDown={(e) => handleKeyDown(e, Country, State)}
-                    />
-                    {error && !vendor_state_code && <div className="text-danger">State should not be blank</div>}
-                  </div>
-                </div>  </div>
+                    <div title="Select the State">
+                      <Select
+                        id="state"
+                        value={selectedState}
+                        onChange={handleChangeState}
+                        options={filteredOptionState}
+                        className="exp-input-field"
+                        placeholder=""
+                        ref={State}
+                        onKeyDown={(e) => handleKeyDown(e, Country, State)}
+                      />
+                      {error && !vendor_state_code && <div className="text-danger">State should not be blank</div>}
+                    </div>
+                  </div>  </div>
 
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
@@ -786,20 +825,20 @@ function VenDetInput({ }) {
                       </div>
                       <div> <span className="text-danger">*</span></div>
                     </div>
- <div title="Select the Country">    
-                    <Select
-                      id="country"
-                      value={selectedCountry}
-                      onChange={handleChangeCountry}
-                      options={filteredOptionCountry}
-                      className="exp-input-field"
-                      placeholder=""
-                      ref={Country}
-                      onKeyDown={(e) => handleKeyDown(e, Imex, Country)}
-                    />
-                    {error && !vendor_country_code && <div className="text-danger">Country should not be blank</div>}
-                  </div>
-                </div>  </div>
+                    <div title="Select the Country">
+                      <Select
+                        id="country"
+                        value={selectedCountry}
+                        onChange={handleChangeCountry}
+                        options={filteredOptionCountry}
+                        className="exp-input-field"
+                        placeholder=""
+                        ref={Country}
+                        onKeyDown={(e) => handleKeyDown(e, Imex, Country)}
+                      />
+                      {error && !vendor_country_code && <div className="text-danger">Country should not be blank</div>}
+                    </div>
+                  </div>  </div>
 
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
@@ -930,7 +969,7 @@ function VenDetInput({ }) {
 
                   </div>
                 </div>
-                <div className="col-md-3 form-group mb-2">
+                {/* <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
                     <div class="d-flex justify-content-start">
                       <div><label for="rid" class="exp-form-labels">
@@ -952,68 +991,68 @@ function VenDetInput({ }) {
 
 
                   </div>
-                </div>
+                </div> */}
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
                     <label for="ventrans" class="exp-form-labels">
                       Transport Code
                     </label>
-                    <div title="Select the Transport Code">        
+                    <div title="Select the Transport Code">
 
-                    <Select
-                      id="ventrans"
-                      value={selectedTransport}
-                      onChange={handleChangeTransport}
-                      options={filteredOptionTransaction}
-                      className="exp-input-field"
-                      placeholder=""
-                      ref={TRansport}
-                      onKeyDown={(e) => handleKeyDown(e, Sales, TRansport)}
-                    />
+                      <Select
+                        id="ventrans"
+                        value={selectedTransport}
+                        onChange={handleChangeTransport}
+                        options={filteredOptionTransaction}
+                        className="exp-input-field"
+                        placeholder=""
+                        ref={TRansport}
+                        onKeyDown={(e) => handleKeyDown(e, Sales, TRansport)}
+                      />
 
-                  </div>
-                </div>    </div>
+                    </div>
+                  </div>    </div>
 
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
                     <label for="vensales" class="exp-form-labels">
                       Salesman Code
                     </label>
- <div title="Select the Salesman Code">    
-                    <Select
-                      id="vensales"
-                      value={selectedSales}
-                      onChange={handleChangeSales}
-                      options={filteredOptionSales}
-                      className="exp-input-field"
-                      placeholder=""
-                      ref={Sales}
-                      onKeyDown={(e) => handleKeyDown(e, Broker, Sales)}
-                    />
+                    <div title="Select the Salesman Code">
+                      <Select
+                        id="vensales"
+                        value={selectedSales}
+                        onChange={handleChangeSales}
+                        options={filteredOptionSales}
+                        className="exp-input-field"
+                        placeholder=""
+                        ref={Sales}
+                        onKeyDown={(e) => handleKeyDown(e, Broker, Sales)}
+                      />
 
-                  </div>
-                </div> </div>
+                    </div>
+                  </div> </div>
 
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
                     <label for="venbro" class="exp-form-labels">
                       Broker Code
                     </label>
-                    <div title="Select the Broker Code">   
+                    <div title="Select the Broker Code">
 
-                    <Select
-                      id="venbro"
-                      value={selectedBroker}
-                      onChange={handleChangeBroker}
-                      options={filteredOptionBroker}
-                      className="exp-input-field"
-                      placeholder=""
-                      ref={Broker}
-                      onKeyDown={(e) => handleKeyDown(e, Week, Broker)}
-                    />
+                      <Select
+                        id="venbro"
+                        value={selectedBroker}
+                        onChange={handleChangeBroker}
+                        options={filteredOptionBroker}
+                        className="exp-input-field"
+                        placeholder=""
+                        ref={Broker}
+                        onKeyDown={(e) => handleKeyDown(e, Week, Broker)}
+                      />
 
-                  </div>
-                </div>  </div>
+                    </div>
+                  </div>  </div>
 
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
@@ -1039,21 +1078,21 @@ function VenDetInput({ }) {
                     <label for="ventrans" class="exp-form-labels">
                       Office Type
                     </label>
-                     <div title="Select the Office Type "> 
-                    <Select
-                    
-                      id="officeType"
-                      value={selectedOffice}
-                      onChange={handleChangeOffice}
-                      options={filteredOptionOffice}
-                      className="exp-input-field"
-                      placeholder=""
-                      ref={OfficeT}
-                      onKeyDown={(e) => handleKeyDown(e, Contact, OfficeT)}
-                    />
+                    <div title="Select the Office Type ">
+                      <Select
 
+                        id="officeType"
+                        value={selectedOffice}
+                        onChange={handleChangeOffice}
+                        options={filteredOptionOffice}
+                        className="exp-input-field"
+                        placeholder=""
+                        ref={OfficeT}
+                        onKeyDown={(e) => handleKeyDown(e, Contact, OfficeT)}
+                      />
+
+                    </div>
                   </div>
-                </div>
                 </div>
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
@@ -1079,7 +1118,7 @@ function VenDetInput({ }) {
                     />
 
                   </div>
-                </div>   
+                </div>
                 {/* <div className="col-md-3 form-group  mb-2">
         {mode === "create" ? (
                 <div class="exp-form-floating">
@@ -1121,7 +1160,7 @@ function VenDetInput({ }) {
                 </div>
                 )}
           </div> */}
-                <div class="col-md-3 form-group ">
+                {/* <div class="col-md-3 form-group ">
                   {mode === "create" ? (
                     <button onClick={handleInsert} className="mt-4" title="Save">
                       <i class="fa-solid fa-floppy-disk"></i>
@@ -1132,12 +1171,108 @@ function VenDetInput({ }) {
                     </button>
                   )}
                   <VenHdrInputPopup open={open2} handleClose={handleClose} />
-                </div>
+                </div> */}
               </div>
 
 
 
             </div>
+
+            <div className="shadow-lg p-3 bg-body-tertiary rounded  mb-2">
+                <div className="col-md-3 form-group mb-3 mt-3" style={{ width: "150px" }}>
+                    <h6 className=""><strong>Financial Year:</strong></h6>
+                </div>
+                                  <div className="row mb-3 ">
+
+                <div className="col-md-3 form-group mb-2">
+                  <div class="exp-form-floating">
+                    <label for="ventrans" className={`exp-form-labels ${error && !balance_type ? 'text-danger' : ''}`}>
+                      Balance Type<span className="text-danger">*</span>
+                    </label>
+                    <div title="Select the Balance Type">
+                      <Select
+                        id="ventrans"
+                        isClearable
+                        value={selectedBT}
+                        onChange={handleChangeBT}
+                        options={filteredOptionBT}
+                        className="exp-input-field"
+                        placeholder=""
+                        ref={BalanceType}
+                        onKeyDown={(e) => handleKeyDown(e, Sales, BalanceType)}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="col-md-3 form-group mb-2">
+                  <div class="exp-form-floating">
+                    <label for="rid" className={`exp-form-labels ${error && !vendor_credit_limit ? 'text-danger' : ''}`}>
+                      Credit Limit<span className="text-danger">*</span>
+                    </label>
+                    <input
+                      id="vencre"
+                      class="exp-input-field form-control"
+                      type="number"
+                      placeholder=""
+                      required
+                      title="Please enter the credit limit"
+                      value={vendor_credit_limit}
+                      onChange={(e) => setvendor_credit_limit(e.target.value)}
+                      maxLength={18}
+                      ref={Credit}
+                      onKeyDown={(e) =>
+                        handleKeyDown(e, openingbalance, Credit)
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="col-md-3 form-group mb-2">
+                  <div class="exp-form-floating">
+                    <label for="rid" className={`exp-form-labels ${error && !opening_balance ? 'text-danger' : ''}`}>
+                      Opening Balance<span className="text-danger">*</span>
+                    </label>
+                    <input
+                      id="vencre"
+                      class="exp-input-field form-control"
+                      type="number"
+                      placeholder=""
+                      required
+                      title="Please enter the opening balance"
+                      value={opening_balance}
+                      onChange={(e) => setopening_balance(e.target.value)}
+                      maxLength={18}
+                      ref={openingbalance}
+                      onKeyDown={(e) =>
+                        handleKeyDown(e, TRansport, openingbalance)
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div class="col-md-3 form-group ">
+                  {mode === "create" ? (
+                    <button
+                      onClick={handleInsert}
+                      className="mt-4"
+                      title="Save"
+                    >
+                      <i class="fa-solid fa-floppy-disk"></i>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleUpdate}
+                      className="mt-4"
+                      title="Update"
+                    >
+                      <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                  )}
+                  <VenHdrInputPopup open={open2} handleClose={handleClose} />
+                </div>                </div>
+
+            </div>  
           </div>
         </div>
       </div>

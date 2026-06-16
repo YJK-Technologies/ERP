@@ -12,7 +12,6 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { showConfirmationToast } from './ToastConfirmation';
 import LoadingScreen from './Loading';
-
 const config = require('./Apiconfig');
 
 
@@ -28,7 +27,7 @@ function AttriDetGrid() {
   const [attributedetails_name, setattributedetails_name] = useState("");
   const [descriptions, setdescriptions] = useState("");
   const [editedData, setEditedData] = useState([]);
-    const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [createdBy, setCreatedBy] = useState("");
   const [modifiedBy, setModifiedBy] = useState("");
@@ -44,48 +43,56 @@ function AttriDetGrid() {
     .map(permission => permission.permission_type.toLowerCase());
 
 
-
   useEffect(() => {
+    const handleKeyDown = (event) => {
+      const isReloadShortcut =
+        (event.ctrlKey && event.key.toLowerCase() === "r") ||
+        (event.altKey && event.key.toLowerCase() === "r") ||
+        event.key === "F5";
+
+      if (isReloadShortcut) {
+        event.preventDefault();
+        clearInputFields();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // const fetchData = async () => {
-  //   try {
-  //     const response = await fetch("http://localhost:5500/attributedetData");
-  //     const jsonData = await response.json();
-  //     setRowData(jsonData);
-  //   } catch (error) {
-  //     console.error("Error fetching data:", error);
-  //   }
-  // };   
-  // Define the function to reload the grid data
   const reloadGridData = () => {
     window.location.reload();
   };
 
   const clearInputFields = () => {
-    setattributeheader_code("");
-    setattributedetails_code("");
-    setattributedetails_name("");
-    setdescriptions("");
-    setRowData([]);
-  };
+    setattributeheader_code("");
+    setattributedetails_code("");
+    setattributedetails_name("");
+    setdescriptions("");
+    setRowData([]);
+  };
 
-useEffect(() => {
-      if (location.state?.preservedRowData) {
-        setRowData(location.state.preservedRowData);
+  useEffect(() => {
+    // if (location.state?.preservedRowData) {
+    //   setRowData(location.state.preservedRowData);
+    // }
+
+    if (location.state?.preservedInputs) {
+      const inputs = location.state.preservedInputs;
+      setattributeheader_code(inputs.attributeheader_code || "");
+      setattributedetails_code(inputs.attributedetails_code || "");
+      setattributedetails_name(inputs.attributedetails_name || "");
+      setdescriptions(inputs.descriptions || "");
+
+      if (location.state?.refreshGrid) {
+        handleSearch(inputs);
       }
-    
-      if (location.state?.preservedInputs) {
-        setattributeheader_code(location.state.preservedInputs.attributeheader_code || "");
-        setattributedetails_code(location.state.preservedInputs.attributedetails_code || "");
-        setattributedetails_name(location.state.preservedInputs.attributedetails_name || "");
-        setdescriptions(location.state.preservedInputs.descriptions || "");
-  
-      }
-    }, [location.state]);
+    }
+  }, [location.state]);
 
 
-  const handleSearch = async () => {
+  const handleSearch = async (searchParams = null) => {
     setLoading(true);
 
     try {
@@ -94,7 +101,13 @@ useEffect(() => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ company_code: sessionStorage.getItem("selectedCompanyCode"),attributeheader_code, attributedetails_code, attributedetails_name, descriptions }), // Send as search criteria
+        body: JSON.stringify({ 
+          company_code: sessionStorage.getItem("selectedCompanyCode"), 
+          attributeheader_code: searchParams?.attributeheader_code ?? attributeheader_code,
+          attributedetails_code: searchParams?.attributedetails_code ?? attributedetails_code,
+          attributedetails_name: searchParams?.attributedetails_name ?? attributedetails_name,
+          descriptions: searchParams?.descriptions ?? descriptions,
+        }), 
       });
 
       if (response.ok) {
@@ -323,32 +336,45 @@ useEffect(() => {
     reportWindow.document.close();
   };
 
-
-
-  /*const handleNavigateToForm = () => {
-    navigate("/form");
-  };*/
-
   const handleNavigatesToForm = () => {
     navigate("/AddAttributeDetail", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
   };
+
+  // const handleNavigateWithRowData = (selectedRow) => {
+  //   navigate("/AddAttributeDetail", {
+  //     state: {
+  //       mode: "update",
+  //       selectedRow,
+
+  //       preservedRowData: rowData,
+
+  //       preservedInputs: {
+  //         attributeheader_code,
+  //         attributedetails_code,
+  //         attributedetails_name,
+  //         descriptions,
+  //       },
+  //     },
+  //   });
+  // };
+
   const handleNavigateWithRowData = (selectedRow) => {
-  navigate("/AddAttributeDetail", {
-    state: {
-      mode: "update",
-      selectedRow,
+    navigate("/AddAttributeDetail", {
+      state: {
+        mode: "update",
+        attributeheader_code: selectedRow.attributeheader_code,
+        attributedetails_code: selectedRow.attributedetails_code,
 
-      preservedRowData: rowData,
-
-      preservedInputs: {
-        attributeheader_code,
-        attributedetails_code,
-        attributedetails_name,
-        descriptions,
+        preservedInputs: {
+          attributeheader_code,
+          attributedetails_code,
+          attributedetails_name,
+          descriptions,
+        },
       },
-    },
-  });
-};
+    });
+  };
+  
   const onSelectionChanged = () => {
     const selectedNodes = gridApi.getSelectedNodes();
     const selectedData = selectedNodes.map((node) => node.data);
@@ -484,7 +510,7 @@ useEffect(() => {
         } catch (error) {
           console.error("Error deleting rows:", error);
           toast.error('Error Deleting Data: ' + error.message);
-        }  finally {
+        } finally {
           setLoading(false);
         }
       },
@@ -527,8 +553,8 @@ useEffect(() => {
   return (
     <div className="container-fluid Topnav-screen">
       <div>
-                            {loading && <LoadingScreen />}
-        
+        {loading && <LoadingScreen />}
+
         <ToastContainer position="top-right" className="toast-design" theme="colored" />
         <div className="shadow-lg p-1 bg-body-tertiary rounded  mb-2 mt-2">
           <div className=" d-flex justify-content-between  ">

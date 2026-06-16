@@ -61,9 +61,103 @@ function UserInput({ }) {
   const [isUpdated, setIsUpdated] = useState(false);
 
   const location = useLocation();
-  const { mode, selectedRow } = location.state || {};
+  const locationState = location.state || {};
+  const mode = locationState.mode || "create";
+  const selectedRow = locationState.selectedRow || null;
+  const userCode = location.state?.user_code;
+  const company_code = sessionStorage.getItem('selectedCompanyCode');
 
-  console.log(selectedRow);
+  useEffect(() => {
+    if (!location.state) {
+      clearInputFields();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (mode === "update" && userCode) {
+      fetchUserData();
+    }
+  }, [mode, userCode]);
+
+  const fetchUserData = async () => {
+    try {
+      setLoading(true);
+
+      const response = await fetch(`${config.apiBaseUrl}/getUserData`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_code: userCode,
+          company_code
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.length > 0) {
+        const user = data[0];
+
+        setUser_code(user.user_code || "");
+        setUser_name(user.user_name || "");
+        setFirst_name(user.first_name || "");
+        setLast_name(user.last_name || "");
+        setUser_password(user.user_password || "");
+        setRole(user.role_id || "");
+        setLog_in_out(user.log_in_out || "");
+        setUser_status(user.user_status || "");
+        setGender(user.gender || "");
+        setSuperAdmin(
+          user.super_admin?.toLowerCase() === "yes"
+        );
+        setSelectedStatus({
+          label: user.user_status,
+          value: user.user_status,
+        });
+        setSelectedRole({
+          label: user.role_id,
+          value: user.role_id,
+        });
+        setSelectedLog({
+          label: user.log_in_out,
+          value: user.log_in_out,
+        });
+        setSelectedGender({
+          label: user.gender,
+          value: user.gender,
+        });
+        setEmail_id(user.email_id || "");
+
+        if (user.dob) {
+          const formattedDate = new Date(user.dob)
+            .toISOString()
+            .split("T")[0];
+          setDob(formattedDate);
+        } else {
+          setDob("");
+        }
+
+        if (user.user_images && user.user_images.data) {
+          const base64Image = arrayBufferToBase64(user.user_images.data);
+          const file = base64ToFile(
+            `data:image/jpeg;base64,${base64Image}`,
+            "user_image.jpg",
+          );
+          setSelectedImage(`data:image/jpeg;base64,${base64Image}`);
+          setuser_image(file);
+        } else {
+          setSelectedImage(null);
+          setuser_image(null);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch user details");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const clearInputFields = () => {
     setUser_code("");
@@ -76,6 +170,7 @@ function UserInput({ }) {
     setSelectedGender("");
     setEmail_id("");
     setDob("");
+    setSuperAdmin(false);
     setSelectedImage("");
     if (ImagE.current) {
       ImagE.current.value = null;
@@ -91,59 +186,59 @@ function UserInput({ }) {
     return window.btoa(binary);
   };
 
-  useEffect(() => {
-    if (mode === "update" && selectedRow && !isUpdated) {
-      setUser_code(selectedRow.user_code || "");
-      setUser_name(selectedRow.user_name || "");
-      setFirst_name(selectedRow.first_name || "");
-      setLast_name(selectedRow.last_name || "");
-      setUser_password(selectedRow.user_password || "");
-      setRole(selectedRow.role_id || "");
-      setLog_in_out(selectedRow.log_in_out || "");
-      setUser_status(selectedRow.user_status || "");
-      setGender(selectedRow.gender || "");
-      setSuperAdmin(
-        selectedRow.super_admin?.toLowerCase() === "yes"
-      );
-      setSelectedStatus({
-        label: selectedRow.user_status,
-        value: selectedRow.user_status,
-      });
-      setSelectedRole({
-        label: selectedRow.role_id,
-        value: selectedRow.role_id,
-      });
-      setSelectedLog({
-        label: selectedRow.log_in_out,
-        value: selectedRow.log_in_out,
-      });
-      setSelectedGender({
-        label: selectedRow.gender,
-        value: selectedRow.gender,
-      });
-      setEmail_id(selectedRow.email_id || "");
+  // useEffect(() => {
+  //   if (mode === "update" && selectedRow && !isUpdated) {
+  //     setUser_code(selectedRow.user_code || "");
+  //     setUser_name(selectedRow.user_name || "");
+  //     setFirst_name(selectedRow.first_name || "");
+  //     setLast_name(selectedRow.last_name || "");
+  //     setUser_password(selectedRow.user_password || "");
+  //     setRole(selectedRow.role_id || "");
+  //     setLog_in_out(selectedRow.log_in_out || "");
+  //     setUser_status(selectedRow.user_status || "");
+  //     setGender(selectedRow.gender || "");
+  //     setSuperAdmin(
+  //       selectedRow.super_admin?.toLowerCase() === "yes"
+  //     );
+  //     setSelectedStatus({
+  //       label: selectedRow.user_status,
+  //       value: selectedRow.user_status,
+  //     });
+  //     setSelectedRole({
+  //       label: selectedRow.role_id,
+  //       value: selectedRow.role_id,
+  //     });
+  //     setSelectedLog({
+  //       label: selectedRow.log_in_out,
+  //       value: selectedRow.log_in_out,
+  //     });
+  //     setSelectedGender({
+  //       label: selectedRow.gender,
+  //       value: selectedRow.gender,
+  //     });
+  //     setEmail_id(selectedRow.email_id || "");
 
-      if (selectedRow.dob) {
-        const formattedDate = new Date(selectedRow.dob).toISOString().split("T")[0];
-        setDob(formattedDate);
-      } else {
-        setDob("");
-      }
+  //     if (selectedRow.dob) {
+  //       const formattedDate = new Date(selectedRow.dob).toISOString().split("T")[0];
+  //       setDob(formattedDate);
+  //     } else {
+  //       setDob("");
+  //     }
 
-      if (selectedRow.user_images && selectedRow.user_images.data) {
-        const base64Image = arrayBufferToBase64(selectedRow.user_images.data);
-        const file = base64ToFile(`data:image/jpeg;base64,${base64Image}`, 'user_image.jpg');
-        setSelectedImage(`data:image/jpeg;base64,${base64Image}`);
-        setuser_image(file);
-      } else {
-        setSelectedImage(null);
-        setuser_image(null);
-      }
+  //     if (selectedRow.user_images && selectedRow.user_images.data) {
+  //       const base64Image = arrayBufferToBase64(selectedRow.user_images.data);
+  //       const file = base64ToFile(`data:image/jpeg;base64,${base64Image}`, 'user_image.jpg');
+  //       setSelectedImage(`data:image/jpeg;base64,${base64Image}`);
+  //       setuser_image(file);
+  //     } else {
+  //       setSelectedImage(null);
+  //       setuser_image(null);
+  //     }
 
-    } else if (mode === "create") {
-      clearInputFields();
-    }
-  }, [mode, selectedRow, isUpdated]);
+  //   } else if (mode === "create") {
+  //     clearInputFields();
+  //   }
+  // }, [mode, selectedRow, isUpdated]);
 
   const base64ToFile = (base64Data, fileName) => {
     if (!base64Data || !base64Data.startsWith("data:")) {
@@ -379,28 +474,12 @@ function UserInput({ }) {
   const handleNavigate = () => {
     navigate("/User", {
       state: {
-        preservedRowData: location.state?.preservedRowData,
+        refreshGrid: true,
+        // preservedRowData: location.state?.preservedRowData,
         preservedInputs: location.state?.preservedInputs,
       },
     });
   };
-
-  // const handleKeyDown = async (e, nextFieldRef, value, hasValueChanged, setHasValueChanged) => {
-  //   if (e.key === 'Enter') {
-  //     // Check if the value has changed and handle the search logic
-  //     if (hasValueChanged) {
-  //       await handleKeyDownStatus(e); // Trigger the search function
-  //       setHasValueChanged(false); // Reset the flag after the search
-  //     }
-
-  //     // Move to the next field if the current field has a valid value
-  //     if (value) {
-  //       nextFieldRef.current.focus();
-  //     } else {
-  //       e.preventDefault(); // Prevent moving to the next field if the value is empty
-  //     }
-  //   }
-  // };
 
   const handleKeyDown = (e, nextRef, currentRef) => {
     if (e.key === 'Enter') {
