@@ -262,7 +262,19 @@ setSelectedStatus("");
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ company_code: sessionStorage.getItem('selectedCompanyCode'), vendor_code, vendor_name, panno, vendor_gst_no, vendor_addr_1, vendor_area_code, vendor_state_code, vendor_country_code, vendor_mobile_no, status })
+        body: JSON.stringify({ 
+          company_code: sessionStorage.getItem('selectedCompanyCode'), 
+          vendor_code, 
+          vendor_name, 
+          panno, 
+          vendor_gst_no, 
+          vendor_addr_1, 
+          vendor_area_code, 
+          vendor_state_code, 
+          vendor_country_code, 
+          vendor_mobile_no, 
+          status
+         })
       });
       if (response.ok) {
         const searchData = await response.json();
