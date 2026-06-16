@@ -34,7 +34,7 @@ function CustomerDetGrid() {
   const [customer_state, setcustomer_state] = useState("");
   const [customer_country, setcustomer_country] = useState("");
   const [customer_mobile_no, setcustomer_mobile_no] = useState("");
-    const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [status, setstatus] = useState("");
   const [drop, setDrop] = useState([]);
   const [condrop, setCondrop] = useState([]);
@@ -53,11 +53,17 @@ function CustomerDetGrid() {
   const [modifiedBy, setModifiedBy] = useState("");
   const [createdDate, setCreatedDate] = useState("");
   const [modifiedDate, setModifiedDate] = useState("");
-    const [selectedCustomer, setselectedCust] = useState('');
-    const [ default_customer, setdefaultCust] = useState('');
-     const [customerdrop, setcustomerdrop] = useState([]);
+  const [selectedCustomer, setselectedCust] = useState('');
+  const [default_customer, setdefaultCust] = useState('');
+  const [customerdrop, setcustomerdrop] = useState([]);
 
-     const location = useLocation();
+  const [opening_balanceSC, setopening_balanceSC] = useState("");
+  const [selectedBT, setSelectedBT] = useState("");
+  const [balance_type, setbalance_type] = useState("");
+  const [balance_typeDrop, setbalance_typeDrop] = useState([]);
+  const [balance_typeAGDrop, setbalance_typeAGDrop] = useState([]);
+
+  const location = useLocation();
 
   //code added by Harish purpose of set user permisssion
   const permissions = JSON.parse(sessionStorage.getItem('permissions')) || {};
@@ -66,42 +72,50 @@ function CustomerDetGrid() {
     .map(permission => permission.permission_type.toLowerCase());
 
   useEffect(() => {
-        if (location.state?.preservedRowData) {
-          setRowData(location.state.preservedRowData);
-        }
-      
-        if (location.state?.preservedInputs) {
-          setcustomer_code(location.state.preservedInputs.customer_code || "");
-          setcustomer_name(location.state.preservedInputs.customer_name || "");
-          setpanno(location.state.preservedInputs.panno || "");
-          setcustomer_gst_no(location.state.preservedInputs.customer_gst_no || "");
-          setcustomer_addr_1(location.state.preservedInputs.customer_addr_1 || "");
-          setcustomer_area(location.state.preservedInputs.customer_area || "");
-          setcustomer_state(location.state.preservedInputs.customer_state || "");
-          setcustomer_country(location.state.preservedInputs.customer_country || "");
-          setcustomer_mobile_no(location.state.preservedInputs.customer_mobile_no || "");
-          setstatus(location.state.preservedInputs.status || "");
-          setdefaultCust(location.state.preservedInputs.default_customer || "");
-      
-          if (location.state.preservedInputs.status) {
-            setSelectedStatus({
-              label: location.state.preservedInputs.status,
-              value: location.state.preservedInputs.status,
-            });
-          }
-          if (location.state.preservedInputs.default_customer) {
-            setselectedCust({
-              label: location.state.preservedInputs.default_customer,
-              value: location.state.preservedInputs.default_customer,
-            });
-          }
-        }
-      }, [location.state]);
-  
+    if (location.state?.preservedRowData) {
+      setRowData(location.state.preservedRowData);
+    }
+
+    if (location.state?.preservedInputs) {
+      setcustomer_code(location.state.preservedInputs.customer_code || "");
+      setcustomer_name(location.state.preservedInputs.customer_name || "");
+      setpanno(location.state.preservedInputs.panno || "");
+      setcustomer_gst_no(location.state.preservedInputs.customer_gst_no || "");
+      setcustomer_addr_1(location.state.preservedInputs.customer_addr_1 || "");
+      setcustomer_area(location.state.preservedInputs.customer_area || "");
+      setcustomer_state(location.state.preservedInputs.customer_state || "");
+      setcustomer_country(location.state.preservedInputs.customer_country || "");
+      setcustomer_mobile_no(location.state.preservedInputs.customer_mobile_no || "");
+      setstatus(location.state.preservedInputs.status || "");
+      setdefaultCust(location.state.preservedInputs.default_customer || "");
+      setopening_balanceSC(location.state.preservedInputs.opening_balanceSC || "");
+      setbalance_type(location.state.preservedInputs.balance_type || "");
+
+      if (location.state.preservedInputs.balance_type) {
+        setSelectedBT({
+          label: location.state.preservedInputs.balance_type,
+          value: location.state.preservedInputs.balance_type,
+        });
+      }
+      if (location.state.preservedInputs.status) {
+        setSelectedStatus({
+          label: location.state.preservedInputs.status,
+          value: location.state.preservedInputs.status,
+        });
+      }
+      if (location.state.preservedInputs.default_customer) {
+        setselectedCust({
+          label: location.state.preservedInputs.default_customer,
+          value: location.state.preservedInputs.default_customer,
+        });
+      }
+    }
+  }, [location.state]);
+
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/status`, {
       method: 'POST',
       headers: {
@@ -109,7 +123,7 @@ function CustomerDetGrid() {
       },
       body: JSON.stringify({ company_code })
     })
-          .then((response) => response.json())
+      .then((response) => response.json())
       .then((data) => {
         // Extract city names from the fetched data
         const statusOption = data.map(option => option.attributedetails_name);
@@ -164,7 +178,7 @@ function CustomerDetGrid() {
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/status`, {
       method: 'POST',
       headers: {
@@ -179,7 +193,7 @@ function CustomerDetGrid() {
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/city`, {
       method: 'POST',
       headers: {
@@ -198,7 +212,7 @@ function CustomerDetGrid() {
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/country`, {
       method: 'POST',
       headers: {
@@ -217,7 +231,7 @@ function CustomerDetGrid() {
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/state`, {
       method: 'POST',
       headers: {
@@ -234,6 +248,55 @@ function CustomerDetGrid() {
       .catch((error) => console.error('Error fetching data:', error));
   }, []);
 
+  const handleChangeBT = (selectedBT) => {
+    setSelectedBT(selectedBT);
+    setbalance_type(selectedBT ? selectedBT.value : "");
+  };
+
+  const filteredOptionBT = Array.isArray(balance_typeDrop)
+    ? balance_typeDrop.map((option) => ({
+      value: option.attributedetails_code,
+      label: `${option.attributedetails_code} - ${option.attributedetails_name}`,
+    }))
+    : [];
+
+  useEffect(() => {
+    const company_code = sessionStorage.getItem("selectedCompanyCode");
+    fetch(`${config.apiBaseUrl}/getbalance_type`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ company_code }),
+    })
+      .then((data) => data.json())
+      .then((data) => {
+        setbalance_typeDrop(data);
+      })
+      .catch((error) => console.error("Error fetching data:", error));
+  }, []);
+
+  useEffect(() => {
+    const company_code = sessionStorage.getItem("selectedCompanyCode");
+
+    fetch(`${config.apiBaseUrl}/getbalance_type`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ company_code }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const balanceTypeOptions = data.map(
+          (option) =>
+            `${option.attributedetails_code} - ${option.attributedetails_name}`,
+        );
+        setbalance_typeAGDrop(balanceTypeOptions);
+      })
+      .catch((error) => console.error("Error fetching data:", error));
+  }, []);
+
   const filteredOptionStatus = statusdrop.map((option) => ({
     value: option.attributedetails_name,
     label: option.attributedetails_name,
@@ -244,10 +307,10 @@ function CustomerDetGrid() {
     setdefaultCust(selectedCustomer ? selectedCustomer.value : '');
   };
 
- 
+
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/getdefCustomer`, {
       method: 'POST',
       headers: {
@@ -282,21 +345,24 @@ function CustomerDetGrid() {
   };
 
   const clearInputFields = () => {
-setcustomer_code("");
-setcustomer_name("");
-setpanno("");
-setcustomer_gst_no("");
-setcustomer_addr_1("");
-setcustomer_area("");
-setcustomer_state("");
-setcustomer_country("");
-setcustomer_mobile_no("");
-setstatus("");
-setdefaultCust("");
-setSelectedStatus("");
-setselectedCust("");
-    setRowData([]);
-  };
+    setcustomer_code("");
+    setcustomer_name("");
+    setpanno("");
+    setcustomer_gst_no("");
+    setcustomer_addr_1("");
+    setcustomer_area("");
+    setcustomer_state("");
+    setcustomer_country("");
+    setcustomer_mobile_no("");
+    setstatus("");
+    setdefaultCust("");
+    setSelectedStatus("");
+    setselectedCust("");
+    setSelectedBT("");
+    setbalance_type("");
+    setopening_balanceSC("");
+    setRowData([]);
+  };
 
   const handleSearch = async () => {
     setLoading(true);
@@ -307,7 +373,22 @@ setselectedCust("");
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ company_code: sessionStorage.getItem('selectedCompanyCode'), customer_code, customer_name, panno, customer_gst_no, customer_addr_1, customer_area, customer_state, customer_country, customer_mobile_no, status,default_customer })
+        body: JSON.stringify({ 
+          company_code: sessionStorage.getItem('selectedCompanyCode'), 
+          customer_code, 
+          customer_name, 
+          panno, 
+          customer_gst_no, 
+          customer_addr_1, 
+          customer_area, 
+          customer_state, 
+          customer_country, 
+          customer_mobile_no, 
+          status, 
+          default_customer,
+          opening_balanceSC,
+          balance_type,
+         })
       });
       if (response.ok) {
         const searchData = await response.json();
@@ -451,8 +532,6 @@ setselectedCust("");
       cellEditor: "agSelectCellEditor",
       cellEditorParams: {
         values: statedrop,
-
-
       },
     },
     {
@@ -566,7 +645,6 @@ setselectedCust("");
       },
     },
     {
-
       headerName: "Credit Limit",
       field: "customer_credit_limit",
       editable: true,
@@ -576,6 +654,28 @@ setselectedCust("");
         maxLength: 250,
       },
     },
+     {
+      headerName: "Opening Balance",
+      field: "opening_balance",
+      editable: true,
+      cellStyle: { textAlign: "left" },
+      // minWidth: 150,
+      cellEditorParams: {
+        maxLength: 250,
+      },
+    },
+    {
+      headerName: "Balance Type",
+      field: "balance_type",
+      editable: true,
+      cellStyle: { textAlign: "left" },
+      // minWidth: 150,
+      cellEditor: "agSelectCellEditor",
+      cellEditorParams: {
+        values: balance_typeAGDrop,
+        maxLength: 250,
+      },
+    }, 
     {
       headerName: "Transport Code",
       field: "customer_transport_code",
@@ -716,6 +816,8 @@ setselectedCust("");
         "Fax No": row.customer_fax_no,
         "Email ID": row.customer_email_id,
         "Credit Limit": row.customer_credit_limit,
+        "Opening Balance": row.opening_balance,
+        "Balance Type": row.balance_type,
         "Transport Code": row.customer_transport_code,
         "Salesman Code": row.customer_salesman_code,
         "Break Code": row.customer_broker_code,
@@ -824,29 +926,31 @@ setselectedCust("");
     navigate("/AddCustomerDetails", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
   };
   const handleNavigateWithRowData = (selectedRow) => {
-  navigate("/AddCustomerDetails", {
-    state: {
-      mode: "update",
-      selectedRow,
+    navigate("/AddCustomerDetails", {
+      state: {
+        mode: "update",
+        selectedRow,
 
-      preservedRowData: rowData,
+        preservedRowData: rowData,
 
-      preservedInputs: {
-        customer_code,
-        customer_name,
-        panno,
-        customer_gst_no,
-        customer_addr_1,
-        customer_area,
-        customer_state,
-        customer_country,
-        customer_mobile_no,
-        status,
-        default_customer
+        preservedInputs: {
+          customer_code,
+          customer_name,
+          panno,
+          customer_gst_no,
+          customer_addr_1,
+          customer_area,
+          customer_state,
+          customer_country,
+          customer_mobile_no,
+          opening_balanceSC,
+          balance_type,
+          status,
+          default_customer
+        },
       },
-    },
-  });
-};
+    });
+  };
 
   const onSelectionChanged = () => {
     const selectedNodes = gridApi.getSelectedNodes();
@@ -920,7 +1024,7 @@ setselectedCust("");
         finally {
           setLoading(false);
         }
-    
+
       },
       () => {
         toast.info("Data updated cancelled.");
@@ -953,7 +1057,7 @@ setselectedCust("");
               "Modified-By": modified_by,
               "company-code": company_code,
             },
-            body: JSON.stringify({ keyfieldsToDelete}),
+            body: JSON.stringify({ keyfieldsToDelete }),
             "modified_by": modified_by// Corrected the key name to match the server-side expectation
           });
 
@@ -969,10 +1073,10 @@ setselectedCust("");
         } catch (error) {
           console.error("Error deleting rows:", error);
           toast.error('Error Deleting Data: ' + error.message);
-        }finally {
+        } finally {
           setLoading(false);
         }
-    
+
       },
       () => {
         toast.info("Data Delete cancelled.");
@@ -1014,7 +1118,7 @@ setselectedCust("");
 
     <div className="container-fluid Topnav-screen">
       <div>
-      {loading && <LoadingScreen />}
+        {loading && <LoadingScreen />}
         <ToastContainer position="top-right" className="toast-design" theme="colored" />
         <div className="shadow-lg p-1 bg-body-tertiary rounded  mb-2 mt-2">
           <div className=" d-flex justify-content-between  ">
@@ -1289,7 +1393,42 @@ setselectedCust("");
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                   maxLength={20}
                 />
-
+              </div>
+            </div>
+             <div className="col-md-3 form-group">
+              <div class="exp-form-floating">
+                <label for="contactno" class="exp-form-labels">
+                  Opening Balance
+                </label>
+                <input
+                  id="contactno"
+                  className="exp-input-field form-control"
+                  type="number"
+                  placeholder=""
+                  required
+                  title="Please fill the opening balance here"
+                  value={opening_balanceSC}
+                  onChange={(e) => setopening_balanceSC(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                  maxLength={20}
+                />
+              </div>
+            </div>
+            <div className="col-md-3 form-group">
+              <div class="exp-form-floating">
+                <label class="exp-form-labels">Balance Type</label>
+                <div title="Select the Status">
+                  <Select
+                    id="status"
+                    value={selectedBT}
+                    onChange={handleChangeBT}
+                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                    options={filteredOptionBT}
+                    className="exp-input-field"
+                    placeholder=""
+                    isClearable
+                  />
+                </div>
               </div>
             </div>
             <div className="col-md-3 form-group">
@@ -1309,20 +1448,20 @@ setselectedCust("");
               </div>
             </div>
             <div className="col-md-3 form-group mb-2 ">
-                <div class="exp-form-floating">
-                  <label for="cusweek" class="exp-form-labels">
+              <div class="exp-form-floating">
+                <label for="cusweek" class="exp-form-labels">
                   Default Customer
-                  </label>
-                  <Select
-                    id="officeType"
-                    value={selectedCustomer}
-                    onChange={handleChangeCustomer}
-                    options={filteredOptioncustomer}
-                    className="exp-input-field"
-                    placeholder=""
-                  />
-                </div>
+                </label>
+                <Select
+                  id="officeType"
+                  value={selectedCustomer}
+                  onChange={handleChangeCustomer}
+                  options={filteredOptioncustomer}
+                  className="exp-input-field"
+                  placeholder=""
+                />
               </div>
+            </div>
             <div className="col-md-3 form-group mt-4">
               <div class="exp-form-floating">
                 <div class=" d-flex  justify-content-center">

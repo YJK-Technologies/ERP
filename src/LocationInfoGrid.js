@@ -64,28 +64,76 @@ function LocInfoGrid() {
     .map(permission => permission.permission_type.toLowerCase());
 
     useEffect(() => {
-            if (location.state?.preservedRowData) {
-              setRowData(location.state.preservedRowData);
-            }
-            if (location.state?.preservedInputs) {
-              const inputs = location.state.preservedInputs;
-              setlocation_no(inputs.location_no || "");
-              setlocation_name(inputs.location_name || "");
-              setcity(inputs.city || "");
-              setstate(inputs.state || "");
-              setpincode(inputs.pincode || "");
-              setcountry(inputs.country || "");
-              setstatus(inputs.status || "");
-              if (inputs.status) {
-                setSelectedStatus({
-                  label: inputs.status,
-                  value: inputs.status,
-                });
-              } else {
-                setSelectedStatus(null);
-              }
-            }
-          }, [location.state]);
+    const handleKeyDown = (event) => {
+      const isReloadShortcut =
+        (event.ctrlKey && event.key.toLowerCase() === "r") ||
+        (event.altKey && event.key.toLowerCase() === "r") ||
+        event.key === "F5";
+
+      if (isReloadShortcut) {
+        event.preventDefault();
+        clearInputFields();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    // if (location.state?.preservedRowData) {
+    //   setRowData(location.state.preservedRowData);
+    // }
+    if (location.state?.preservedInputs) {
+
+      const inputs = location.state.preservedInputs;
+
+      setlocation_no(inputs.location_no || "");
+      setlocation_name(inputs.location_name || "");
+      setcity(inputs.city || "");
+      setstate(inputs.state || "");
+      setpincode(inputs.pincode || "");
+      setcountry(inputs.country || "");
+      setstatus(inputs.status || "");
+
+      if (inputs.status) {
+        setSelectedStatus({
+          label: inputs.status,
+          value: inputs.status,
+        });
+      }
+
+      if (location.state?.refreshGrid) {
+        handleSearch(inputs); 
+      }
+
+    }
+  }, [location.state]);
+
+    // useEffect(() => {
+    //         if (location.state?.preservedRowData) {
+    //           setRowData(location.state.preservedRowData);
+    //         }
+    //         if (location.state?.preservedInputs) {
+    //           const inputs = location.state.preservedInputs;
+    //           setlocation_no(inputs.location_no || "");
+    //           setlocation_name(inputs.location_name || "");
+    //           setcity(inputs.city || "");
+    //           setstate(inputs.state || "");
+    //           setpincode(inputs.pincode || "");
+    //           setcountry(inputs.country || "");
+    //           setstatus(inputs.status || "");
+    //           if (inputs.status) {
+    //             setSelectedStatus({
+    //               label: inputs.status,
+    //               value: inputs.status,
+    //             });
+    //           } else {
+    //             setSelectedStatus(null);
+    //           }
+    //         }
+    //       }, [location.state]);
     
 
 
@@ -187,19 +235,58 @@ function LocInfoGrid() {
   };
 
   const clearInputFields = () => {
-    setlocation_no("");
-    setlocation_name("");
-    setcity("");
-    setstate("");
-    setpincode("");
-    setcountry("");
-    setSelectedStatus("");
-    setstatus("");
-    setRowData([]);
-  };
+    setlocation_no("");
+    setlocation_name("");
+    setcity("");
+    setstate("");
+    setpincode("");
+    setcountry("");
+    setSelectedStatus("");
+    setstatus("");
+    setRowData([]);
+  };
 
 
-  const handleSearch = async () => {
+  // const handleSearch = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const response = await fetch(`${config.apiBaseUrl}/locationSearchdata`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         location_no,
+  //         location_name,
+  //         city,
+  //         state,
+  //         pincode,
+  //         country,
+  //         status,
+  //       }),
+  //     });
+
+  //     if (response.ok) {
+  //       const searchData = await response.json();
+  //       setRowData(searchData);
+  //       console.log("data fetched successfully")
+  //     } else if (response.status === 404) {
+  //       console.log("Data not found");
+  //       toast.warning("Data not found");
+  //       setRowData([]);
+  //     } else {
+  //       const errorResponse = await response.json();
+  //       toast.warning(errorResponse.message || "Failed to insert sales data");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error saving data:", error);
+  //     toast.error("Error updating data: " + error.message);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+    const handleSearch = async (searchParams = null) => {
     setLoading(true);
     try {
       const response = await fetch(`${config.apiBaseUrl}/locationSearchdata`, {
@@ -208,13 +295,13 @@ function LocInfoGrid() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          location_no,
-          location_name,
-          city,
-          state,
-          pincode,
-          country,
-          status,
+          location_no: searchParams?.location_no ?? location_no,
+          location_name: searchParams?.location_name ?? location_name,
+          city: searchParams?.city ?? city,
+          state: searchParams?.state ?? state,
+          pincode: searchParams?.pincode ?? pincode,
+          country: searchParams?.country ?? country,
+          status: searchParams?.status ?? status,
         }),
       });
 
@@ -237,7 +324,6 @@ function LocInfoGrid() {
       setLoading(false);
     }
   };
-
   const columnDefs = [
     {
       headerCheckboxSelection: true,
@@ -531,9 +617,27 @@ function LocInfoGrid() {
     navigate("/AddLocation", { state: { mode: "create" } });
   };
 
+  // const handleNavigateWithRowData = (selectedRow) => {
+  // navigate("/AddLocation", { state: { mode: "update", selectedRow, preservedRowData: rowData, 
+  //     preservedInputs: { location_no, location_name, city, state, pincode, country, status, }, }, }); 
+  // };
+
   const handleNavigateWithRowData = (selectedRow) => {
-  navigate("/AddLocation", { state: { mode: "update", selectedRow, preservedRowData: rowData, 
-      preservedInputs: { location_no, location_name, city, state, pincode, country, status, }, }, }); 
+    navigate("/AddLocation", {
+      state: {
+        mode: "update", 
+        location_no: selectedRow.location_no, 
+        preservedInputs: { 
+          location_no, 
+          location_name, 
+          city, 
+          state, 
+          pincode,
+          country, 
+          status, 
+        },
+      },
+    });
   };
 
   const onSelectionChanged = () => {

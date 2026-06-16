@@ -30,34 +30,90 @@ function UserRoleInput({ }) {
   const [isUpdated, setIsUpdated] = useState(false);
   const [keyfield, setKeyfield] = useState('');
   const location = useLocation();
-  const { mode, selectedRow } = location.state || {};
+  const locationState = location.state || {};
+  const mode = locationState.mode || "create"; // ✅ default fallback
+  const selectedRow = locationState.selectedRow || null;
+  const keyfields = location.state?.keyfield;
+  const company_code = sessionStorage.getItem('selectedCompanyCode');
 
-  console.log(selectedRow);
+  useEffect(() => {
+    if (!location.state) {
+      clearInputFields(); // ensure fresh create mode
+    }
+  }, []);
+
+  useEffect(() => {
+    if (mode === "update" && keyfields) {
+      fetchRoleMappingData();
+    }
+  }, [mode, keyfields]);
+
+  const fetchRoleMappingData = async () => {
+    try {
+      setLoading(true);
+
+      const response = await fetch(`${config.apiBaseUrl}/getRoleMappingData`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          keyfield: keyfields,
+          company_code
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.length > 0) {
+        const roleMapping = data[0];
+
+        setuser_code(roleMapping.user_code || "");
+        setrole_id(roleMapping.role_id || "");
+        setKeyfield(roleMapping.keyfield || "");
+        setSelectedUser({
+          label: roleMapping.user_code,
+          value: roleMapping.user_code,
+        });
+        setSelectedRole({
+          label: roleMapping.role_id,
+          value: roleMapping.role_id,
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch role mapping details");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const clearInputFields = () => {
     setSelectedUser("");
+    setuser_code("");
     setSelectedRole("");
-    
+    setrole_id("");
+    setKeyfield("");
   };
 
-  useEffect(() => {
-    if (mode === "update" && selectedRow && !isUpdated) {
-      setuser_code(selectedRow.user_code || "");
-      setrole_id(selectedRow.order_no || "");
-      setKeyfield(selectedRow.keyfield || "");
-      setSelectedUser({
-        label: selectedRow.user_code,
-        value: selectedRow.user_code,
-      });
-      setSelectedRole({
-        label: selectedRow.role_id,
-        value: selectedRow.role_id,
-      });
+  // useEffect(() => {
+  //   if (mode === "update" && selectedRow && !isUpdated) {
+  //     setuser_code(selectedRow.user_code || "");
+  //     setrole_id(selectedRow.order_no || "");
+  //     setKeyfield(selectedRow.keyfield || "");
+  //     setSelectedUser({
+  //       label: selectedRow.user_code,
+  //       value: selectedRow.user_code,
+  //     });
+  //     setSelectedRole({
+  //       label: selectedRow.role_id,
+  //       value: selectedRow.role_id,
+  //     });
 
-    } else if (mode === "create") {
-      clearInputFields();
-    }
-  }, [mode, selectedRow, isUpdated]);
+  //   } else if (mode === "create") {
+  //     clearInputFields();
+  //   }
+  // }, [mode, selectedRow, isUpdated]);
 
   useEffect(() => {
     fetch(`${config.apiBaseUrl}/usercode`)
@@ -125,10 +181,10 @@ function UserRoleInput({ }) {
         }),
       });
 
-       if (response.ok) {
-                   toast.success("Data inserted Successfully", {
-                     onClose: () => clearInputFields()
-                   });
+      if (response.ok) {
+        toast.success("Data inserted Successfully", {
+          onClose: () => clearInputFields()
+        });
       } else if (response.status === 400) {
         const errorResponse = await response.json();
         console.error(errorResponse.message);
@@ -146,40 +202,38 @@ function UserRoleInput({ }) {
   };
 
   const handleNavigate = () => {
-     navigate("/UserRoleMapping", {
-    state: {
-      preservedRowData: location.state?.preservedRowData,
-      preservedInputs: location.state?.preservedInputs
-    }
-  });
+    navigate("/UserRoleMapping", {
+      state: {
+        refreshGrid: true,
+        // preservedRowData: location.state?.preservedRowData,
+        preservedInputs: location.state?.preservedInputs
+      }
+    });
   };
 
   const handleKeyDown = async (e, nextFieldRef, value, hasValueChanged, setHasValueChanged) => {
     if (e.key === 'Enter') {
-      // Check if the value has changed and handle the search logic
       if (hasValueChanged) {
-        await handleKeyDownStatus(e); // Trigger the search function
-        setHasValueChanged(false); // Reset the flag after the search
+        await handleKeyDownStatus(e);
+        setHasValueChanged(false); 
       }
 
-      // Move to the next field if the current field has a valid value
       if (value) {
         nextFieldRef.current.focus();
       } else {
-        e.preventDefault(); // Prevent moving to the next field if the value is empty
+        e.preventDefault();
       }
     }
   };
 
   const handleKeyDownStatus = async (e) => {
-    if (e.key === 'Enter' && hasValueChanged) { // Only trigger search if the value has changed
-      // Trigger the search function
-      setHasValueChanged(false); // Reset the flag after search
+    if (e.key === 'Enter' && hasValueChanged) { 
+      setHasValueChanged(false); 
     }
   };
 
   const handleUpdate = async () => {
-    if ( !user_code ||
+    if (!user_code ||
       !role_id) {
       setError(" ");
       toast.warning("Error: Missing required fields");
@@ -195,16 +249,16 @@ function UserRoleInput({ }) {
         },
         body: JSON.stringify({
           company_code: sessionStorage.getItem("selectedCompanyCode"),
-         user_code,
+          user_code,
           role_id,
           modified_by,
           keyfield
         }),
       });
-       if (response.ok) {
-                    toast.success("Data updated successfully", {
-                      // onClose: () => clearInputFields()
-                    });
+      if (response.ok) {
+        toast.success("Data updated successfully", {
+          // onClose: () => clearInputFields()
+        });
       } else if (response.status === 400) {
         const errorResponse = await response.json();
         console.error(errorResponse.message);
@@ -258,19 +312,19 @@ function UserRoleInput({ }) {
                         </div>
                       </div>
                       <div title="Select the User Code ">
-                      <Select
-                        id="usercode"
-                        value={selectedUser}
-                        onChange={handleChangeUser}
-                        options={filteredOptionUser}
-                        className="exp-input-field"
-                        placeholder=""
-                        maxLength={18}
-                        ref={usercode}
-                        onKeyDown={(e) => handleKeyDown(e, roleid, usercode)}
-                      />
-                      {/* {error && !user_code && <div className="text-danger">User Code should not be blank</div>} */}
-                    </div>
+                        <Select
+                          id="usercode"
+                          value={selectedUser}
+                          onChange={handleChangeUser}
+                          options={filteredOptionUser}
+                          className="exp-input-field"
+                          placeholder=""
+                          maxLength={18}
+                          ref={usercode}
+                          onKeyDown={(e) => handleKeyDown(e, roleid, usercode)}
+                        />
+                        {/* {error && !user_code && <div className="text-danger">User Code should not be blank</div>} */}
+                      </div>
                     </div>
                   </div>
                   <div className="col-md-3 form-group">
@@ -283,28 +337,28 @@ function UserRoleInput({ }) {
                         </div>
                       </div>
                       <div title="Select the Role ID ">
-                      <Select
-                        id="roleid"
-                        value={selectedRole}
-                        onChange={handleChangeRole}
-                        options={filteredOptionRole}
-                        className="exp-input-field"
-                        placeholder=""
-                        maxLength={18}
-                        ref={roleid}
-                        // onKeyDown={(e) => handleKeyDown(e, roleid)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            if (mode === "create") {
-                              handleInsert();
-                            } else {
-                              handleUpdate();
+                        <Select
+                          id="roleid"
+                          value={selectedRole}
+                          onChange={handleChangeRole}
+                          options={filteredOptionRole}
+                          className="exp-input-field"
+                          placeholder=""
+                          maxLength={18}
+                          ref={roleid}
+                          // onKeyDown={(e) => handleKeyDown(e, roleid)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              if (mode === "create") {
+                                handleInsert();
+                              } else {
+                                handleUpdate();
+                              }
                             }
-                          }
-                        }}
-                      />
-                      {/* {error && !role_id && <div className="text-danger">Role Id should not be blank</div>} */}
-                    </div>
+                          }}
+                        />
+                        {/* {error && !role_id && <div className="text-danger">Role Id should not be blank</div>} */}
+                      </div>
                     </div>
                   </div>
                   {/* <div className="col-md-3 form-group  mb-2">

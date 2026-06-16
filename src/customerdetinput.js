@@ -61,6 +61,12 @@ function CustomerDetInput({ }) {
   const [contact_person, setContact_person] = useState('');
   const [selectedCustomer, setselectedCust] = useState('');
   const [default_customer, setdefaultCust] = useState('');
+
+  const [opening_balance, setopening_balance] = useState("0");
+  const [selectedBT, setSelectedBT] = useState("");
+  const [balance_type, setbalance_type] = useState("");
+  const [balance_typeDrop, setbalance_typeDrop] = useState([]);
+
   const Country = useRef(null);
   const IMEx = useRef(null);
   const OfficeNo = useRef(null);
@@ -81,6 +87,9 @@ function CustomerDetInput({ }) {
   const Address1 = useRef(null);
   const code = useRef(null);
   const Contact = useRef(null);
+  const openingbalance = useRef(null);
+  const BalanceType = useRef(null);
+
   const [status, setStatus] = useState("");
   const [hasValueChanged, setHasValueChanged] = useState(false);
   const created_by = sessionStorage.getItem('selectedUserCode')
@@ -104,7 +113,7 @@ function CustomerDetInput({ }) {
     setcustomer_resi_no('');
     setcustomer_mobile_no('');
     setcustomer_email_id('');
-    setcustomer_credit_limit('');
+    setcustomer_credit_limit('0');
     setcustomer_weekday_code('');
     setContact_person('');
     setcustomer_code('');
@@ -126,12 +135,29 @@ function CustomerDetInput({ }) {
     setselectedOffice('');
     setselectedCust('');
     setStatus('');
+    setSelectedBT('');
+    setbalance_type('');
+    setopening_balance("0");
   };
 
 
 
-  
-  
+  useEffect(() => {
+    const company_code = sessionStorage.getItem("selectedCompanyCode");
+    fetch(`${config.apiBaseUrl}/getbalance_type`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ company_code }),
+    })
+      .then((data) => data.json())
+      .then((data) => {
+        setbalance_typeDrop(data);
+      })
+      .catch((error) => console.error("Error fetching data:", error));
+  }, []);
+
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
     const fetchCustomer = async () => {
@@ -283,6 +309,8 @@ function CustomerDetInput({ }) {
       setdefaultCust(selectedRow.default_customer || "");
       setkeyfield(selectedRow.keyfield || "");
       setStatus(selectedRow.status || "");
+      setopening_balance(selectedRow.opening_balance || 0);
+      setbalance_type(selectedRow.balance_type || "");
       setSelectedCode({
         label: selectedRow.customer_code,
         value: selectedRow.customer_code,
@@ -319,7 +347,10 @@ function CustomerDetInput({ }) {
         label: selectedRow.default_customer,
         value: selectedRow.default_customer,
       });
-
+      setSelectedBT({
+        label: selectedRow.balance_type,
+        value: selectedRow.balance_type,
+      });
 
     } else if (mode === "create") {
       clearInputFields();
@@ -372,6 +403,12 @@ function CustomerDetInput({ }) {
     label: option.attributedetails_name,
   }));
 
+  const filteredOptionBT = Array.isArray(balance_typeDrop)
+    ? balance_typeDrop.map((option) => ({
+      value: option.attributedetails_code,
+      label: `${option.attributedetails_code} - ${option.attributedetails_name}`,
+    }))
+    : [];
 
   const handleChangeCode = (selectedOption) => {
     setSelectedCode(selectedOption);
@@ -419,20 +456,23 @@ function CustomerDetInput({ }) {
     setdefaultCust(selectedCustomer ? selectedCustomer.value : '');
   };
 
-
+  const handleChangeBT = (selectedBT) => {
+    setSelectedBT(selectedBT);
+    setbalance_type(selectedBT ? selectedBT.value : "");
+  };
 
   const handleNavigateToForm = () => {
     navigate("/AddCustomerHeader", { selectedRows }); // Pass selectedRows as props to the Input component
   };
 
   const handleNavigate = () => {
-  navigate("/Customer", {
-    state: {
-      preservedRowData: location.state?.preservedRowData,
-      preservedInputs: location.state?.preservedInputs
-    }
-  });
-};
+    navigate("/Customer", {
+      state: {
+        preservedRowData: location.state?.preservedRowData,
+        preservedInputs: location.state?.preservedInputs
+      }
+    });
+  };
 
   const handleInsert = async () => {
     if (
@@ -444,7 +484,9 @@ function CustomerDetInput({ }) {
       !customer_email_id ||
       !customer_credit_limit ||
       !customer_country ||
-      !customer_state
+      !customer_state ||
+      !opening_balance ||
+      !balance_type
     ) {
       setError(" ");
       return;
@@ -487,13 +529,15 @@ function CustomerDetInput({ }) {
           contact_person,
           office_type,
           default_customer,
+          opening_balance,
+          balance_type,
           created_by: sessionStorage.getItem('selectedUserCode')
         }),
       });
-       if (response.ok) {
-                    toast.success("Data inserted Successfully", {
-                      onClose: () => clearInputFields()
-                    });
+      if (response.ok) {
+        toast.success("Data inserted Successfully", {
+          onClose: () => clearInputFields()
+        });
       } else {
         const errorResponse = await response.json();
         console.error(errorResponse.message);
@@ -522,7 +566,9 @@ function CustomerDetInput({ }) {
       !customer_email_id ||
       !customer_credit_limit ||
       !customer_country ||
-      !customer_state
+      !customer_state ||
+      !opening_balance ||
+      !balance_type
     ) {
       setError(" ");
       return;
@@ -567,13 +613,15 @@ function CustomerDetInput({ }) {
           default_customer,
           keyfield,
           status,
+          opening_balance,
+          balance_type,
           modified_by: sessionStorage.getItem('selectedUserCode')
         }),
       });
-       if (response.ok) {
-                    toast.success("Data updated successfully", {
-                      // onClose: () => clearInputFields()
-                    });
+      if (response.ok) {
+        toast.success("Data updated successfully", {
+          // onClose: () => clearInputFields()
+        });
       } else if (response.status === 400) {
         const errorResponse = await response.json();
         console.error(errorResponse.message);
@@ -873,7 +921,7 @@ function CustomerDetInput({ }) {
                       ref={OfficeNo}
                       onKeyDown={(e) => handleKeyDown(e, Residential, OfficeNo)}
                     />
-                      {error && !customer_office_no && <div className="text-danger">Office no should not be blank</div>}
+                    {error && !customer_office_no && <div className="text-danger">Office no should not be blank</div>}
                   </div>
                 </div>
                 <div className="col-md-3 form-group mb-2">
@@ -959,7 +1007,7 @@ function CustomerDetInput({ }) {
                     {error && !validateEmail(customer_email_id) && <div className="text-danger">Please Enter Valid Email Id</div>}
                   </div>
                 </div>
-                <div className="col-md-3 form-group mb-2">
+                {/* <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
                     <div class="d-flex justify-content-start">
                       <div><label for="rid" class="exp-form-labels">
@@ -980,7 +1028,7 @@ function CustomerDetInput({ }) {
                     />
                     {error && !customer_credit_limit && <div className="text-danger">Credit Limit should not be blank</div>}
                   </div>
-                </div>
+                </div> */}
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
                     <label for="custrans" class="exp-form-labels">
@@ -1162,6 +1210,92 @@ function CustomerDetInput({ }) {
                 </div>
                 )}
               </div> */}
+                {/* <div class="col-md-3 form-group d-flex justify-content-start p-2">
+                  {mode === "create" ? (
+                    <button onClick={handleInsert} className="mt-3" title="Save">
+                      <i class="fa-solid fa-floppy-disk"></i>
+                    </button>
+                  ) : (
+                    <button onClick={handleUpdate} className="mt-3" title="Update">
+                      <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                  )}
+                </div> */}
+                <div>
+                  <CustomerHdrInputPopup open={open2} handleClose={handleClose} />
+                </div>
+
+              </div>
+            </div>
+
+            <div className="shadow-lg p-3 bg-body-tertiary rounded  mb-2">
+                <div className="col-md-3 form-group mb-3 mt-3" style={{ width: "150px" }}>
+                    <h6 className=""><strong>Financial Year:</strong></h6>
+                </div>
+                                  <div className="row mb-3 ">
+                  <div className="col-md-3 form-group mb-2">
+                  <div class="exp-form-floating">
+                    <label for="ventrans" className={`exp-form-labels ${error && !balance_type ? 'text-danger' : ''}`}>
+                      Balance Type<span className="text-danger">*</span>
+                    </label>
+                    <div title="Select the Balance Type">
+                      <Select
+                        id="ventrans"
+                        value={selectedBT}
+                        onChange={handleChangeBT}
+                        options={filteredOptionBT}
+                        className="exp-input-field"
+                        placeholder=""
+                        ref={BalanceType}
+                        onKeyDown={(e) => handleKeyDown(e, Salesman, BalanceType)}
+                      />
+                    </div>
+                  </div>
+                  </div>
+
+                <div className="col-md-3 form-group mb-2">
+                  <div class="exp-form-floating">
+                    <label for="rid" className={`exp-form-labels ${error && !customer_credit_limit ? 'text-danger' : ''}`}>
+                      Credit Limit<span className="text-danger">*</span>
+                    </label>
+                    <input
+                      id="cuscre"
+                      class="exp-input-field form-control"
+                      type="number"
+                      placeholder=""
+                      required title="Please enter the credit limit"
+                      value={customer_credit_limit}
+                      onChange={(e) => setcustomer_credit_limit(e.target.value)}
+                      maxLength={18}
+                      ref={Credit}
+                      onKeyDown={(e) => handleKeyDown(e, Transport, Credit)}
+                    />
+                  </div>
+                </div>
+
+                <div className="col-md-3 form-group mb-2">
+                  <div class="exp-form-floating">
+                    <label for="rid" className={`exp-form-labels ${error && !opening_balance ? 'text-danger' : ''}`}>
+                      Opening Balance<span className="text-danger">*</span>
+                    </label>
+                    <input
+                      id="vencre"
+                      class="exp-input-field form-control"
+                      type="number"
+                      placeholder=""
+                      required
+                      title="Please enter the opening balance"
+                      value={opening_balance}
+                      onChange={(e) => setopening_balance(e.target.value)}
+                      maxLength={18}
+                      ref={openingbalance}
+                      onKeyDown={(e) =>
+                        handleKeyDown(e, Transport, openingbalance)
+                      }
+                    />
+                  </div>
+                </div>
+
                 <div class="col-md-3 form-group d-flex justify-content-start p-2">
                   {mode === "create" ? (
                     <button onClick={handleInsert} className="mt-3" title="Save">
@@ -1173,11 +1307,9 @@ function CustomerDetInput({ }) {
                     </button>
                   )}
                 </div>
-                <div>
-                  <CustomerHdrInputPopup open={open2} handleClose={handleClose} />
+
                 </div>
 
-              </div>
             </div>
           </div>
         </div>
