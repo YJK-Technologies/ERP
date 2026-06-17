@@ -9,6 +9,8 @@ import LoadingScreen from './Loading';
 import { ToastContainer, toast } from 'react-toastify';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import DefaultProductImage from "./DefaultIMG/User.png";
+
 
 const config = require('./Apiconfig');
 
@@ -897,7 +899,7 @@ function UserInput({ }) {
                       />
                     </div>
                   </div>
-                  {selectedImage && (
+                  {/* {selectedImage && (
                     <div className="col-md-3 form-group mb-2">
                       <div class="exp-form-floating">
                         <img
@@ -908,9 +910,18 @@ function UserInput({ }) {
                         />
                       </div>
                     </div>
-                  )}
+                  )} */}
+                <div className="col-md-3 form-group mb-2">
 
-                  <div className="col-md-3 form-group mt-3">
+                  <div className="image-preview-frame">
+                    <img
+                      src={selectedImage || DefaultProductImage}
+                      alt="Selected Preview"
+                      className="preview-image"
+                    />
+                  </div>
+                </div>                  
+                <div className="col-md-3 form-group mt-3">
                     <div className="exp-form-floating d-flex align-items-center gap-2" style={{ minHeight: "58px" }} >
                       <input
                         className="form-check-input m-2"
