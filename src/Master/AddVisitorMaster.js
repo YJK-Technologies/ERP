@@ -34,8 +34,11 @@ function AddVisitorMaster({ }) {
   const [expiryDate, setExpiryDate] = useState('');
 
   const location = useLocation();
-  const { mode, selectedRow } = location.state || {};
-  console.log(selectedRow);
+  const locationState = location.state || {};
+  const mode = locationState.mode || "create";
+  const selectedRow = locationState.selectedRow || null;
+  const keyfields = location.state?.Keyfield;
+  const company_code = sessionStorage.getItem('selectedCompanyCode');
 
   const clearInputFields = () => {
     setVisitorName("");
@@ -50,6 +53,72 @@ function AddVisitorMaster({ }) {
     setKeyfield("");
     setVisitorNo("");
     setExpiryDate("");
+  };
+
+  useEffect(() => {
+    if (!location.state) {
+      clearInputFields();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (mode === "update" && keyfields && customerTypeDrop) {
+      fetchVisitorData();
+    }
+  }, [mode, keyfields, customerTypeDrop]);
+
+  const fetchVisitorData = async () => {
+    try {
+      setLoading(true);
+
+      const response = await fetch(`${config.apiBaseUrl}/getVisitorData`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          Keyfield: keyfields,
+          company_code
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.length > 0) {
+        const visitor = data[0];
+
+        setVisitorId(visitor.Visitor_ID || "");
+        setVisitorName(visitor.Visitor_Name || "");
+        setStatus(visitor.Status || "");
+        setIdProofType(visitor.ID_Proof || "");
+        setIdProofNo(visitor.ID_Proof_No || "");
+        setCompanyName(visitor.Company_Name || "");
+        setCustomerType(visitor.Customer_type || "");
+        setVisitorNo(visitor.Phone_No || "");
+        setExpiryDate(formatDateForInput(visitor.Expired_Date));
+        setSelectedStatus({
+          label: visitor.Status,
+          value: visitor.Status,
+        });
+        setSelectedIdProofType({
+          label: visitor.ID_Proof,
+          value: visitor.ID_Proof,
+        });
+        const mappedCustomerTypes = mapCommaStringToSelectOptions(
+          visitor.Customer_type,
+          filteredOptionCustomerType
+        );
+
+        // ?? ALWAYS ARRAY (even for single)
+        setSelectedCustomerType(mappedCustomerTypes);
+        setKeyfield(visitor.Keyfield || "");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch role details");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const mapCommaStringToSelectOptions = (valueString, optionsList) => {
@@ -78,37 +147,37 @@ function AddVisitorMaster({ }) {
     return `${year}-${month}-${day}`; // yyyy-MM-dd
   };
 
-  useEffect(() => {
-    if (mode === "update" && selectedRow) {
-      setVisitorId(selectedRow.Visitor_ID || "");
-      setVisitorName(selectedRow.Visitor_Name || "");
-      setStatus(selectedRow.Status || "");
-      setIdProofType(selectedRow.ID_Proof || "");
-      setIdProofNo(selectedRow.ID_Proof_No || "");
-      setCompanyName(selectedRow.Company_Name || "");
-      setCustomerType(selectedRow.Customer_type || "");
-      setVisitorNo(selectedRow.Phone_No || "");
-      setExpiryDate(formatDateForInput(selectedRow.Expired_Date));
-      setSelectedStatus({
-        label: selectedRow.Status,
-        value: selectedRow.Status,
-      });
-      setSelectedIdProofType({
-        label: selectedRow.ID_Proof,
-        value: selectedRow.ID_Proof,
-      });
-      const mappedCustomerTypes = mapCommaStringToSelectOptions(
-        selectedRow.Customer_type,
-        filteredOptionCustomerType
-      );
+  // useEffect(() => {
+  //   if (mode === "update" && selectedRow) {
+  //     setVisitorId(selectedRow.Visitor_ID || "");
+  //     setVisitorName(selectedRow.Visitor_Name || "");
+  //     setStatus(selectedRow.Status || "");
+  //     setIdProofType(selectedRow.ID_Proof || "");
+  //     setIdProofNo(selectedRow.ID_Proof_No || "");
+  //     setCompanyName(selectedRow.Company_Name || "");
+  //     setCustomerType(selectedRow.Customer_type || "");
+  //     setVisitorNo(selectedRow.Phone_No || "");
+  //     setExpiryDate(formatDateForInput(selectedRow.Expired_Date));
+  //     setSelectedStatus({
+  //       label: selectedRow.Status,
+  //       value: selectedRow.Status,
+  //     });
+  //     setSelectedIdProofType({
+  //       label: selectedRow.ID_Proof,
+  //       value: selectedRow.ID_Proof,
+  //     });
+  //     const mappedCustomerTypes = mapCommaStringToSelectOptions(
+  //       selectedRow.Customer_type,
+  //       filteredOptionCustomerType
+  //     );
 
-      // ?? ALWAYS ARRAY (even for single)
-      setSelectedCustomerType(mappedCustomerTypes);
-      setKeyfield(selectedRow.Keyfield || "");
-    } else if (mode === "create") {
-      clearInputFields();
-    }
-  }, [mode, selectedRow, customerTypeDrop]);
+  //     // ?? ALWAYS ARRAY (even for single)
+  //     setSelectedCustomerType(mappedCustomerTypes);
+  //     setKeyfield(selectedRow.Keyfield || "");
+  //   } else if (mode === "create") {
+  //     clearInputFields();
+  //   }
+  // }, [mode, selectedRow, customerTypeDrop]);
 
   useEffect(() => {
     const company_code = sessionStorage.getItem("selectedCompanyCode");
@@ -330,8 +399,7 @@ function AddVisitorMaster({ }) {
     formData.append("descriptor", JSON.stringify(images));
 
     try {
-      const response = await fetch(
-        `${config.apiBaseUrl}/VisitorMasterInsert`,
+      const response = await fetch(`${config.apiBaseUrl}/VisitorMasterInsert`,
         {
           method: "POST",
           body: formData,
@@ -401,13 +469,14 @@ function AddVisitorMaster({ }) {
   };
 
   const handleNavigate = () => {
-  navigate("/VisitorMaster", {
-    state: {
-      preservedRowData: location.state?.preservedRowData,
-      preservedInputs: location.state?.preservedInputs
-    }
-  });
-};
+    navigate("/VisitorMaster", {
+      state: {
+        refreshGrid: true,
+        // preservedRowData: location.state?.preservedRowData,
+        preservedInputs: location.state?.preservedInputs
+      }
+    });
+  };
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -609,7 +678,7 @@ function AddVisitorMaster({ }) {
                     />
                   </div>
                 </div>
-                
+
                 {mode === "create" && (
                   <div className="col-md-3 form-group">
                     <div class="exp-form-floating"> <label for="lname" className={`exp-form-labels ${error && !companyName ? 'text-danger' : ''}`}>

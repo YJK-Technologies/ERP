@@ -24,23 +24,23 @@ function Grid() {
   const [gridColumnApi, setGridColumnApi] = useState(null);
   const [searchValue, setSearchValue] = useState("");
   const navigate = useNavigate();
-   const [transactiondrop, setTransactiondrop] = useState([]);
+  const [transactiondrop, setTransactiondrop] = useState([]);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
-   const[LockGridDrop,setLockGriddrop]=useState([]);
-   const[TransactionGriddrop,setTransactionGriddrop]=useState([])
+  const [LockGridDrop, setLockGriddrop] = useState([]);
+  const [TransactionGriddrop, setTransactionGriddrop] = useState([])
 
   const [transactionType, setTransactionType] = useState('');
   const [start_year, setstart_year] = useState('');
   const [end_year, setend_year] = useState('');
   const [error, setError] = useState('');
-  const[selectedLockType,setSelectedLockType]=useState("");
-   const [Lockdrop,setLockdrop] = useState([]);
-   const [LockType,setLockType] = useState("");
+  const [selectedLockType, setSelectedLockType] = useState("");
+  const [Lockdrop, setLockdrop] = useState([]);
+  const [LockType, setLockType] = useState("");
   const [editedData, setEditedData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
-  
+
   const [pincode, setPincode] = useState("");
- 
+
   const [hasValueChanged, setHasValueChanged] = useState(false);
 
   const [createdBy, setCreatedBy] = useState("");
@@ -60,44 +60,68 @@ function Grid() {
 
   const location = useLocation();
 
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      const isReloadShortcut =
+        (event.ctrlKey && event.key.toLowerCase() === "r") ||
+        (event.altKey && event.key.toLowerCase() === "r") ||
+        event.key === "F5";
+
+      if (isReloadShortcut) {
+        event.preventDefault();
+        clearInputFields();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   const handleClose = () => {
     setOpen(false);
   };
 
-const handleChangeLockType = (selectedLockType) => {
+  const handleChangeLockType = (selectedLockType) => {
     setSelectedLockType(selectedLockType);
     setLockType(selectedLockType ? selectedLockType.value : '');
   };
-   const filteredOptionLockType = Lockdrop.map((option) => ({
+  const filteredOptionLockType = Lockdrop.map((option) => ({
     value: option.attributedetails_name,
     label: option.attributedetails_name,
   }));
-  
+
   useEffect(() => {
-        if (location.state?.preservedRowData) {
-          setRowData(location.state.preservedRowData);
-        }
-      
-        if (location.state?.preservedInputs) {
-          setstart_year(location.state.preservedInputs.start_year || "");
-          setend_year(location.state.preservedInputs.end_year || "");
-          setTransactionType(location.state.preservedInputs.transactionType || "");
-          setLockType(location.state.preservedInputs.LockType || "");
-      
-          if (location.state.preservedInputs.transactionType) {
-            setSelectedTransaction({
-              label: location.state.preservedInputs.transactionType,
-              value: location.state.preservedInputs.transactionType,
-            });
-          }
-          if (location.state.preservedInputs.LockType) {
-            setSelectedLockType({
-              label: location.state.preservedInputs.LockType,
-              value: location.state.preservedInputs.LockType,
-            });
-          }
-        }
-      }, [location.state]);
+    // if (location.state?.preservedRowData) {
+    //   setRowData(location.state.preservedRowData);
+    // }
+
+    if (location.state?.preservedInputs) {
+      const inputs = location.state.preservedInputs;
+
+      setstart_year(inputs.start_year || "");
+      setend_year(inputs.end_year || "");
+      setTransactionType(inputs.transactionType || "");
+      setLockType(inputs.LockType || "");
+
+      if (inputs.transactionType) {
+        setSelectedTransaction({
+          label: inputs.transactionType,
+          value: inputs.transactionType,
+        });
+      }
+      if (inputs.LockType) {
+        setSelectedLockType({
+          label: inputs.LockType,
+          value: inputs.LockType,
+        });
+      }
+
+      if (location.state?.refreshGrid) {
+        handleSearch(inputs);
+      }
+    }
+  }, [location.state]);
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
@@ -113,15 +137,15 @@ const handleChangeLockType = (selectedLockType) => {
       .then((val) => setLockdrop(val));
   }, []);
 
-    const handleChangeTransaction = (selectedTransaction) => {
+  const handleChangeTransaction = (selectedTransaction) => {
     setSelectedTransaction(selectedTransaction);
     setTransactionType(selectedTransaction ? selectedTransaction.value : '');
   };
-   const filteredOptionTransaction = transactiondrop.map((option) => ({
+  const filteredOptionTransaction = transactiondrop.map((option) => ({
     value: option.attributedetails_name,
     label: option.attributedetails_name,
   }));
-useEffect(() => {
+  useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
 
     fetch(`${config.apiBaseUrl}/Transaction`, {
@@ -139,44 +163,44 @@ useEffect(() => {
   //grid option
 
   useEffect(() => {
-      const company_code = sessionStorage.getItem('selectedCompanyCode');
-      
-      fetch(`${config.apiBaseUrl}/getLockType`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ company_code })
-      })      .then((response) => response.json())
-        .then((data) => {
-          // Extract city names from the fetched data
-          const LockOption = data.map(option => option.attributedetails_name);
-          setLockGriddrop(LockOption);
-        })
-        .catch((error) => console.error('Error fetching data:', error));
-    }, []);
+    const company_code = sessionStorage.getItem('selectedCompanyCode');
 
-    //  useEffect(() => {
-    //   const company_code = sessionStorage.getItem('selectedCompanyCode');
-      
-    //   fetch(`${config.apiBaseUrl}/Transaction`, {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({ company_code })
-    //   })      .then((response) => response.json())
-    //     .then((data) => {
-    //       // Extract city names from the fetched data
-    //       const TransactionOption = data.map(option => option.attributedetails_name);
-    //       setTransactionGriddrop(TransactionOption);
-    //     })
-    //     .catch((error) => console.error('Error fetching data:', error));
-    // }, []);
+    fetch(`${config.apiBaseUrl}/getLockType`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ company_code })
+    }).then((response) => response.json())
+      .then((data) => {
+        // Extract city names from the fetched data
+        const LockOption = data.map(option => option.attributedetails_name);
+        setLockGriddrop(LockOption);
+      })
+      .catch((error) => console.error('Error fetching data:', error));
+  }, []);
+
+  //  useEffect(() => {
+  //   const company_code = sessionStorage.getItem('selectedCompanyCode');
+
+  //   fetch(`${config.apiBaseUrl}/Transaction`, {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: JSON.stringify({ company_code })
+  //   })      .then((response) => response.json())
+  //     .then((data) => {
+  //       // Extract city names from the fetched data
+  //       const TransactionOption = data.map(option => option.attributedetails_name);
+  //       setTransactionGriddrop(TransactionOption);
+  //     })
+  //     .catch((error) => console.error('Error fetching data:', error));
+  // }, []);
 
   // useEffect(() => {
   //   const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
   //   fetch(`${config.apiBaseUrl}/city`, {
   //     method: 'POST',
   //     headers: {
@@ -194,7 +218,7 @@ useEffect(() => {
 
   // useEffect(() => {
   //   const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
   //   fetch(`${config.apiBaseUrl}/country`, {
   //     method: 'POST',
   //     headers: {
@@ -213,7 +237,7 @@ useEffect(() => {
 
   // useEffect(() => {
   //   const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
   //   fetch(`${config.apiBaseUrl}/state`, {
   //     method: 'POST',
   //     headers: {
@@ -231,7 +255,7 @@ useEffect(() => {
   // }, []);
 
   // useEffect(() => {
-    
+
   //   fetch(`${config.apiBaseUrl}/locationno`)
   //     .then((response) => response.json())
   //     .then((data) => {
@@ -244,7 +268,7 @@ useEffect(() => {
 
   // useEffect(() => {
   //   const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
   //   fetch(`${config.apiBaseUrl}/status`, {
   //     method: 'POST',
   //     headers: {
@@ -264,7 +288,7 @@ useEffect(() => {
 
   // useEffect(() => {
   //   const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
   //   fetch(`${config.apiBaseUrl}/status`, {
   //     method: 'POST',
   //     headers: {
@@ -298,21 +322,22 @@ useEffect(() => {
   // };
 
 
-  const handleSearch = async () => {
+  const handleSearch = async (searchParams = null) => {
     try {
-       const company_code = sessionStorage.getItem('selectedCompanyCode');
+      const company_code = sessionStorage.getItem('selectedCompanyCode');
       const response = await fetch(`${config.apiBaseUrl}/getFinacnialyearlockscreenSearchCriteria`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-           "company_code": company_code,
+          "company_code": company_code,
         },
         body: JSON.stringify({
           company_code: sessionStorage.getItem('selectedCompanyCode'),
-           start_year:start_year,
-          end_year:end_year,
-           transaction_type:transactionType, 
-           locked:LockType}) // Send company_no and company_name as search criteria
+          start_year: searchParams?.start_year ?? start_year,
+          end_year: searchParams?.end_year ?? end_year,
+          transaction_type: searchParams?.transactionType ?? transactionType,
+          locked: searchParams?.LockType ?? LockType,
+        })
       });
       if (response.ok) {
         const searchData = await response.json();
@@ -338,14 +363,14 @@ useEffect(() => {
   };
 
   const clearInputFields = () => {
-setstart_year("");
-setend_year("");
-setTransactionType("");
-setLockType("");
-setSelectedTransaction("");
-setSelectedLockType("");
-    setRowData([]);
-  };
+    setstart_year("");
+    setend_year("");
+    setTransactionType("");
+    setLockType("");
+    setSelectedTransaction("");
+    setSelectedLockType("");
+    setRowData([]);
+  };
 
 
   const arrayBufferToBase64 = (buffer) => {
@@ -414,44 +439,44 @@ setSelectedLockType("");
     //     );
     //   },
     // },
-      
+
     {
-  headerName: "Start Year",
-  field: "start_year",
-  cellClass: "ag-link-cell",  
-  editable: true,
-  cellStyle: { textAlign: "left" },
-  checkboxSelection: true,
-  cellEditorParams: {
-    maxLength: 18,
-  },
-  cellRenderer: (params) => {
-    const handleClick = () => {
-      handleNavigateWithRowData(params.data);
-    };
+      headerName: "Start Year",
+      field: "start_year",
+      cellClass: "ag-link-cell",
+      editable: true,
+      cellStyle: { textAlign: "left" },
+      checkboxSelection: true,
+      cellEditorParams: {
+        maxLength: 18,
+      },
+      cellRenderer: (params) => {
+        const handleClick = () => {
+          handleNavigateWithRowData(params.data);
+        };
 
-    return (
-      <span style={{ cursor: "pointer" }} onClick={handleClick}>
-        {formatDate(params.value)}
-      </span>
-    );
-  },
-  valueFormatter: (params) => formatDate(params.value),
-  filter: "agDateColumnFilter",
-  filterParams: {
-    comparator: (filterLocalDateAtMidnight, cellValue) => {
-      const cellDate = new Date(cellValue);
-      // Remove time for correct comparison
-      const cellDateOnly = new Date(cellDate.getFullYear(), cellDate.getMonth(), cellDate.getDate());
-      if (cellDateOnly < filterLocalDateAtMidnight) return -1;
-      if (cellDateOnly > filterLocalDateAtMidnight) return 1;
-      return 0;
+        return (
+          <span style={{ cursor: "pointer" }} onClick={handleClick}>
+            {formatDate(params.value)}
+          </span>
+        );
+      },
+      valueFormatter: (params) => formatDate(params.value),
+      filter: "agDateColumnFilter",
+      filterParams: {
+        comparator: (filterLocalDateAtMidnight, cellValue) => {
+          const cellDate = new Date(cellValue);
+          // Remove time for correct comparison
+          const cellDateOnly = new Date(cellDate.getFullYear(), cellDate.getMonth(), cellDate.getDate());
+          if (cellDateOnly < filterLocalDateAtMidnight) return -1;
+          if (cellDateOnly > filterLocalDateAtMidnight) return 1;
+          return 0;
+        },
+        browserDatePicker: true,
+      },
     },
-    browserDatePicker: true,
-  },
-},
 
-      
+
     {
       headerName: "End Year",
       field: "end_year",
@@ -461,19 +486,19 @@ setSelectedLockType("");
       cellEditorParams: {
         maxLength: 250,
       },
-        valueFormatter: (params) => formatDate(params.value),  
-        filterParams: {
-          comparator: (filterLocalDateAtMidnight, cellValue) => {
-            const cellDate = new Date(cellValue.split('/').join('-')); 
-            if (cellDate < filterLocalDateAtMidnight) {
-              return -1;
-            } else if (cellDate > filterLocalDateAtMidnight) {
-              return 1;
-            }
-            return 0;
-          },
+      valueFormatter: (params) => formatDate(params.value),
+      filterParams: {
+        comparator: (filterLocalDateAtMidnight, cellValue) => {
+          const cellDate = new Date(cellValue.split('/').join('-'));
+          if (cellDate < filterLocalDateAtMidnight) {
+            return -1;
+          } else if (cellDate > filterLocalDateAtMidnight) {
+            return 1;
+          }
+          return 0;
         },
-       
+      },
+
     },
     {
       headerName: "Transaction Type ",
@@ -484,26 +509,26 @@ setSelectedLockType("");
       cellEditorParams: {
         maxLength: 250,
       },
-     
+
     },
-   
+
     {
       headerName: "Locked",
       field: "locked",
       editable: true,
-      minWidth:1000,
+      minWidth: 1000,
       cellStyle: { textAlign: "left" },
       // minWidth: 150,
       cellEditorParams: {
         maxLength: 250,
 
       },
-        cellEditor: "agSelectCellEditor",
+      cellEditor: "agSelectCellEditor",
       cellEditorParams: {
         values: LockGridDrop,
       },
     },
-    
+
   ];
 
   const defaultColDef = {
@@ -531,14 +556,14 @@ setSelectedLockType("");
 
     const reportData = selectedRows.map((row) => {
       return {
-       
-       
-        "startYear":formatDate(row.start_year),
-        "EndYear":formatDate(row.end_year),
+
+
+        "startYear": formatDate(row.start_year),
+        "EndYear": formatDate(row.end_year),
         "TransactionType": row.transaction_type,
         "Locked": row.locked,
-        
-     
+
+
       };
     });
 
@@ -641,23 +666,38 @@ setSelectedLockType("");
     navigate("/AddFYA", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
   };
 
+  // const handleNavigateWithRowData = (selectedRow) => {
+  //   navigate("/AddFYA", {
+  //     state: {
+  //       mode: "update",
+  //       selectedRow,
+
+  //       preservedRowData: rowData,
+
+  //       preservedInputs: {
+  //         start_year,
+  //         end_year,
+  //         transactionType,
+  //         LockType,
+  //       },
+  //     },
+  //   });
+  // };
+
   const handleNavigateWithRowData = (selectedRow) => {
-  navigate("/AddFYA", {
-    state: {
-      mode: "update",
-      selectedRow,
-
-      preservedRowData: rowData,
-
-      preservedInputs: {
-        start_year,
-        end_year,
-        transactionType,
-        LockType,
+    navigate("/AddFYA", {
+      state: {
+        mode: "update",
+        keyfield: selectedRow.keyfield,
+        preservedInputs: {
+          start_year,
+          end_year,
+          transactionType,
+          LockType,
+        },
       },
-    },
-  });
-};
+    });
+  };
 
   const onSelectionChanged = () => {
     const selectedNodes = gridApi.getSelectedNodes();
@@ -683,8 +723,8 @@ setSelectedLockType("");
 
   const saveEditedData = async () => {
     const selectedRowsData = editedData
-    .filter(row => selectedRows.some(selectedRow => selectedRow.keyfield === row.keyfield))
-  
+      .filter(row => selectedRows.some(selectedRow => selectedRow.keyfield === row.keyfield))
+
     if (selectedRowsData.length === 0) {
       toast.warning("Please select and modify at least one row to update its data");
       return;
@@ -694,7 +734,7 @@ setSelectedLockType("");
       "Are you sure you want to update the data in the selected rows?",
       async () => {
         try {
-            const company_code = sessionStorage.getItem("selectedCompanyCode");
+          const company_code = sessionStorage.getItem("selectedCompanyCode");
           const modified_by = sessionStorage.getItem('selectedUserCode');
 
           const response = await fetch(`${config.apiBaseUrl}/UpdateFinacnialyearlockscreen`, {
@@ -703,14 +743,14 @@ setSelectedLockType("");
               "Content-Type": "application/json",
               "Modified-By": modified_by
             },
-            body: JSON.stringify({  editedData: selectedRowsData }), // Send only the selected rows for saving
+            body: JSON.stringify({ editedData: selectedRowsData }), // Send only the selected rows for saving
             "modified_by": modified_by
           });
 
           if (response.status === 200) {
             toast.success("Data Updated Successfully", {
               onClose: () => handleSearch(),
-              autoClose: 1000, 
+              autoClose: 1000,
             });
             return;
           } else {
@@ -730,51 +770,51 @@ setSelectedLockType("");
 
 
   const deleteSelectedRows = async () => {
-  const selectedRows = gridApi.getSelectedRows();
+    const selectedRows = gridApi.getSelectedRows();
 
-  if (selectedRows.length === 0) {
-    toast.warning("Please select at least one row to delete");
-    return;
-  }
-
-  const company_code = sessionStorage.getItem("selectedCompanyCode");
-  const modified_by = sessionStorage.getItem("selectedUserCode");
-  const keyfieldToDelete = selectedRows.map((row) => row.keyfield);
-
-  showConfirmationToast(
-    "Are you sure you want to delete the data in the selected rows?",
-    async () => {
-      try {
-        const response = await fetch(`${config.apiBaseUrl}/deleteFinacnialyearlockscreen`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            company_code: company_code,
-            "Modified-By": modified_by,
-          },
-          body: JSON.stringify({ keyfield: keyfieldToDelete }),
-        });
-
-        if (response.ok) {
-          console.log("Rows deleted successfully:", keyfieldToDelete);
-          toast.success("Data deleted successfully");
-
-          
-          handleSearch();
-        } else {
-          const errorResponse = await response.json();
-          toast.warning(errorResponse.message || "Failed to delete data");
-        }
-      } catch (error) {
-        console.error("Error deleting rows:", error);
-        toast.error("Error deleting data: " + error.message);
-      }
-    },
-    () => {
-      toast.info("Data delete cancelled.");
+    if (selectedRows.length === 0) {
+      toast.warning("Please select at least one row to delete");
+      return;
     }
-  );
-};
+
+    const company_code = sessionStorage.getItem("selectedCompanyCode");
+    const modified_by = sessionStorage.getItem("selectedUserCode");
+    const keyfieldToDelete = selectedRows.map((row) => row.keyfield);
+
+    showConfirmationToast(
+      "Are you sure you want to delete the data in the selected rows?",
+      async () => {
+        try {
+          const response = await fetch(`${config.apiBaseUrl}/deleteFinacnialyearlockscreen`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              company_code: company_code,
+              "Modified-By": modified_by,
+            },
+            body: JSON.stringify({ keyfield: keyfieldToDelete }),
+          });
+
+          if (response.ok) {
+            console.log("Rows deleted successfully:", keyfieldToDelete);
+            toast.success("Data deleted successfully");
+
+
+            handleSearch();
+          } else {
+            const errorResponse = await response.json();
+            toast.warning(errorResponse.message || "Failed to delete data");
+          }
+        } catch (error) {
+          console.error("Error deleting rows:", error);
+          toast.error("Error deleting data: " + error.message);
+        }
+      },
+      () => {
+        toast.info("Data delete cancelled.");
+      }
+    );
+  };
 
   const handlesetPincode = (e) => {
     const value = e.target.value;
@@ -808,8 +848,8 @@ setSelectedLockType("");
               <h1 align="left" className="purbut"> Financial Year Access
               </h1>
             </div>
-               <div className="d-flex justify-content-end purbut me-3">
-              
+            <div className="d-flex justify-content-end purbut me-3">
+
               {['add', 'all permission'].some(permission => companyPermissions.includes(permission)) && (
                 <addbutton className="purbut" onClick={handleNavigateToForm} title="Add"
                 ><i class="fa-solid fa-user-plus"></i>
@@ -820,7 +860,7 @@ setSelectedLockType("");
                   <i class="fa-solid fa-user-minus"></i>
                 </delbutton>
               )}
-                {['update', 'all permission'].some(permission => companyPermissions.includes(permission)) && (
+              {['update', 'all permission'].some(permission => companyPermissions.includes(permission)) && (
                 <savebutton
                   className="purbut"
                   onClick={saveEditedData}
@@ -830,7 +870,7 @@ setSelectedLockType("");
                   <i class="fa-solid fa-floppy-disk"></i>
                 </savebutton>
               )}
-               {['all permission', 'view'].some(permission => companyPermissions.includes(permission)) && (
+              {['all permission', 'view'].some(permission => companyPermissions.includes(permission)) && (
                 <printbutton
                   class="purbut"
                   onClick={generateReport}
@@ -840,7 +880,7 @@ setSelectedLockType("");
                   <i class="fa-solid fa-print"></i>
                 </printbutton>
               )}
-            
+
 
             </div></div>
           <div class="mobileview">
@@ -864,7 +904,7 @@ setSelectedLockType("");
                       </icon>
                     )}
                   </li>
-                 
+
                   <li class="iconbutton  d-flex justify-content-center text-danger">
                     {['delete', 'all permission'].some(permission => companyPermissions.includes(permission)) && (
                       <icon
@@ -876,15 +916,15 @@ setSelectedLockType("");
                       </icon>
                     )}
                   </li>
-                  <li class="iconbutton  d-flex justify-content-center text-primary "> 
+                  <li class="iconbutton  d-flex justify-content-center text-primary ">
                     {['update', 'all permission'].some(permission => companyPermissions.includes(permission)) && (
-                    <icon
-                      class="icon"
-                      onClick={saveEditedData}
-                    >
-                      <i class="fa-solid fa-floppy-disk"></i>
-                    </icon>
-                  )}
+                      <icon
+                        class="icon"
+                        onClick={saveEditedData}
+                      >
+                        <i class="fa-solid fa-floppy-disk"></i>
+                      </icon>
+                    )}
                   </li>
                   <li class="iconbutton  d-flex justify-content-center ">
                     {['all permission', 'view'].some(permission => companyPermissions.includes(permission)) && (
@@ -913,7 +953,7 @@ setSelectedLockType("");
             <div class="exp-form-floating">
 
               <label for="cname" class="exp-form-labels">
-              Start Year 
+                Start Year
               </label>
               <input
                 id="cno"
@@ -921,19 +961,19 @@ setSelectedLockType("");
                 type="date"
                 placeholder=""
                 required title="Please fill the company number here"
-                  value={start_year}
-                      onChange={(e) => setstart_year(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              
+                value={start_year}
+                onChange={(e) => setstart_year(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+
               />
-                {error && !start_year && <div className="text-danger">Start Year should not be blank</div>}
+              {error && !start_year && <div className="text-danger">Start Year should not be blank</div>}
 
             </div>
           </div>
           <div className="col-md-3 form-group">
             <div class="exp-form-floating">
               <label for="cname" class="exp-form-labels">
-              End Year
+                End Year
               </label>
               <input
                 id="cname"
@@ -941,35 +981,35 @@ setSelectedLockType("");
                 type="date"
                 placeholder=""
                 required title="Please fill the company name here"
-                 value={end_year}
-                      onChange={(e) => setend_year(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                
+                value={end_year}
+                onChange={(e) => setend_year(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+
               />
 
               {error && !end_year && <div className="text-danger">End Year should not be blank</div>}
 
-              
+
 
             </div>
           </div>
           <div className="col-md-3 form-group">
             <div class="exp-form-floating">
-             
+
               <label for="city" class="exp-form-labels">
                 Transactions Type
               </label>
-            <div title="Select the Transactions Type">        
-              <Select
-                className="exp-input-field "
-                   type="text"
-                   value={selectedTransaction}
-              onChange={handleChangeTransaction}
-              options={filteredOptionTransaction}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              />
+              <div title="Select the Transactions Type">
+                <Select
+                  className="exp-input-field "
+                  type="text"
+                  value={selectedTransaction}
+                  onChange={handleChangeTransaction}
+                  options={filteredOptionTransaction}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                />
 
-            </div>
+              </div>
             </div>
           </div>
 
@@ -978,35 +1018,35 @@ setSelectedLockType("");
               <label for="state" class="exp-form-labels">
                 Locked
               </label>
-            <div title="Select the Locked Status">        
-              <Select
-                className="exp-input-field"
-                   value={selectedLockType}
-              onChange={handleChangeLockType}
-              options={filteredOptionLockType}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              />
-            </div>
+              <div title="Select the Locked Status">
+                <Select
+                  className="exp-input-field"
+                  value={selectedLockType}
+                  onChange={handleChangeLockType}
+                  options={filteredOptionLockType}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                />
+              </div>
             </div>
           </div>
-         
-         
+
+
 
 
 
           <div className="col-md-3 form-group mt-4">
-           
+
             <div class="exp-form-floating">
-             
+
               <div class=" d-flex  justify-content-center">
 
                 <div class=''><icon className=" text-dark popups-btn fs-6" onClick={handleSearch} required title="Search"><i class="fa-solid fa-magnifying-glass"></i></icon></div>
                 <div><icon className=" popups-btn text-dark fs-6" onClick={clearInputFields} required title="Refresh"><FontAwesomeIcon icon="fa-solid fa-arrow-rotate-right" /></icon></div>
               </div>
-              
-               </div>
-              
-              </div>
+
+            </div>
+
+          </div>
 
 
 

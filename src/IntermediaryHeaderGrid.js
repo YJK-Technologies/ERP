@@ -34,7 +34,7 @@ function IntermediaryGrid() {
   const [intermediary_fax_no, setintermediary_fax_no] = useState("");
   const [intermediary_email_id, setintermediary_email_id] = useState("");
   const [editedData, setEditedData] = useState([]);
-  const [loading, setLoading] = useState(false);    
+  const [loading, setLoading] = useState(false);
   const [createdBy, setCreatedBy] = useState("");
   const [modifiedBy, setModifiedBy] = useState("");
   const [createdDate, setCreatedDate] = useState("");
@@ -50,43 +50,67 @@ function IntermediaryGrid() {
     .map(permission => permission.permission_type.toLowerCase());
 
   useEffect(() => {
-        if (location.state?.preservedRowData) {
-          setRowData(location.state.preservedRowData);
-        }
-      
-        if (location.state?.preservedInputs) {
-          setcode(location.state.preservedInputs.Code || "");
-          setcodeDetails(location.state.preservedInputs.codeDetails || "");
-          setintermediary_addr_1(location.state.preservedInputs.intermediary_addr_1 || "");
-          setintermediary_area_code(location.state.preservedInputs.intermediary_area_code || "");
-          setintermediary_stat_code(location.state.preservedInputs.intermediary_stat_code || "");
-          setintermediary_cnty_code(location.state.preservedInputs.intermediary_cnty_code || "");
-          setintermediary_imex_no(location.state.preservedInputs.intermediary_imex_no || "");
-          setintermediary_office_no(location.state.preservedInputs.intermediary_office_no || "");
-          setintermediary_fax_no(location.state.preservedInputs.intermediary_fax_no || "");
-          setintermediary_email_id(location.state.preservedInputs.intermediary_email_id || "");
-        }
-      }, [location.state]); 
+    const handleKeyDown = (event) => {
+      const isReloadShortcut =
+        (event.ctrlKey && event.key.toLowerCase() === "r") ||
+        (event.altKey && event.key.toLowerCase() === "r") ||
+        event.key === "F5";
+
+      if (isReloadShortcut) {
+        event.preventDefault();
+        clearInputFields();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    // if (location.state?.preservedRowData) {
+    //   setRowData(location.state.preservedRowData);
+    // }
+
+    if (location.state?.preservedInputs) {
+      const inputs = location.state.preservedInputs;
+
+      setcode(inputs.Code || "");
+      setcodeDetails(inputs.codeDetails || "");
+      setintermediary_addr_1(inputs.intermediary_addr_1 || "");
+      setintermediary_area_code(inputs.intermediary_area_code || "");
+      setintermediary_stat_code(inputs.intermediary_stat_code || "");
+      setintermediary_cnty_code(inputs.intermediary_cnty_code || "");
+      setintermediary_imex_no(inputs.intermediary_imex_no || "");
+      setintermediary_office_no(inputs.intermediary_office_no || "");
+      setintermediary_fax_no(inputs.intermediary_fax_no || "");
+      setintermediary_email_id(inputs.intermediary_email_id || "");
+
+      if (location.state?.refreshGrid) {
+        handleSearch(inputs);
+      }
+    }
+  }, [location.state]);
 
   const reloadGridData = () => {
     window.location.reload();
   };
 
   const clearInputFields = () => {
-setcode("");
-    setcodeDetails("");
-    setintermediary_addr_1("");
-    setintermediary_area_code("");
-    setintermediary_stat_code("");
-    setintermediary_cnty_code("");
-    setintermediary_imex_no("");
-    setintermediary_office_no("");
-    setintermediary_fax_no("");
-    setintermediary_email_id("");
-    setRowData([]);
-  };
+    setcode("");
+    setcodeDetails("");
+    setintermediary_addr_1("");
+    setintermediary_area_code("");
+    setintermediary_stat_code("");
+    setintermediary_cnty_code("");
+    setintermediary_imex_no("");
+    setintermediary_office_no("");
+    setintermediary_fax_no("");
+    setintermediary_email_id("");
+    setRowData([]);
+  };
 
-  const handleSearch = async () => {
+  const handleSearch = async (searchParams = null) => {
     setLoading(true);
     try {
       const company_code = sessionStorage.getItem('selectedCompanyCode');
@@ -97,9 +121,18 @@ setcode("");
           "company_code": company_code
         },
         body: JSON.stringify({
-          company_code: company_code, Code, codeDetails, intermediary_addr_1, intermediary_area_code, intermediary_stat_code, intermediary_cnty_code, intermediary_imex_no, intermediary_office_no,
-          intermediary_fax_no, intermediary_email_id
-        }) // Send company_no and company_name as search criteria
+          company_code: company_code,
+          Code: searchParams?.Code ?? Code,
+          codeDetails: searchParams?.codeDetails ?? codeDetails,
+          intermediary_addr_1: searchParams?.intermediary_addr_1 ?? intermediary_addr_1,
+          intermediary_area_code: searchParams?.intermediary_area_code ?? intermediary_area_code,
+          intermediary_stat_code: searchParams?.intermediary_stat_code ?? intermediary_stat_code,
+          intermediary_cnty_code: searchParams?.intermediary_cnty_code ?? intermediary_cnty_code,
+          intermediary_imex_no: searchParams?.intermediary_imex_no ?? intermediary_imex_no,
+          intermediary_office_no: searchParams?.intermediary_office_no ?? intermediary_office_no,
+          intermediary_fax_no: searchParams?.intermediary_fax_no ?? intermediary_fax_no,
+          intermediary_email_id: searchParams?.intermediary_email_id ?? intermediary_email_id,
+        })
       });
       if (response.ok) {
         const searchData = await response.json();
@@ -114,7 +147,7 @@ setcode("");
     } catch (error) {
       console.error("Error saving data:", error);
       toast.error("Error updating data: " + error.message);
-    }finally {
+    } finally {
       setLoading(false);
     }
 
@@ -462,29 +495,52 @@ setcode("");
   const handleNavigatesToForm = () => {
     navigate("/AddIntermedDetails", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
   };
+
+  // const handleNavigateWithRowData = (selectedRow) => {
+  //   navigate("/AddIntermedDetails", {
+  //     state: {
+  //       mode: "update",
+  //       selectedRow,
+
+  //       preservedRowData: rowData,
+
+  //       preservedInputs: {
+  //         Code,
+  //         codeDetails,
+  //         intermediary_addr_1,
+  //         intermediary_area_code,
+  //         intermediary_stat_code,
+  //         intermediary_cnty_code,
+  //         intermediary_imex_no,
+  //         intermediary_office_no,
+  //         intermediary_fax_no,
+  //         intermediary_email_id
+  //       },
+  //     },
+  //   });
+  // };
+
   const handleNavigateWithRowData = (selectedRow) => {
-  navigate("/AddIntermedDetails", {
-    state: {
-      mode: "update",
-      selectedRow,
-
-      preservedRowData: rowData,
-
-      preservedInputs: {
-        Code,
-        codeDetails,
-        intermediary_addr_1,
-        intermediary_area_code,
-        intermediary_stat_code,
-        intermediary_cnty_code,
-        intermediary_imex_no,
-        intermediary_office_no,
-        intermediary_fax_no,
-        intermediary_email_id
+    navigate("/AddIntermedDetails", {
+      state: {
+        mode: "update",
+        Code: selectedRow.Code,
+        codeDetails: selectedRow.codeDetails,
+        preservedInputs: {
+          Code,
+          codeDetails,
+          intermediary_addr_1,
+          intermediary_area_code,
+          intermediary_stat_code,
+          intermediary_cnty_code,
+          intermediary_imex_no,
+          intermediary_office_no,
+          intermediary_fax_no,
+          intermediary_email_id
+        },
       },
-    },
-  });
-};
+    });
+  };
 
   const onSelectionChanged = () => {
     const selectedNodes = gridApi.getSelectedNodes();
@@ -555,10 +611,10 @@ setcode("");
         } catch (error) {
           console.error("Error saving data:", error);
           toast.error("Error Updating Data: " + error.message);
-        }finally {
+        } finally {
           setLoading(false);
         }
-    
+
       },
       () => {
         toast.info("Data updated cancelled.");
@@ -614,7 +670,7 @@ setcode("");
         finally {
           setLoading(false);
         }
-    
+
       },
       () => {
         toast.info("Data Delete cancelled.");
@@ -655,8 +711,8 @@ setcode("");
 
     <div className="container-fluid Topnav-screen">
       <div>
-                            {loading && <LoadingScreen />}
-        
+        {loading && <LoadingScreen />}
+
         <ToastContainer position="top-right" className="toast-design" theme="colored" />
         <div className="shadow-lg p-1 bg-body-tertiary rounded  mb-2 mt-2">
           <div className=" d-flex justify-content-between  ">

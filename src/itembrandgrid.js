@@ -38,13 +38,13 @@ function ItemBrandGrid() {
   const [selectedStatus, setSelectedStatus] = useState('');
   const [statusgriddrop, setStatusGriddrop] = useState([]);
   const [brandgriddrop, setBrandGriddrop] = useState([]);
-   const [Dropbaseuom, setDropbaseuom] = useState([]);
+  const [Dropbaseuom, setDropbaseuom] = useState([]);
   const [dropsecondryuom, setdropsecondryuom] = useState([]);
   const [Regbrand, setRegbrand] = useState([]);
   const [ourbranddrop, setourbranddrop] = useState([]);
   const [selectedItemCode, setSelectedItemCode] = useState(null);
   const [selectedItemImage, setSelectedItemIamge] = useState(null);
-  const [loading, setLoading] = useState(false);    
+  const [loading, setLoading] = useState(false);
   const [createdBy, setCreatedBy] = useState("");
   const [modifiedBy, setModifiedBy] = useState("");
   const [createdDate, setCreatedDate] = useState("");
@@ -73,44 +73,69 @@ function ItemBrandGrid() {
     .filter(permission => permission.screen_type === 'Item')
     .map(permission => permission.permission_type.toLowerCase());
 
-    useEffect(() => {
-            if (location.state?.preservedRowData) {
-              setRowData(location.state.preservedRowData);
-            }
-        
-            if (location.state?.preservedInputs) {
-              setItem_code(location.state.preservedInputs.Item_code || "");
-              setItem_variant(location.state.preservedInputs.Item_variant || "");
-              setItem_name(location.state.preservedInputs.Item_name || "");
-              setItem_short_name(location.state.preservedInputs.Item_short_name || "");
-              setItem_Our_Brand(location.state.preservedInputs.Item_Our_Brand || "");
-              setstatus(location.state.preservedInputs.status || "");
-        
-              if (location.state.preservedInputs.Item_Our_Brand) {
-                setSelectedBrand({
-                  label: location.state.preservedInputs.Item_Our_Brand,
-                  value: location.state.preservedInputs.Item_Our_Brand,
-                });
-              }
-              if (location.state.preservedInputs.status) {
-                setSelectedStatus({
-                  label: location.state.preservedInputs.status,
-                  value: location.state.preservedInputs.status,
-                });
-              }
-            }
-          }, [location.state]);
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      const isReloadShortcut =
+        (event.ctrlKey && event.key.toLowerCase() === "r") ||
+        (event.altKey && event.key.toLowerCase() === "r") ||
+        event.key === "F5";
 
- useEffect(() => {
+      if (isReloadShortcut) {
+        event.preventDefault();
+        clearInputFields();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+
+  useEffect(() => {
+    // if (location.state?.preservedRowData) {
+    //   setRowData(location.state.preservedRowData);
+    // }
+
+    if (location.state?.preservedInputs) {
+      const inputs = location.state.preservedInputs;
+
+      setItem_code(inputs.Item_code || "");
+      setItem_variant(inputs.Item_variant || "");
+      setItem_name(inputs.Item_name || "");
+      setItem_short_name(inputs.Item_short_name || "");
+      setItem_Our_Brand(inputs.Item_Our_Brand || "");
+      setstatus(inputs.status || "");
+
+      if (inputs.Item_Our_Brand) {
+        setSelectedBrand({
+          label: inputs.Item_Our_Brand,
+          value: inputs.Item_Our_Brand,
+        });
+      }
+      if (inputs.status) {
+        setSelectedStatus({
+          label: inputs.status,
+          value: inputs.status,
+        });
+      }
+
+      if (location.state?.refreshGrid) {
+        handleSearch(inputs);
+      }
+    }
+  }, [location.state]);
+
+  useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/uom`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ company_code })
-    })      .then((response) => response.json())
+    }).then((response) => response.json())
       .then((data) => {
         // Extract city names from the fetched data
         const UOMOption = data.map(option => option.attributedetails_name);
@@ -119,16 +144,16 @@ function ItemBrandGrid() {
       .catch((error) => console.error('Error fetching data:', error));
   }, []);
 
-   useEffect(() => {
+  useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/uom`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ company_code })
-    })      .then((response) => response.json())
+    }).then((response) => response.json())
       .then((data) => {
         // Extract city names from the fetched data
         const UOMOption = data.map(option => option.attributedetails_name);
@@ -139,7 +164,7 @@ function ItemBrandGrid() {
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/ourbrand`, {
       method: 'POST',
       headers: {
@@ -152,16 +177,16 @@ function ItemBrandGrid() {
       .catch((error) => console.error('Error fetching data:', error));
   }, []);
 
- useEffect(() => {
+  useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/regbrand`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ company_code })
-    })      .then((response) => response.json())
+    }).then((response) => response.json())
       .then((data) => {
         // Extract city names from the fetched data
         const Regoption = data.map(option => option.attributedetails_name);
@@ -172,14 +197,14 @@ function ItemBrandGrid() {
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/status`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ company_code })
-    })      .then((response) => response.json())
+    }).then((response) => response.json())
       .then((data) => {
         // Extract city names from the fetched data
         const statusOption = data.map(option => option.attributedetails_name);
@@ -190,14 +215,14 @@ function ItemBrandGrid() {
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/ourbrand`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ company_code })
-    })      .then((response) => response.json())
+    }).then((response) => response.json())
       .then((data) => {
         // Extract city names from the fetched data
         const brandOption = data.map(option => option.attributedetails_name);
@@ -210,7 +235,7 @@ function ItemBrandGrid() {
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/status`, {
       method: 'POST',
       headers: {
@@ -252,18 +277,18 @@ function ItemBrandGrid() {
   };
 
   const clearInputFields = () => {
-setItem_code("");
-setItem_variant("");
-setItem_name("");
-setItem_short_name("");
-setItem_Our_Brand("");
-setstatus("");
-setSelectedBrand("");
-setSelectedStatus("");
-    setRowData([]);
-  };
+    setItem_code("");
+    setItem_variant("");
+    setItem_name("");
+    setItem_short_name("");
+    setItem_Our_Brand("");
+    setstatus("");
+    setSelectedBrand("");
+    setSelectedStatus("");
+    setRowData([]);
+  };
 
-  const handleSearch = async () => {
+  const handleSearch = async (searchParams = null) => {
     const company_code = sessionStorage.getItem('selectedCompanyCode')
     setLoading(true);
     try {
@@ -272,7 +297,15 @@ setSelectedStatus("");
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ company_code, Item_code, Item_name, Item_variant, Item_short_name, Item_Our_Brand, status }) // Send company_no and company_name as search criteria
+        body: JSON.stringify({
+          company_code,
+          Item_code: searchParams?.Item_code ?? Item_code,
+          Item_name: searchParams?.Item_name ?? Item_name,
+          Item_variant: searchParams?.Item_variant ?? Item_variant,
+          Item_short_name: searchParams?.Item_short_name ?? Item_short_name,
+          Item_Our_Brand: searchParams?.Item_Our_Brand ?? Item_Our_Brand,
+          status: searchParams?.status ?? status,
+        })
       });
       if (response.ok) {
         const searchData = await response.json();
@@ -289,7 +322,7 @@ setSelectedStatus("");
     } catch (error) {
       console.error("Error saving data:", error);
       toast.error("Error updating data: " + error.message);
-    }finally {
+    } finally {
       setLoading(false);
     }
 
@@ -440,7 +473,7 @@ setSelectedStatus("");
       editable: true,
       cellStyle: { textAlign: "center" },
       // minWidth: 150,
-       cellEditor: "agSelectCellEditor",
+      cellEditor: "agSelectCellEditor",
       cellEditorParams: {
         maxLength: 60,
         values: Dropbaseuom
@@ -606,12 +639,12 @@ setSelectedStatus("");
       editable: true,
       cellStyle: { textAlign: "center" },
       // minWidth: 150,
-      cellEditor : "agSelectCellEditor",
+      cellEditor: "agSelectCellEditor",
       cellEditorParams: {
         maxLength: 30,
         values: Regbrand
       },
-      
+
     },
     {
       headerName: "Our Brand",
@@ -790,14 +823,31 @@ setSelectedStatus("");
   const handleNavigateToForm = () => {
     navigate("/AddItem", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
   };
+  // const handleNavigateWithRowData = (selectedRow) => {
+  //   navigate("/AddItem", {
+  //     state: {
+  //       mode: "update",
+  //       selectedRow,
+
+  //       preservedRowData: rowData,
+
+  //       preservedInputs: {
+  //         Item_code,
+  //         Item_variant,
+  //         Item_name,
+  //         Item_short_name,
+  //         Item_Our_Brand,
+  //         status,
+  //       },
+  //     },
+  //   });
+  // };
+
   const handleNavigateWithRowData = (selectedRow) => {
     navigate("/AddItem", {
       state: {
         mode: "update",
-        selectedRow,
-
-        preservedRowData: rowData,
-
+        Item_code: selectedRow.Item_code,
         preservedInputs: {
           Item_code,
           Item_variant,
@@ -877,10 +927,10 @@ setSelectedStatus("");
         } catch (error) {
           console.error("Error saving data:", error);
           toast.error("Error Updating Data: " + error.message);
-        }finally {
+        } finally {
           setLoading(false);
         }
-    
+
       },
       () => {
         toast.info("Data updated cancelled.");
@@ -927,10 +977,10 @@ setSelectedStatus("");
         } catch (err) {
           console.error("Error deleting rows:", err);
           toast.error('Error Deleting Data:' + err.message);
-        }finally {
+        } finally {
           setLoading(false);
         }
-    
+
       },
       () => {
         toast.info("Data Delete cancelled.");
@@ -967,8 +1017,8 @@ setSelectedStatus("");
     }
   };
 
-    const handleOpenSettings = () => {
-    navigate("/ItemSettings"); 
+  const handleOpenSettings = () => {
+    navigate("/ItemSettings");
   };
 
 
@@ -976,7 +1026,7 @@ setSelectedStatus("");
   return (
     <div className="container-fluid Topnav-screen">
       <div>
-      {loading && <LoadingScreen />}
+        {loading && <LoadingScreen />}
         <ToastContainer position="top-right" className="toast-design" theme="colored" />
         <div className="shadow-lg p-1 bg-body-tertiary rounded  mb-2 mt-2">
           <div className=" d-flex justify-content-between  ">
@@ -1081,9 +1131,9 @@ setSelectedStatus("");
                         )}
                     </li>
                     <li class="iconbutton  d-flex justify-content-center ">
-                          <icon class="icon" onClick={handleOpenSettings}>
-                            <i className="fa-solid fa-gear"></i>
-                          </icon>
+                      <icon class="icon" onClick={handleOpenSettings}>
+                        <i className="fa-solid fa-gear"></i>
+                      </icon>
                     </li>
                   </ul>
                 </div>
@@ -1174,17 +1224,17 @@ setSelectedStatus("");
                   Our Brand
                 </label>
                 <div title="Select the Own Brand">
-                <Select
-                  id="ahsts"
-                  value={selectedBrand}
-                  onChange={handleChangeBrand}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  options={filteredOptionBrand}
-                  className="exp-input-field"
-                  placeholder=""
-                  maxLength={30}
-                />
-              </div>
+                  <Select
+                    id="ahsts"
+                    value={selectedBrand}
+                    onChange={handleChangeBrand}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                    options={filteredOptionBrand}
+                    className="exp-input-field"
+                    placeholder=""
+                    maxLength={30}
+                  />
+                </div>
               </div>
             </div>
 
@@ -1194,17 +1244,17 @@ setSelectedStatus("");
                 <label class="exp-form-labels">
                   Status
                 </label>
-<div title="Select the Status">
-                <Select
-                  id="ahsts"
-                  value={selectedStatus}
-                  onChange={handleChangeStatus}
-                  // onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  options={filteredOptionStatus}
-                  className="exp-input-field"
-                  placeholder=""
-                />
-</div>
+                <div title="Select the Status">
+                  <Select
+                    id="ahsts"
+                    value={selectedStatus}
+                    onChange={handleChangeStatus}
+                    // onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                    options={filteredOptionStatus}
+                    className="exp-input-field"
+                    placeholder=""
+                  />
+                </div>
               </div>
             </div>
             <div className="col-md-3 form-group mt-4">

@@ -31,54 +31,111 @@ function StdAccInput({ }) {
   const lockType = useRef(null)
   const [hasValueChanged, setHasValueChanged] = useState(false);
   const config = require('./Apiconfig');
+
   const location = useLocation();
-  const { mode, selectedRow } = location.state || {};
+  const locationState = location.state || {};
+  const mode = locationState.mode || "create"; // ✅ default fallback
+  const selectedRow = locationState.selectedRow || null;
+  const keyfields = location.state?.keyfield;
+  const company_code = sessionStorage.getItem('selectedCompanyCode');
 
-  console.log(selectedRow);
+  useEffect(() => {
+    if (!location.state) {
+      clearInputFields(); // ensure fresh create mode
+    }
+  }, []);
 
-  console.log(selectedRow);
+  useEffect(() => {
+    if (mode === "update" && keyfields) {
+      fetchFinancialYearAccessData();
+    }
+  }, [mode, keyfields]);
+
+  const fetchFinancialYearAccessData = async () => {
+    try {
+      setLoading(true);
+
+      const response = await fetch(`${config.apiBaseUrl}/getFinancialYearAccessData`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          keyfield: keyfields,
+          company_code
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.length > 0) {
+        const financialYearAccess = data[0];
+
+        setStartYear(financialYearAccess.start_year || "");
+        setEndYear(financialYearAccess.end_year || "");
+        setTransactionType(financialYearAccess.transaction_type || "");
+        setLockType(financialYearAccess.locked || "");
+        setKeyfield(financialYearAccess.keyfield || "");
+        setSelectedTransaction({
+          label: financialYearAccess.transaction_type,
+          value: financialYearAccess.transaction_type,
+        });
+        setSelectedLockType({
+          label: financialYearAccess.locked,
+          value: financialYearAccess.locked,
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch financial year access details");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const clearInputFields = () => {
     setStartYear("");
     setEndYear("");
+    setSelectedTransaction("");
     setTransactionType("");
+    setSelectedLockType("");
     setLockType("");
-
   };
 
 
-  useEffect(() => {
-    if (mode === "update" && selectedRow && !isUpdated) {
-      if (selectedRow.start_year) {
-        const formattedStartYear = new Date(selectedRow.start_year).toISOString().split("T")[0];
-        setStartYear(formattedStartYear);
-      } else {
-        setStartYear("");
-      }
+  // useEffect(() => {
+  //   if (mode === "update" && selectedRow && !isUpdated) {
+  //     if (selectedRow.start_year) {
+  //       const formattedStartYear = new Date(selectedRow.start_year).toISOString().split("T")[0];
+  //       setStartYear(formattedStartYear);
+  //     } else {
+  //       setStartYear("");
+  //     }
 
-      if (selectedRow.end_year) {
-        const formattedEndYear = new Date(selectedRow.end_year).toISOString().split("T")[0];
-        setEndYear(formattedEndYear);
-      } else {
-        setEndYear("");
-      }
-      setTransactionType(selectedRow.transaction_type || "");
-      setLockType(selectedRow.locked || "");
-      setKeyfield(selectedRow.keyfield || "");
+  //     if (selectedRow.end_year) {
+  //       const formattedEndYear = new Date(selectedRow.end_year).toISOString().split("T")[0];
+  //       setEndYear(formattedEndYear);
+  //     } else {
+  //       setEndYear("");
+  //     }
+  //     setTransactionType(selectedRow.transaction_type || "");
+  //     setLockType(selectedRow.locked || "");
+  //     setKeyfield(selectedRow.keyfield || "");
 
-      setSelectedTransaction({
-        label: selectedRow.transaction_type,
-        value: selectedRow.transaction_type,
-      });
-      setSelectedLockType({
-        label: selectedRow.locked,
-        value: selectedRow.locked,
-      });
+  //     setSelectedTransaction({
+  //       label: selectedRow.transaction_type,
+  //       value: selectedRow.transaction_type,
+  //     });
+  //     setSelectedLockType({
+  //       label: selectedRow.locked,
+  //       value: selectedRow.locked,
+  //     });
 
 
-    } else if (mode === "create") {
-      clearInputFields();
-    }
-  }, [mode, selectedRow, isUpdated]);
+  //   } else if (mode === "create") {
+  //     clearInputFields();
+  //   }
+  // }, [mode, selectedRow, isUpdated]);
 
   const getFinancialYearDates = () => {
     const now = new Date();
@@ -151,81 +208,6 @@ function StdAccInput({ }) {
       .then((val) => setLockdrop(val));
   }, []);
 
-
-
-  //  useEffect(() => {
-  //    const company_code = sessionStorage.getItem('selectedCompanyCode');
-
-  //    fetch(`${config.apiBaseUrl}/status`, {
-  //      method: 'POST',
-  //      headers: {
-  //        'Content-Type': 'application/json',
-  //      },
-  //      body: JSON.stringify({ company_code })
-  //    })
-  //      .then((data) => data.json())
-  //      .then((val) => setStatusdrop(val))
-  //      .catch((error) => console.error('Error fetching data:', error));
-  //  }, []);
-
-
-  //  useEffect(() => {
-  //    fetch(`${config.apiBaseUrl}/getbasaccode`)
-  //      .then((data) => data.json())
-  //      .then((val) => setbaseaccdrop(val));
-  //  }, []);
-
-
-  // //  useEffect(() => {
-  // //    const company_code = sessionStorage.getItem('selectedCompanyCode');
-
-  // //    fetch(`${config.apiBaseUrl}/delPer`, {
-  // //      method: 'POST',
-  // //      headers: {
-  // //        'Content-Type': 'application/json',
-  // //      },
-  // //      body: JSON.stringify({ company_code })
-  // //    })
-  // //      .then((data) => data.json())
-  // //      .then((val) => setdeletedrop(val))
-  // //      .catch((error) => console.error('Error fetching data:', error));
-  // //  }, []);
-
-
-  // //  const filteredOptionbaseacc = baseaccdrop.map((option) => ({
-  // //    value: option.base_accgroup_code,
-  // //    label: option.base_accgroup_code,
-  // //  }));
-
-  // //  const filteredOptionStatus = statusdrop.map((option) => ({
-  // //    value: option.attributedetails_name,
-  // //    label: option.attributedetails_name,
-  // //  }));
-
-  // //  const filteredOptionDelete = Array.isArray(deletedrop) ? deletedrop.map((option) => ({
-  // //    value: option.attributedetails_name,
-  // //    label: option.attributedetails_name,
-  // //  })) : [];
-
-
-  // //  const handleChangeStatus = (selectedStatus) => {
-  // //    setSelectedStatus(selectedStatus);
-  // //    setstatus(selectedStatus ? selectedStatus.value : '');
-  // //    setError(false);
-  // //  };
-
-  // //  const handleChangebaseacc = (selectedbaseacc) => {
-  // //    setselectedbaseacc(selectedbaseacc);
-  // //    setbase_accgroup_code(selectedbaseacc ? selectedbaseacc.value : '');
-  // //    setError(false);
-  // //  };
-
-  // //  const handleChangeDelete = (selectedDelete) => {
-  // //    setSelectedDelete(selectedDelete);
-  // //    setdeletePermission(selectedDelete ? selectedDelete.value : '');
-  // //    setError(false);
-  //  //};
-
   const handleNavigateToForm = () => {
     navigate("/AddBaseAccount", { selectedRows }); // Pass selectedRows as props to the Input component
   };
@@ -271,10 +253,10 @@ function StdAccInput({ }) {
 
         }),
       });
-       if (response.ok) {
-           toast.success("Data inserted Successfully", {
-           onClose: () => clearInputFields()
-           });
+      if (response.ok) {
+        toast.success("Data inserted Successfully", {
+          onClose: () => clearInputFields()
+        });
       } else if (response.status === 400) {
         const errorResponse = await response.json();
         console.error(errorResponse.message);
@@ -298,12 +280,11 @@ function StdAccInput({ }) {
       !endYear ||
       !TransactionType ||
       !LockType
-    )
-      // {
-      //     setError(" ");
-
-      //     return;
-      //   }
+    ) {
+      setError(" ");
+      toast.warning("Error: Missing required fields");
+      return;
+    }
       setLoading(true);
 
     try {
@@ -314,7 +295,7 @@ function StdAccInput({ }) {
         },
         body: JSON.stringify({
           company_code: sessionStorage.getItem('selectedCompanyCode'),
-           start_year: startYear,
+          start_year: startYear,
           end_year: endYear,
           transaction_type: TransactionType,
           locked: LockType,
@@ -322,10 +303,10 @@ function StdAccInput({ }) {
           keyfield
         }),
       });
-            if (response.ok) {
-            toast.success("Data updated successfully", {
-            // onClose: () => clearInputFields()
-           });
+      if (response.ok) {
+        toast.success("Data updated successfully", {
+          // onClose: () => clearInputFields()
+        });
 
       } else if (response.status === 400) {
         const errorResponse = await response.json();
@@ -344,17 +325,15 @@ function StdAccInput({ }) {
     }
   };
 
-
-
-
   const handleNavigate = () => {
-  navigate("/FinancialYearAccess", {
-    state: {
-      preservedRowData: location.state?.preservedRowData,
-      preservedInputs: location.state?.preservedInputs
-    }
-  });
-};
+    navigate("/FinancialYearAccess", {
+      state: {
+        refreshGrid: true,
+        // preservedRowData: location.state?.preservedRowData,
+        preservedInputs: location.state?.preservedInputs
+      }
+    });
+  };
 
 
   const handleKeyDown = async (e, nextFieldRef, value, hasValueChanged, setHasValueChanged) => {
@@ -446,19 +425,19 @@ function StdAccInput({ }) {
                   <div> <span className="text-danger">*</span></div>
                 </div>
                 <div className="">
-                 <div title="Select the Transactions Type">       
-                  <Select
-                    id="taxtransaction"
-                    type="text"
-                    value={selectedTransaction}
-                    onChange={handleChangeTransaction}
-                    options={filteredOptionTransaction}
-                    ref={transactionType}
-                    onKeyDown={(e) => handleKeyDown(e, lockType, transactionType)}
-                  />
-                </div>
-                {/* {error && !selectedTransaction && <div className="text-danger">Transaction Type should not be blank</div>} */}
-              </div>  </div>
+                  <div title="Select the Transactions Type">
+                    <Select
+                      id="taxtransaction"
+                      type="text"
+                      value={selectedTransaction}
+                      onChange={handleChangeTransaction}
+                      options={filteredOptionTransaction}
+                      ref={transactionType}
+                      onKeyDown={(e) => handleKeyDown(e, lockType, transactionType)}
+                    />
+                  </div>
+                  {/* {error && !selectedTransaction && <div className="text-danger">Transaction Type should not be blank</div>} */}
+                </div>  </div>
               <div className="col-md-3 form-group ">
                 <div class="exp-form-floating">
                   <div class="d-flex justify-content-start">
@@ -467,26 +446,26 @@ function StdAccInput({ }) {
                     </label></div>
                     <div> <span className="text-danger">*</span></div>
                   </div>
-                   <div title="Select the Locked Status">     
-                  <Select
-                    class="exp-input-field"
-                    value={selectedLockType}
-                    onChange={handleChangeLockType}
-                    options={filteredOptionLockType}
-                    ref={lockType}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        if (mode === "create") {
-                          handleInsert();
-                        } else {
-                          handleUpdate();
+                  <div title="Select the Locked Status">
+                    <Select
+                      class="exp-input-field"
+                      value={selectedLockType}
+                      onChange={handleChangeLockType}
+                      options={filteredOptionLockType}
+                      ref={lockType}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          if (mode === "create") {
+                            handleInsert();
+                          } else {
+                            handleUpdate();
+                          }
                         }
-                      }
-                    }}
-                  />
-                </div>
-                {/* {error && !base_accgroup_code && <div className="text-danger">Locked should not be blank</div>} */}
-              </div>   </div>
+                      }}
+                    />
+                  </div>
+                  {/* {error && !base_accgroup_code && <div className="text-danger">Locked should not be blank</div>} */}
+                </div>   </div>
               {/* <div className="col-md-3 form-group  ">
             <div class="exp-form-floating">
             <div class="d-flex justify-content-start">

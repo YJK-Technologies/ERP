@@ -29,7 +29,7 @@ function NumberSeriesGrid() {
   const [screentypedrop, setscreentypedrop] = useState([]);
   const [statusgriddrop, setStatusGriddrop] = useState([]);
   const [booleangriddrop, setBooleangriddrop] = useState([]);
-  const [loading, setLoading] = useState(false);    
+  const [loading, setLoading] = useState(false);
   const [createdBy, setCreatedBy] = useState("");
   const [modifiedBy, setModifiedBy] = useState("");
   const [createdDate, setCreatedDate] = useState("");
@@ -43,28 +43,50 @@ function NumberSeriesGrid() {
     .filter((permission) => permission.screen_type === "Number Series")
     .map((permission) => permission.permission_type.toLowerCase());
 
-  console.log(numberSeriesPermission);
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      const isReloadShortcut =
+        (event.ctrlKey && event.key.toLowerCase() === "r") ||
+        (event.altKey && event.key.toLowerCase() === "r") ||
+        event.key === "F5";
+
+      if (isReloadShortcut) {
+        event.preventDefault();
+        clearInputFields();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
 
   useEffect(() => {
-        if (location.state?.preservedRowData) {
-          setRowData(location.state.preservedRowData);
-        }
-      
-        if (location.state?.preservedInputs) {
-          setScreen_Type(location.state.preservedInputs.Screen_Type || "");
-      
-          if (location.state.preservedInputs.Screen_Type) {
-            setselectedscreentype({
-              label: location.state.preservedInputs.Screen_Type,
-              value: location.state.preservedInputs.Screen_Type,
-            });
-          }
-        }
-      }, [location.state]);
-  
+    // if (location.state?.preservedRowData) {
+    //   setRowData(location.state.preservedRowData);
+    // }
+
+    if (location.state?.preservedInputs) {
+      const inputs = location.state.preservedInputs;
+
+      setScreen_Type(inputs.Screen_Type || "");
+      if (inputs.Screen_Type) {
+        setselectedscreentype({
+          label: inputs.Screen_Type,
+          value: inputs.Screen_Type,
+        });
+      }
+
+      if (location.state?.refreshGrid) {
+        handleSearch(inputs);
+      }
+    }
+  }, [location.state]);
+
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/screentype`, {
       method: 'POST',
       headers: {
@@ -78,15 +100,15 @@ function NumberSeriesGrid() {
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/status`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ company_code })
-    })     
-     .then((response) => response.json())
+    })
+      .then((response) => response.json())
       .then((data) => {
         // Extract city names from the fetched data
         const statusOption = data.map(option => option.attributedetails_name);
@@ -97,15 +119,15 @@ function NumberSeriesGrid() {
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/getboolean`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ company_code })
-    })     
-     .then((response) => response.json())
+    })
+      .then((response) => response.json())
       .then((data) => {
         // Extract city names from the fetched data
         const booleanOption = data.map(option => option.attributedetails_name);
@@ -138,12 +160,12 @@ function NumberSeriesGrid() {
   };
 
   const clearInputFields = () => {
-setScreen_Type("");
-setselectedscreentype("");
-    setRowData([]);
-  };
+    setScreen_Type("");
+    setselectedscreentype("");
+    setRowData([]);
+  };
 
-  const handleSearch = async () => {
+  const handleSearch = async (searchParams = null) => {
     setLoading(true);
     try {
       const company_code = sessionStorage.getItem("selectedCompanyCode");
@@ -152,10 +174,11 @@ setselectedscreentype("");
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            company_code: company_code,
-            Screen_Type: Screen_Type,
           },
-          body: JSON.stringify({ company_code: company_code, Screen_Type:Screen_Type }), // Send company_no and company_name as search criteria
+          body: JSON.stringify({
+            company_code,
+            Screen_Type: searchParams?.Screen_Type ?? Screen_Type,
+          }),
         }
       );
       if (response.ok) {
@@ -173,7 +196,7 @@ setselectedscreentype("");
     } catch (error) {
       console.error("Error saving data:", error);
       toast.error("Error updating data: " + error.message);
-    }finally {
+    } finally {
       setLoading(false);
     }
 
@@ -444,20 +467,35 @@ setselectedscreentype("");
   const handleNavigatesToForm = () => {
     navigate("/AddNumberSeries", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
   };
+  
+  // const handleNavigateWithRowData = (selectedRow) => {
+  //   navigate("/AddNumberSeries", {
+  //     state: {
+  //       mode: "update",
+  //       selectedRow,
+
+  //       preservedRowData: rowData,
+
+  //       preservedInputs: {
+  //         Screen_Type,
+  //       },
+  //     },
+  //   });
+  // };
+
   const handleNavigateWithRowData = (selectedRow) => {
-  navigate("/AddNumberSeries", {
-    state: {
-      mode: "update",
-      selectedRow,
-
-      preservedRowData: rowData,
-
-      preservedInputs: {
-        Screen_Type,
+    navigate("/AddNumberSeries", {
+      state: {
+        mode: "update",
+        Screen_Type: selectedRow.Screen_Type,
+        Start_Year: selectedRow.Start_Year,
+        End_Year: selectedRow.End_Year,
+        preservedInputs: {
+          Screen_Type,
+        },
       },
-    },
-  });
-};
+    });
+  };
 
   const onSelectionChanged = () => {
     const selectedNodes = gridApi.getSelectedNodes();
@@ -471,16 +509,16 @@ setselectedscreentype("");
     const rowIndex = updatedRowData.findIndex(
       (row) => row.Screen_Type === params.data.Screen_Type
     );
-  
+
     if (rowIndex !== -1) {
       updatedRowData[rowIndex][params.colDef.field] = params.newValue;
       setRowData(updatedRowData);
-  
+
       setEditedData((prevData) => {
         const existingIndex = prevData.findIndex(
           (item) => item.Screen_Type === params.data.Screen_Type
         );
-  
+
         if (existingIndex !== -1) {
           const updatedEdited = [...prevData];
           updatedEdited[existingIndex] = updatedRowData[rowIndex];
@@ -535,10 +573,10 @@ setselectedscreentype("");
         } catch (error) {
           console.error("Error saving data:", error);
           toast.error("Error Updating Data: " + error.message);
-        }finally {
+        } finally {
           setLoading(false);
         }
-    
+
       },
       () => {
         toast.info("Data updated cancelled.");
@@ -557,7 +595,7 @@ setselectedscreentype("");
     const company_code = sessionStorage.getItem("selectedCompanyCode");
     // const ScreenTypdeDelete  =  {Screen_TypesToDelete:Array.isArray(rowData) ? rowData : [rowData] };
     const ScreenTypdeDelete = { Screen_TypesToDelete: selectedRows };
-    
+
     showConfirmationToast(
       "Are you sure you want to Delete the data in the selected rows?",
       async () => {
@@ -590,7 +628,7 @@ setselectedscreentype("");
         } catch (error) {
           console.error("Error deleting rows:", error);
           toast.error('Error Deleting Data: ' + error.message);
-        }finally {
+        } finally {
           setLoading(false);
         }
       },
@@ -631,7 +669,7 @@ setselectedscreentype("");
   return (
     <div className="container-fluid Topnav-screen">
       <div>
-      {loading && <LoadingScreen />}
+        {loading && <LoadingScreen />}
         <ToastContainer position="top-right" className="toast-design" theme="colored" />
         <div className="shadow-lg p-1 bg-body-tertiary rounded  mb-2 mt-2">
           <div className=" d-flex justify-content-between  ">
@@ -763,19 +801,19 @@ setselectedscreentype("");
                   Screen Type
                 </label>
                 <div title="Select the Screen Type">
-                <Select
-                  id="wcode"
-                  value={selectedscreentype}
-                  onChange={handleChangescreentype}
-                  // onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                  options={filteredOptionscreentype}
-                  className="exp-input-field"
-                  placeholder=""
-                  required
-                  title="Please select a screen type"
-                  maxLength={50}
-                />
-              </div>
+                  <Select
+                    id="wcode"
+                    value={selectedscreentype}
+                    onChange={handleChangescreentype}
+                    // onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                    options={filteredOptionscreentype}
+                    className="exp-input-field"
+                    placeholder=""
+                    required
+                    title="Please select a screen type"
+                    maxLength={50}
+                  />
+                </div>
               </div>
             </div>
             <div className="col-md-3 form-group mt-4">

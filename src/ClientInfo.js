@@ -51,11 +51,11 @@ function ClientInfo() {
   const [modifiedBy, setModifiedBy] = useState("");
   const [createdDate, setCreatedDate] = useState("");
   const [modifiedDate, setModifiedDate] = useState("");
-    const [selectedPaymentType, setselectedpaymettype] = useState('');
-    const [ Payment_Type, setpaymettype] = useState('');
-     const [paymenttypedrop, setPaymenttypeDrop] = useState([]);
+  const [selectedPaymentType, setselectedpaymettype] = useState('');
+  const [Payment_Type, setpaymettype] = useState('');
+  const [paymenttypedrop, setPaymenttypeDrop] = useState([]);
 
-     const location = useLocation();
+  const location = useLocation();
 
   //code added by Harish purpose of set user permisssion
   const permissions = JSON.parse(sessionStorage.getItem('permissions')) || {};
@@ -64,40 +64,64 @@ function ClientInfo() {
     .map(permission => permission.permission_type.toLowerCase());
 
   useEffect(() => {
-          if (location.state?.preservedRowData) {
-            setRowData(location.state.preservedRowData);
-          }
-        
-          if (location.state?.preservedInputs) {
-            setClient_code(location.state.preservedInputs.Client_code || "");
-            setCompany_or_Personal(location.state.preservedInputs.Company_or_Personal || "");
-            setCompanyName(location.state.preservedInputs.CompanyName || "");
-            setProduct(location.state.preservedInputs.Product || "");
-            setPayment(location.state.preservedInputs.Payment || 0);
-            setaddress1(location.state.preservedInputs.address1 || "");
-            setLast_Payment(location.state.preservedInputs.Last_Payment || "");
-            setPhone(location.state.preservedInputs.Phone || "");
-            setPaymentmode(location.state.preservedInputs.Payment_Mode || "");
-            setpaymettype(location.state.preservedInputs.Payment_Type || "");
+    const handleKeyDown = (event) => {
+      const isReloadShortcut =
+        (event.ctrlKey && event.key.toLowerCase() === "r") ||
+        (event.altKey && event.key.toLowerCase() === "r") ||
+        event.key === "F5";
 
-            if (location.state.preservedInputs.Payment_Mode) {
-              setSelectedPaymentMode({
-                label: location.state.preservedInputs.Payment_Mode,
-                value: location.state.preservedInputs.Payment_Mode,
-              });
-            }
-            if (location.state.preservedInputs.Payment_Type) {
-              setselectedpaymettype({
-                label: location.state.preservedInputs.Payment_Type,
-                value: location.state.preservedInputs.Payment_Type,
-              });
-            }
-          }
-        }, [location.state]);
+      if (isReloadShortcut) {
+        event.preventDefault();
+        clearInputFields();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    // if (location.state?.preservedRowData) {
+    //   setRowData(location.state.preservedRowData);
+    // }
+
+    if (location.state?.preservedInputs) {
+      const inputs = location.state.preservedInputs;
+
+      setClient_code(inputs.Client_code || "");
+      setCompany_or_Personal(inputs.Company_or_Personal || "");
+      setCompanyName(inputs.CompanyName || "");
+      setProduct(inputs.Product || "");
+      setPayment(inputs.Payment || 0);
+      setaddress1(inputs.address1 || "");
+      setLast_Payment(inputs.Last_Payment || "");
+      setPhone(inputs.Phone || "");
+      setPaymentmode(inputs.Payment_Mode || "");
+      setpaymettype(inputs.Payment_Type || "");
+
+      if (inputs.Payment_Mode) {
+        setSelectedPaymentMode({
+          label: inputs.Payment_Mode,
+          value: inputs.Payment_Mode,
+        });
+      }
+      if (inputs.Payment_Type) {
+        setselectedpaymettype({
+          label: inputs.Payment_Type,
+          value: inputs.Payment_Type,
+        });
+      }
+
+      if (location.state?.refreshGrid) {
+        handleSearch(inputs);
+      }
+    }
+  }, [location.state]);
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/status`, {
       method: 'POST',
       headers: {
@@ -105,7 +129,7 @@ function ClientInfo() {
       },
       body: JSON.stringify({ company_code })
     })
-          .then((response) => response.json())
+      .then((response) => response.json())
       .then((data) => {
         // Extract city names from the fetched data
         const statusOption = data.map(option => option.attributedetails_name);
@@ -160,7 +184,7 @@ function ClientInfo() {
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/GetPaymentMode`, {
       method: 'POST',
       headers: {
@@ -175,7 +199,7 @@ function ClientInfo() {
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/city`, {
       method: 'POST',
       headers: {
@@ -194,7 +218,7 @@ function ClientInfo() {
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/country`, {
       method: 'POST',
       headers: {
@@ -213,7 +237,7 @@ function ClientInfo() {
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/state`, {
       method: 'POST',
       headers: {
@@ -240,10 +264,10 @@ function ClientInfo() {
     setpaymettype(selectedCustomer ? selectedCustomer.value : '');
   };
 
- 
+
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/GetPaymentType`, {
       method: 'POST',
       headers: {
@@ -278,22 +302,22 @@ function ClientInfo() {
   };
 
   const clearInputFields = () => {
-setClient_code("");
-setCompany_or_Personal("");
-setCompanyName("");
-setProduct("");
-setPayment("");
-setaddress1("");
-setLast_Payment("");
-setPhone("");
-setPaymentmode("");
-setpaymettype("");
-setSelectedPaymentMode("");
-setselectedpaymettype("");
-    setRowData([]);
-  };
+    setClient_code("");
+    setCompany_or_Personal("");
+    setCompanyName("");
+    setProduct("");
+    setPayment("0");
+    setaddress1("");
+    setLast_Payment("");
+    setPhone("");
+    setPaymentmode("");
+    setpaymettype("");
+    setSelectedPaymentMode("");
+    setselectedpaymettype("");
+    setRowData([]);
+  };
 
-  const handleSearch = async () => {
+  const handleSearch = async (searchParams = null) => {
     setLoading(true);
 
     try {
@@ -302,7 +326,20 @@ setselectedpaymettype("");
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ company_code: sessionStorage.getItem('selectedCompanyCode'),Client_code, Client_Name, CompanyName, Company_or_Personal, Phone, Product, Payment_Type, Payment, Payment_Mode,address1,Last_Payment })
+        body: JSON.stringify({ 
+          company_code: sessionStorage.getItem('selectedCompanyCode'), 
+          Client_code: searchParams?.Client_code ?? Client_code,  
+          Client_Name: searchParams?.Client_Name ?? Client_Name,  
+          CompanyName: searchParams?.CompanyName ?? CompanyName,  
+          Company_or_Personal: searchParams?.Company_or_Personal ?? Company_or_Personal,  
+          Phone: searchParams?.Phone ?? Phone,  
+          Product: searchParams?.Product ?? Product,  
+          Payment_Type: searchParams?.Payment_Type ?? Payment_Type,   
+          Payment: searchParams?.Payment ?? Payment,  
+          Payment_Mode: searchParams?.Payment_Mode ?? Payment_Mode,  
+          address1: searchParams?.address1 ?? address1,  
+          Last_Payment: searchParams?.Last_Payment ?? Last_Payment,  
+        })
       });
       if (response.ok) {
         const searchData = await response.json();
@@ -412,7 +449,7 @@ setselectedpaymettype("");
         maxLength: 250,
       },
     },
-   
+
     {
       headerName: "Phone",
       field: "Phone",
@@ -424,7 +461,7 @@ setselectedpaymettype("");
         maxLength: 250,
       },
     },
-      {
+    {
 
       headerName: "Live Date",
       field: "Live_Date",
@@ -434,7 +471,7 @@ setselectedpaymettype("");
       cellEditorParams: {
         maxLength: 250,
       },
-        valueFormatter: (params) => {
+      valueFormatter: (params) => {
         if (!params.value) return ""; // Return an empty string if the value is null or undefined
         const date = new Date(params.value);
         const day = date.getDate().toString().padStart(2, "0"); // Get day (padStart ensures double-digit format)
@@ -453,7 +490,7 @@ setselectedpaymettype("");
       cellEditorParams: {
         maxLength: 250,
       },
-        valueFormatter: (params) => {
+      valueFormatter: (params) => {
         if (!params.value) return ""; // Return an empty string if the value is null or undefined
         const date = new Date(params.value);
         const day = date.getDate().toString().padStart(2, "0"); // Get day (padStart ensures double-digit format)
@@ -664,7 +701,7 @@ setselectedpaymettype("");
         maxLength: 250,
       },
     },
-  
+
     {
       headerName: "Keyfield",
       field: "keyfield",
@@ -837,29 +874,50 @@ setselectedpaymettype("");
   // const handleNavigateWithRowData = (selectedRow) => {
   //   navigate("/ADDClientInfo", { state: { mode: "update", selectedRow } });
   // };
+  // const handleNavigateWithRowData = (selectedRow) => {
+  //   navigate("/ADDClientInfo", {
+  //     state: {
+  //       mode: "update",
+  //       selectedRow,
+
+  //       preservedRowData: rowData,
+
+  //       preservedInputs: {
+  //         Client_code,
+  //         Company_or_Personal,
+  //         CompanyName,
+  //         Product,
+  //         Payment,
+  //         address1,
+  //         Last_Payment,
+  //         Phone,
+  //         Payment_Mode,
+  //         Payment_Type,
+  //       },
+  //     },
+  //   });
+  // };
+
   const handleNavigateWithRowData = (selectedRow) => {
-  navigate("/ADDClientInfo", {
-    state: {
-      mode: "update",
-      selectedRow,
-
-      preservedRowData: rowData,
-
-      preservedInputs: {
-        Client_code,
-        Company_or_Personal,
-        CompanyName,
-        Product,
-        Payment,
-        address1,
-        Last_Payment,
-        Phone,
-        Payment_Mode,
-        Payment_Type,
+    navigate("/ADDClientInfo", {
+      state: {
+        mode: "update",
+        keyfield: selectedRow.keyfield,
+        preservedInputs: {
+          Client_code,
+          Company_or_Personal,
+          CompanyName,
+          Product,
+          Payment,
+          address1,
+          Last_Payment,
+          Phone,
+          Payment_Mode,
+          Payment_Type,
+        },
       },
-    },
-  });
-};
+    });
+  };
 
   const onSelectionChanged = () => {
     const selectedNodes = gridApi.getSelectedNodes();
@@ -871,7 +929,7 @@ setselectedpaymettype("");
   const onCellValueChanged = (params) => {
     const updatedRowData = [...rowData];
     const rowIndex = updatedRowData.findIndex(
-      (row) => row.Contact_ID === params.data.Contact_ID && row.Company_code === params.data.Company_code 
+      (row) => row.Contact_ID === params.data.Contact_ID && row.Company_code === params.data.Company_code
     );
     if (rowIndex !== -1) {
       updatedRowData[rowIndex][params.colDef.field] = params.newValue;
@@ -931,7 +989,7 @@ setselectedpaymettype("");
         finally {
           setLoading(false);
         }
-    
+
       },
       () => {
         toast.info("Data updated cancelled.");
@@ -939,7 +997,7 @@ setselectedpaymettype("");
     );
   };
 
-const deleteSelectedRows = async () => {
+  const deleteSelectedRows = async () => {
     const selectedRows = gridApi.getSelectedRows();
     if (selectedRows.length === 0) {
       toast.warning("Please select atleast One Row to Delete");
@@ -1029,7 +1087,7 @@ const deleteSelectedRows = async () => {
   //       }finally {
   //         setLoading(false);
   //       }
-    
+
   //     },
   //     () => {
   //       toast.info("Data Delete cancelled.");
@@ -1071,7 +1129,7 @@ const deleteSelectedRows = async () => {
 
     <div className="container-fluid Topnav-screen">
       <div>
-      {loading && <LoadingScreen />}
+        {loading && <LoadingScreen />}
         <ToastContainer position="top-right" className="toast-design" theme="colored" />
         <div className="shadow-lg p-1 bg-body-tertiary rounded  mb-2 mt-2">
           <div className=" d-flex justify-content-between  ">
@@ -1225,7 +1283,7 @@ const deleteSelectedRows = async () => {
             <div className="col-md-3 form-group">
               <div class="exp-form-floating">
                 <label for="panno" class="exp-form-labels">
-                 Company or Personal 
+                  Company or Personal
                 </label> <input
                   id="panno"
                   className="exp-input-field form-control"
@@ -1243,7 +1301,7 @@ const deleteSelectedRows = async () => {
             <div className="col-md-3 form-group">
               <div class="exp-form-floating">
                 <label for="cusgst" class="exp-form-labels">
-                Company Name 
+                  Company Name
                 </label><input
                   id="cusgst"
                   className="exp-input-field form-control"
@@ -1262,7 +1320,7 @@ const deleteSelectedRows = async () => {
             <div className="col-md-3 form-group">
               <div class="exp-form-floating">
                 <label for="cusaddr1" class="exp-form-labels">
-             Product
+                  Product
                 </label> <input
                   id="cusaddr1"
                   className="exp-input-field form-control"
@@ -1280,7 +1338,7 @@ const deleteSelectedRows = async () => {
             <div className="col-md-3 form-group">
               <div class="exp-form-floating">
                 <label for="cusarcode" class="exp-form-labels">
-          Payment 
+                  Payment
                 </label><input
                   id="cusarcode"
                   className="exp-input-field form-control"
@@ -1298,7 +1356,7 @@ const deleteSelectedRows = async () => {
             <div className="col-md-3 form-group">
               <div class="exp-form-floating">
                 <label for="cusstatcode" class="exp-form-labels">
-                 Address
+                  Address
                 </label><input
                   id="cusstatcode"
                   className="exp-input-field form-control"
@@ -1316,7 +1374,7 @@ const deleteSelectedRows = async () => {
             <div className="col-md-3 form-group">
               <div class="exp-form-floating">
                 <label for="cuscountrycode" class="exp-form-labels">
-           Last Payment
+                  Last Payment
                 </label> <input
                   id="cuscountrycode"
                   className="exp-input-field form-control"
@@ -1334,7 +1392,7 @@ const deleteSelectedRows = async () => {
             <div className="col-md-3 form-group">
               <div class="exp-form-floating">
                 <label for="contactno" class="exp-form-labels">
-              Phone
+                  Phone
                 </label><input
                   id="contactno"
                   className="exp-input-field form-control"
@@ -1352,7 +1410,7 @@ const deleteSelectedRows = async () => {
             <div className="col-md-3 form-group">
               <div class="exp-form-floating">
                 <label class="exp-form-labels">
-                 Payment Mode 
+                  Payment Mode
                 </label>
                 <Select
                   id="status"
@@ -1366,20 +1424,20 @@ const deleteSelectedRows = async () => {
               </div>
             </div>
             <div className="col-md-3 form-group mb-2 ">
-                <div class="exp-form-floating">
-                  <label for="cusweek" class="exp-form-labels">
+              <div class="exp-form-floating">
+                <label for="cusweek" class="exp-form-labels">
                   Payment Type
-                  </label>
-                  <Select
-                    id="officeType"
-                    value={selectedPaymentType}
-                    onChange={handleChangePaymentType}
-                    options={filteredOptionPaymemntType}
-                    className="exp-input-field"
-                    placeholder=""
-                  />
-                </div>
+                </label>
+                <Select
+                  id="officeType"
+                  value={selectedPaymentType}
+                  onChange={handleChangePaymentType}
+                  options={filteredOptionPaymemntType}
+                  className="exp-input-field"
+                  placeholder=""
+                />
               </div>
+            </div>
             <div className="col-md-3 form-group mt-4">
               <div class="exp-form-floating">
                 <div class=" d-flex  justify-content-center">

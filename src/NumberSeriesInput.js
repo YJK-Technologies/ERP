@@ -42,15 +42,84 @@ function NumberSeriesInput({ }) {
   const numpre = useRef(null);
   const [hasValueChanged, setHasValueChanged] = useState(false);
   const created_by = sessionStorage.getItem('selectedUserCode')
-  const [isUpdated, setIsUpdated] = useState(false); 
+  const [isUpdated, setIsUpdated] = useState(false);
 
   console.log(selectedRows);
   console.log(selectedRows);
   const modified_by = sessionStorage.getItem("selectedUserCode");
- 
+
   const location = useLocation();
-  const { mode, selectedRow } = location.state || {};
- 
+  const locationState = location.state || {};
+  const mode = locationState.mode || "create"; // ✅ default fallback
+  const selectedRow = locationState.selectedRow || null;
+  const screenType = location.state?.Screen_Type;
+  const startYear = location.state?.Start_Year;
+  const endYear = location.state?.End_Year;
+  const company_code = sessionStorage.getItem('selectedCompanyCode');
+
+  useEffect(() => {
+    if (!location.state) {
+      clearInputFields(); // ensure fresh create mode
+    }
+  }, []);
+
+  useEffect(() => {
+    if (mode === "update" && screenType && startYear && endYear) {
+      fetchNumberSeriesData();
+    }
+  }, [mode, screenType, startYear, endYear]);
+
+  const fetchNumberSeriesData = async () => {
+    try {
+      setLoading(true);
+
+      const response = await fetch(`${config.apiBaseUrl}/getNumberSeriesData`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          Screen_Type: screenType,
+          Start_Year: startYear,
+          End_Year: endYear,
+          company_code
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.length > 0) {
+        const numberSeries = data[0];
+
+        setStart_Year(numberSeries.Start_Year || "");
+        setEnd_Year(numberSeries.End_Year || "");
+        setStart_No(numberSeries.Start_No || "");
+        setRunning_No(numberSeries.Running_No || "");
+        setEnd_No(numberSeries.End_No || "");
+        secomtext(numberSeries.comtext || "");
+        setScreen_Type(numberSeries.Screen_Type || "");
+        setStatus(numberSeries.Status || "");
+        setNumber_prefix(numberSeries.number_prefix || "");
+        setselectedscreentype({
+          label: numberSeries.Screen_Type,
+          value: numberSeries.Screen_Type,
+        });
+        setselectedStatus({
+          label: numberSeries.Status,
+          value: numberSeries.Status,
+        });
+        setselectedBoolean({
+          label: numberSeries.number_prefix,
+          value: numberSeries.number_prefix,
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch number series details");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const clearInputFields = () => {
     setStart_Year("");
@@ -59,64 +128,65 @@ function NumberSeriesInput({ }) {
     setRunning_No("");
     setEnd_No("");
     setScreen_Type("");
-    setStatus(null);
-    setNumber_prefix(null);
+    setStatus("");
+    setNumber_prefix("");
     secomtext("");
-   
+    setselectedscreentype("");
+    setselectedStatus("");
+    setselectedBoolean("");
   }
 
- useEffect(() => {
-    if (mode === "update" && selectedRow && !isUpdated) {
-      setStart_Year(selectedRow.Start_Year || "");
-      setEnd_Year(selectedRow.End_Year || "");
-      setStart_No(selectedRow.Start_No || "");
-      setRunning_No(selectedRow.Running_No || "");
-      setEnd_No(selectedRow.End_No || "");
-      secomtext(selectedRow.comtext || "");
-      setScreen_Type(selectedRow.Screen_Type || "");
-      setStatus(selectedRow.Status || "");
-      setNumber_prefix(selectedRow.number_prefix || "");
-      
+  // useEffect(() => {
+  //   if (mode === "update" && selectedRow && !isUpdated) {
+  //     setStart_Year(selectedRow.Start_Year || "");
+  //     setEnd_Year(selectedRow.End_Year || "");
+  //     setStart_No(selectedRow.Start_No || "");
+  //     setRunning_No(selectedRow.Running_No || "");
+  //     setEnd_No(selectedRow.End_No || "");
+  //     secomtext(selectedRow.comtext || "");
+  //     setScreen_Type(selectedRow.Screen_Type || "");
+  //     setStatus(selectedRow.Status || "");
+  //     setNumber_prefix(selectedRow.number_prefix || "");
 
-      setselectedscreentype({
-        label: selectedRow.Screen_Type,
-        value: selectedRow.Screen_Type,
-      });
 
-      setselectedStatus({
-        label: selectedRow.Status,
-        value: selectedRow.status,
-      });
-      setStatus(selectedRow.status||'')
+  //     setselectedscreentype({
+  //       label: selectedRow.Screen_Type,
+  //       value: selectedRow.Screen_Type,
+  //     });
 
-      setselectedBoolean({
-        label: selectedRow.number_prefix,
-        value: selectedRow.number_prefix,
-      });
-      setNumber_prefix(selectedRow.number_prefix||'')
-      
- 
-    } else if (mode === "create") {
-      clearInputFields();
-    }
-  }, [mode, selectedRow, isUpdated]);
+  //     setselectedStatus({
+  //       label: selectedRow.Status,
+  //       value: selectedRow.status,
+  //     });
+  //     setStatus(selectedRow.status || '')
 
+  //     setselectedBoolean({
+  //       label: selectedRow.number_prefix,
+  //       value: selectedRow.number_prefix,
+  //     });
+  //     setNumber_prefix(selectedRow.number_prefix || '')
+
+
+  //   } else if (mode === "create") {
+  //     clearInputFields();
+  //   }
+  // }, [mode, selectedRow, isUpdated]);
 
   const handleUpdate = async () => {
     if (
-      
+
       !Start_Year ||
       !End_Year ||
       !Start_No ||
       !Running_No ||
       !End_No ||
-      !comtext 
-      
-    )  {
-        setError(" ");
-        toast.warning("Missing Required Fields");
-        return;
-         }
+      !comtext
+
+    ) {
+      setError(" ");
+      toast.warning("Missing Required Fields");
+      return;
+    }
     setLoading(true);
 
     try {
@@ -126,33 +196,33 @@ function NumberSeriesInput({ }) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-         
+
           company_code: sessionStorage.getItem('selectedCompanyCode'),
-          Screen_Type:selectedscreentype.value,
-          Start_Year:Start_Year,
-          End_Year:End_Year,
-          Running_No:Running_No,
-          Start_No:Start_No,
-          End_No:End_No,
+          Screen_Type: selectedscreentype.value,
+          Start_Year: Start_Year,
+          End_Year: End_Year,
+          Running_No: Running_No,
+          Start_No: Start_No,
+          End_No: End_No,
           text: comtext,
           number_prefix: number_prefix,
           Status: status,
           modified_by,
         }),
       });
-     if (response.ok) {
-                        toast.success("Data updated successfully", {
-                          // onClose: () => clearInputFields()
-                        });
+      if (response.ok) {
+        toast.success("Data updated successfully", {
+          // onClose: () => clearInputFields()
+        });
       }
-       else if (response.status === 400) {
+      else if (response.status === 400) {
         const errorResponse = await response.json();
         console.error(errorResponse.message);
         toast.warning(errorResponse.message);
-      } 
+      }
       else {
         console.error("Failed to insert data");
-        toast.error( "Failed to Update data");
+        toast.error("Failed to Update data");
       }
     } catch (error) {
       console.error("Error Update data:", error);
@@ -165,24 +235,24 @@ function NumberSeriesInput({ }) {
 
 
 
-   useEffect(() => {
-     const company_code = sessionStorage.getItem('selectedCompanyCode');
-     
-     fetch(`${config.apiBaseUrl}/screentype`, {
-       method: 'POST',
-       headers: {
-         'Content-Type': 'application/json',
-       },
-       body: JSON.stringify({ company_code })
-     })
-       .then((data) => data.json())
-       .then((val) => setscreentypedrop(val));
-   }, []);
- 
-     
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
+    fetch(`${config.apiBaseUrl}/screentype`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ company_code })
+    })
+      .then((data) => data.json())
+      .then((val) => setscreentypedrop(val));
+  }, []);
+
+
+  useEffect(() => {
+    const company_code = sessionStorage.getItem('selectedCompanyCode');
+
     fetch(`${config.apiBaseUrl}/status`, {
       method: 'POST',
       headers: {
@@ -198,7 +268,7 @@ function NumberSeriesInput({ }) {
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/getboolean`, {
       method: 'POST',
       headers: {
@@ -254,29 +324,29 @@ function NumberSeriesInput({ }) {
   const handleChangescreentype = (selectedscreentype) => {
     setselectedscreentype(selectedscreentype);
     setScreen_Type(selectedscreentype ? selectedscreentype.value : '');
-      
+
   };
 
   const handleChangeStatus = (selectedStatus) => {
     setselectedStatus(selectedStatus);
     setStatus(selectedStatus ? selectedStatus.value : '');
-      
+
   };
 
   const handleChangeBoolean = (selectedBoolean) => {
     setselectedBoolean(selectedBoolean);
     setNumber_prefix(selectedBoolean ? selectedBoolean.value : '');
-      
+
   };
 
   const handleInsert = async () => {
     if (
       !Screen_Type
     ) {
-          setError(" ");
-          toast.warning("Missing Required Fields");
-          return;
-        }
+      setError(" ");
+      toast.warning("Missing Required Fields");
+      return;
+    }
     setLoading(true);
 
     try {
@@ -299,45 +369,45 @@ function NumberSeriesInput({ }) {
           created_by: sessionStorage.getItem('selectedUserCode')
         }),
       });
-     if (response.ok) {
-                        toast.success("Data inserted Successfully", {
-                          onClose: () => clearInputFields()
-                        });
+      if (response.ok) {
+        toast.success("Data inserted Successfully", {
+          onClose: () => clearInputFields()
+        });
 
       } else if (response.status === 400) {
         const errorResponse = await response.json();
         console.error(errorResponse.message);
         //setError(errorResponse.error);
         toast.warning(errorResponse.message, {
-          
+
         });
       } else {
         console.error("Failed to insert data");
         // Show generic error message using SweetAlert
         toast.error('Failed to insert data', {
-          
+
         });
       }
     } catch (error) {
       console.error("Error inserting data:", error);
       // Show error message using SweetAlert
       toast.error('Error inserting data: ' + error.message, {
-       
+
       });
-    }   finally {
+    } finally {
       setLoading(false);
     }
   };
+
   const handleNavigate = () => {
-  navigate("/NumberSeries", {
-    state: {
-      preservedRowData: location.state?.preservedRowData,
-      preservedInputs: location.state?.preservedInputs
-    }
-  });
-};
-
-
+    navigate("/NumberSeries", {
+      state: {
+        refreshGrid: true,
+        // preservedRowData: location.state?.preservedRowData,
+        preservedInputs: location.state?.preservedInputs
+      }
+    });
+  };
 
   const handleKeyDown = async (e, nextFieldRef, value, hasValueChanged, setHasValueChanged) => {
     if (e.key === 'Enter') {
@@ -365,279 +435,279 @@ function NumberSeriesInput({ }) {
 
   return (
     <div class="container-fluid Topnav-screen ">
-       <div className="">
-    <div class="">
-                      {loading && <LoadingScreen />}
-        
-        <ToastContainer position="top-right" className="toast-design" theme="colored" />
-              <div className="shadow-lg p-0 bg-body-tertiary rounded ">
-                <div className=" mb-0 d-flex justify-content-between" >
-                <h1 align="left" class="purbut" >{mode === "update"?'Update Number Series ':'Add Number Series'} </h1>
-                <h1 align="left" class="fs-4 mobileview" >{mode === "update"?'Update Number Series ':'Add Number Series'} </h1>
+      <div className="">
+        <div class="">
+          {loading && <LoadingScreen />}
+
+          <ToastContainer position="top-right" className="toast-design" theme="colored" />
+          <div className="shadow-lg p-0 bg-body-tertiary rounded ">
+            <div className=" mb-0 d-flex justify-content-between" >
+              <h1 align="left" class="purbut" >{mode === "update" ? 'Update Number Series ' : 'Add Number Series'} </h1>
+              <h1 align="left" class="fs-4 mobileview" >{mode === "update" ? 'Update Number Series ' : 'Add Number Series'} </h1>
               <button onClick={handleNavigate} className=" btn btn-danger shadow-none rounded-0 h-70 fs-5" required title="Close">
-              <i class="fa-solid fa-xmark"></i>
+                <i class="fa-solid fa-xmark"></i>
               </button>
             </div>
-              </div>
-        <div class="pt-2 mb-4">
-          <div className="shadow-lg p-3 bg-body-tertiary rounded  mb-2">
-            <div class="row">
-            <div className="col-md-3 form-group">
-            
-            <div class="exp-form-floating">
-            <div class="d-flex justify-content-start">
-                <div>
-                   <label for="state" class="exp-form-labels">
-                 Screen Type
-                  
-                </label>
-                </div>
-                <div>
-                  <span className="text-danger">*</span>
-                  </div>
-                </div>
-                <div title="Select the Screen Type">
-              <Select
-                id="status"
-                value={selectedscreentype}
-                onChange={handleChangescreentype}
-                options={filteredOptionscreentype}
-                className="exp-input-field "
-                placeholder=""
-                required title="Please select a screen type"
-                ref={screentype}
-                readOnly={mode === "update"}
-                isDisabled={mode === "update"}
-                onKeyDown={(e) => handleKeyDown(e, startyear, screentype)}
-              />
-              {error && !Screen_Type && <div className="text-danger">Screen Type should not be blank</div>}
-            </div>
-            </div>
           </div>
-            <div className="col-md-3 form-group">
-              <div class="exp-form-floating">
-              <div class="d-flex justify-content-start">
-                <div>
-                   <label for="state" class="exp-form-labels">
-                 Start Year
-                  
-                </label>
-                </div>
-                <div>
-                  <span className="text-danger">*</span>
-                  </div>
-                </div><input
-                  id="acc"
-                  class="exp-input-field form-control"
-                  type="date"
-                  placeholder=""
-                  required title="Please enter the start year"
-                  value={Start_Year}
-                  onChange={(e) => setStart_Year
-                  (e.target.value)}
-                  maxLength={9}
-                  // readOnly
-                  ref={startyear}
-                  onKeyDown={(e) => handleKeyDown(e, endyear, startyear)}
-                />{error && !Start_Year && <div className="text-danger">Start Year should not be blank</div>}
+          <div class="pt-2 mb-4">
+            <div className="shadow-lg p-3 bg-body-tertiary rounded  mb-2">
+              <div class="row">
+                <div className="col-md-3 form-group">
 
-               
-              </div>
-            </div>
-            <div className="col-md-3 form-group">
-              <div class="exp-form-floating">
-              <div class="d-flex justify-content-start">
-                <div>
-                   <label for="state" class="exp-form-labels">
-                 End Year
-                  
-                </label>
-                </div>
-                <div>
-                  <span className="text-danger">*</span>
-                  </div>
-                </div><input
-                  id="acc"
-                  class="exp-input-field form-control"
-                  type="date"
-                  placeholder=""
-                  required title="Please enter the end year"
-                  value={End_Year}
-                  onChange={(e) => setEnd_Year
-                  (e.target.value)}
-                  maxLength={9}
-                  // readOnly
-                  ref={endyear}
-                  onKeyDown={(e) => handleKeyDown(e, strtno, endyear)}
-                />{error && !End_Year && <div className="text-danger">End Year should not be blank</div>}
+                  <div class="exp-form-floating">
+                    <div class="d-flex justify-content-start">
+                      <div>
+                        <label for="state" class="exp-form-labels">
+                          Screen Type
 
-               
-              </div>
-            </div>
-            <div className="col-md-3 form-group">
-              <div class="exp-form-floating">
-              <div class="d-flex justify-content-start">
-                <div>
-                   <label for="state" class="exp-form-labels">
-                 Start No
-                  
-                </label>
-                </div>
-                <div>
-                  <span className="text-danger">*</span>
-                  </div>
-                </div><input
-                  id="acc"
-                  class="exp-input-field form-control"
-                  type="number"
-                  placeholder=""
-                  required title="Please enter the start number"
-                  value={Start_No}
-                  onChange={(e) => setStart_No
-                  (e.target.value)}
-                  maxLength={9}
-                  ref={strtno}
-                  onKeyDown={(e) => handleKeyDown(e, runno, strtno)}
-                />{error && !Start_No && <div className="text-danger">Start No should not be blank</div>}
-
-               
-              </div>
-            </div>
-            <div className="col-md-3 form-group">
-              <div class="exp-form-floating">
-              <div class="d-flex justify-content-start">
-                <div>
-                   <label for="state" class="exp-form-labels">
-                 Running No
-                  
-                </label>
-                </div>
-                <div>
-                  <span className="text-danger">*</span>
-                  </div>
-                </div><input
-                  id="acc"
-                  class="exp-input-field form-control"
-                  type="number"
-                  placeholder=""
-                  required title="Please enter the running number"
-                  value={Running_No}
-                  onChange={(e) => setRunning_No
-                  (e.target.value)}
-                  maxLength={9}
-                  ref={runno}
-                  onKeyDown={(e) => handleKeyDown(e, endno, runno)}
-                />{error && !Running_No && <div className="text-danger">Running No should not be blank</div>}
-
-               
-              </div>
-            </div>
-            <div className="col-md-3 form-group">
-              <div class="exp-form-floating">
-              <div class="d-flex justify-content-start">
-                <div>
-                   <label for="state" class="exp-form-labels">
-                 End No
-                  
-                </label>
-                </div>
-                <div>
-                  <span className="text-danger">*</span>
-                  </div>
-                </div><input
-                  id="acc"
-                  class="exp-input-field form-control"
-                  type="number"
-                  placeholder=""
-                  required title="Please enter the end number"
-                  value={End_No}
-                  onChange={(e) => setEnd_No
-                  (e.target.value)}
-                  maxLength={9}
-                  ref={endno}
-                  onKeyDown={(e) => handleKeyDown(e, text, endno)}
-                />{error && !End_No && <div className="text-danger">End No should not be blank</div>}
-
-               
-              </div>
-            </div>
-            <div className="col-md-3 form-group mb-2">
-            <label for="text">
-             Text
-            </label>
-            <span className="text-danger">*</span>
-            <div class="exp-form-floating">
-              <input
-                className="exp-input-field form-control"
-                id='party_code'
-                required
-                value={comtext}
-                onChange={(e) => secomtext
-                  (e.target.value)}
-                autoComplete="off"
-                type="text"
-                ref={text}
-                onKeyDown={(e) => handleKeyDown(e,Status,text)}
-              />
-               {error && !comtext  && <div className="text-danger">Text should not be blank</div>}
-            </div>
-          </div>
-          <div className="col-md-3 form-group">
-            
-            <div class="exp-form-floating">
-            <div class="d-flex justify-content-start">
-                <div>
-                   <label for="state" class="exp-form-labels">
-                 Status
-                  
-                </label>
-                </div>
-                <div>
-                  <span className="text-danger">*</span>
+                        </label>
+                      </div>
+                      <div>
+                        <span className="text-danger">*</span>
+                      </div>
+                    </div>
+                    <div title="Select the Screen Type">
+                      <Select
+                        id="status"
+                        value={selectedscreentype}
+                        onChange={handleChangescreentype}
+                        options={filteredOptionscreentype}
+                        className="exp-input-field "
+                        placeholder=""
+                        required title="Please select a screen type"
+                        ref={screentype}
+                        readOnly={mode === "update"}
+                        isDisabled={mode === "update"}
+                        onKeyDown={(e) => handleKeyDown(e, startyear, screentype)}
+                      />
+                      {error && !Screen_Type && <div className="text-danger">Screen Type should not be blank</div>}
+                    </div>
                   </div>
                 </div>
-                                <div title="Select the Status">
+                <div className="col-md-3 form-group">
+                  <div class="exp-form-floating">
+                    <div class="d-flex justify-content-start">
+                      <div>
+                        <label for="state" class="exp-form-labels">
+                          Start Year
 
-              <Select
-                 id="status"
-                 value={selectedStatus}
-                 onChange={handleChangeStatus}
-                 options={filteredOptionStatus}
-                 className="exp-input-field"
-                 placeholder=""
-                 ref={Status}
-                required title="Please select a status"
-                onKeyDown={(e) => handleKeyDown(e,numpre,Status)}
-              />
-              {error && !selectedStatus  && <div className="text-danger">Status should not be blank</div>}
-            </div>
-          </div>
-          </div>
-          <div className="col-md-3 form-group">
-            
-            <div class="exp-form-floating">
-            <div class="d-flex justify-content-start">
-                <div>
-                   <label for="state" class="exp-form-labels">
-                 Number Prefix
-                  
-                </label>
+                        </label>
+                      </div>
+                      <div>
+                        <span className="text-danger">*</span>
+                      </div>
+                    </div><input
+                      id="acc"
+                      class="exp-input-field form-control"
+                      type="date"
+                      placeholder=""
+                      required title="Please enter the start year"
+                      value={Start_Year}
+                      onChange={(e) => setStart_Year
+                        (e.target.value)}
+                      maxLength={9}
+                      // readOnly
+                      ref={startyear}
+                      onKeyDown={(e) => handleKeyDown(e, endyear, startyear)}
+                    />{error && !Start_Year && <div className="text-danger">Start Year should not be blank</div>}
+
+
+                  </div>
                 </div>
-                {/* <div>
+                <div className="col-md-3 form-group">
+                  <div class="exp-form-floating">
+                    <div class="d-flex justify-content-start">
+                      <div>
+                        <label for="state" class="exp-form-labels">
+                          End Year
+
+                        </label>
+                      </div>
+                      <div>
+                        <span className="text-danger">*</span>
+                      </div>
+                    </div><input
+                      id="acc"
+                      class="exp-input-field form-control"
+                      type="date"
+                      placeholder=""
+                      required title="Please enter the end year"
+                      value={End_Year}
+                      onChange={(e) => setEnd_Year
+                        (e.target.value)}
+                      maxLength={9}
+                      // readOnly
+                      ref={endyear}
+                      onKeyDown={(e) => handleKeyDown(e, strtno, endyear)}
+                    />{error && !End_Year && <div className="text-danger">End Year should not be blank</div>}
+
+
+                  </div>
+                </div>
+                <div className="col-md-3 form-group">
+                  <div class="exp-form-floating">
+                    <div class="d-flex justify-content-start">
+                      <div>
+                        <label for="state" class="exp-form-labels">
+                          Start No
+
+                        </label>
+                      </div>
+                      <div>
+                        <span className="text-danger">*</span>
+                      </div>
+                    </div><input
+                      id="acc"
+                      class="exp-input-field form-control"
+                      type="number"
+                      placeholder=""
+                      required title="Please enter the start number"
+                      value={Start_No}
+                      onChange={(e) => setStart_No
+                        (e.target.value)}
+                      maxLength={9}
+                      ref={strtno}
+                      onKeyDown={(e) => handleKeyDown(e, runno, strtno)}
+                    />{error && !Start_No && <div className="text-danger">Start No should not be blank</div>}
+
+
+                  </div>
+                </div>
+                <div className="col-md-3 form-group">
+                  <div class="exp-form-floating">
+                    <div class="d-flex justify-content-start">
+                      <div>
+                        <label for="state" class="exp-form-labels">
+                          Running No
+
+                        </label>
+                      </div>
+                      <div>
+                        <span className="text-danger">*</span>
+                      </div>
+                    </div><input
+                      id="acc"
+                      class="exp-input-field form-control"
+                      type="number"
+                      placeholder=""
+                      required title="Please enter the running number"
+                      value={Running_No}
+                      onChange={(e) => setRunning_No
+                        (e.target.value)}
+                      maxLength={9}
+                      ref={runno}
+                      onKeyDown={(e) => handleKeyDown(e, endno, runno)}
+                    />{error && !Running_No && <div className="text-danger">Running No should not be blank</div>}
+
+
+                  </div>
+                </div>
+                <div className="col-md-3 form-group">
+                  <div class="exp-form-floating">
+                    <div class="d-flex justify-content-start">
+                      <div>
+                        <label for="state" class="exp-form-labels">
+                          End No
+
+                        </label>
+                      </div>
+                      <div>
+                        <span className="text-danger">*</span>
+                      </div>
+                    </div><input
+                      id="acc"
+                      class="exp-input-field form-control"
+                      type="number"
+                      placeholder=""
+                      required title="Please enter the end number"
+                      value={End_No}
+                      onChange={(e) => setEnd_No
+                        (e.target.value)}
+                      maxLength={9}
+                      ref={endno}
+                      onKeyDown={(e) => handleKeyDown(e, text, endno)}
+                    />{error && !End_No && <div className="text-danger">End No should not be blank</div>}
+
+
+                  </div>
+                </div>
+                <div className="col-md-3 form-group mb-2">
+                  <label for="text">
+                    Text
+                  </label>
+                  <span className="text-danger">*</span>
+                  <div class="exp-form-floating">
+                    <input
+                      className="exp-input-field form-control"
+                      id='party_code'
+                      required
+                      value={comtext}
+                      onChange={(e) => secomtext
+                        (e.target.value)}
+                      autoComplete="off"
+                      type="text"
+                      ref={text}
+                      onKeyDown={(e) => handleKeyDown(e, Status, text)}
+                    />
+                    {error && !comtext && <div className="text-danger">Text should not be blank</div>}
+                  </div>
+                </div>
+                <div className="col-md-3 form-group">
+
+                  <div class="exp-form-floating">
+                    <div class="d-flex justify-content-start">
+                      <div>
+                        <label for="state" class="exp-form-labels">
+                          Status
+
+                        </label>
+                      </div>
+                      <div>
+                        <span className="text-danger">*</span>
+                      </div>
+                    </div>
+                    <div title="Select the Status">
+
+                      <Select
+                        id="status"
+                        value={selectedStatus}
+                        onChange={handleChangeStatus}
+                        options={filteredOptionStatus}
+                        className="exp-input-field"
+                        placeholder=""
+                        ref={Status}
+                        required title="Please select a status"
+                        onKeyDown={(e) => handleKeyDown(e, numpre, Status)}
+                      />
+                      {error && !selectedStatus && <div className="text-danger">Status should not be blank</div>}
+                    </div>
+                  </div>
+                </div>
+                <div className="col-md-3 form-group">
+
+                  <div class="exp-form-floating">
+                    <div class="d-flex justify-content-start">
+                      <div>
+                        <label for="state" class="exp-form-labels">
+                          Number Prefix
+
+                        </label>
+                      </div>
+                      {/* <div>
                   <span className="text-danger">*</span>
                   </div> */}
-                </div>
-                <div title="Select the Number Prefix">
-              <Select
-                 id="numpref"
-                 value={selectedBoolean}
-                 onChange={handleChangeBoolean}
-                 options={filteredOptionBoolean}
-                 className="exp-input-field"
-                 placeholder=""
-                 required title="Please select a Number Prefix status"
-                 ref={numpre}
-                 onKeyDown={(e) => {
+                    </div>
+                    <div title="Select the Number Prefix">
+                      <Select
+                        id="numpref"
+                        value={selectedBoolean}
+                        onChange={handleChangeBoolean}
+                        options={filteredOptionBoolean}
+                        className="exp-input-field"
+                        placeholder=""
+                        required title="Please select a Number Prefix status"
+                        ref={numpre}
+                        onKeyDown={(e) => {
                           if (e.key === 'Enter') {
                             if (mode === "create") {
                               handleInsert();
@@ -646,12 +716,12 @@ function NumberSeriesInput({ }) {
                             }
                           }
                         }}
-              />
-              {error && !selectedBoolean && <div className="text-danger">Number Prefix Status should not be blank</div>}
-            </div>
-            </div>
-          </div>
-          {/* <div className="col-md-3 form-group  mb-2">
+                      />
+                      {error && !selectedBoolean && <div className="text-danger">Number Prefix Status should not be blank</div>}
+                    </div>
+                  </div>
+                </div>
+                {/* <div className="col-md-3 form-group  mb-2">
           {mode === "create" ? (
                 <div class="exp-form-floating">
                   <div class="d-flex justify-content-start">
@@ -691,26 +761,26 @@ function NumberSeriesInput({ }) {
             </div>
                 )}
           </div> */}
-            
-          <div class="col-md-3 form-group">
-                {mode === "create" ? (
-                  <button onClick={handleInsert} className="mt-4" title="Save">
-                                        <i class="fa-solid fa-floppy-disk"></i>
 
-                  </button>
-                ) : (
-                  <button onClick={handleUpdate}className="mt-4" title="Update">
-                                        <i class="fa-solid fa-floppy-disk"></i>
+                <div class="col-md-3 form-group">
+                  {mode === "create" ? (
+                    <button onClick={handleInsert} className="mt-4" title="Save">
+                      <i class="fa-solid fa-floppy-disk"></i>
 
-                  </button>
-                )}
+                    </button>
+                  ) : (
+                    <button onClick={handleUpdate} className="mt-4" title="Update">
+                      <i class="fa-solid fa-floppy-disk"></i>
+
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
-    </div>
-    </div>
-    
+      </div>
+
     </div>
   );
 }
