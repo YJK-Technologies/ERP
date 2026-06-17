@@ -28,25 +28,73 @@ function DepartmentInput({ }) {
   const [hasValueChanged, setHasValueChanged] = useState(false);
 
   const location = useLocation();
-  const { mode, selectedRow } = location.state || {};
-  console.log(selectedRow);
+  const locationState = location.state || {};
+  const mode = locationState.mode || "create"; // ✅ default fallback
+  const selectedRow = locationState.selectedRow || null;
+  const keyfields = location.state?.key_field;
+  const company_code = sessionStorage.getItem('selectedCompanyCode');
+
+  useEffect(() => {
+    if (!location.state) {
+      clearInputFields(); // ensure fresh create mode
+    }
+  }, []);
+
+  useEffect(() => {
+    if (mode === "update" && keyfields) {
+      fetchDepartmentData();
+    }
+  }, [mode, keyfields]);
+
+  const fetchDepartmentData = async () => {
+    try {
+      setLoading(true);
+
+      const response = await fetch(`${config.apiBaseUrl}/getDepartmentData`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          key_field: keyfields,
+          company_code
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.length > 0) {
+        const department = data[0];
+
+        setDepartmentCode(department.dept_id || "");
+        setDepartmenntName(department.dept_name || "");
+        setkey_field(department.key_field || "");
+
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch department details");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const clearInputFields = () => {
     setDepartmentCode("");
     setDepartmenntName("");
   };
 
-  useEffect(() => {
-    if (mode === "update" && selectedRow && !isUpdated) {
+  // useEffect(() => {
+  //   if (mode === "update" && selectedRow && !isUpdated) {
 
-      setDepartmentCode(selectedRow.dept_id || "");
-      setDepartmenntName(selectedRow.dept_name || "");
-      setkey_field(selectedRow.key_field || "");
+  //     setDepartmentCode(selectedRow.dept_id || "");
+  //     setDepartmenntName(selectedRow.dept_name || "");
+  //     setkey_field(selectedRow.key_field || "");
 
-    } else if (mode === "create") {
-      clearInputFields();
-    }
-  }, [mode, selectedRow, isUpdated]);
+  //   } else if (mode === "create") {
+  //     clearInputFields();
+  //   }
+  // }, [mode, selectedRow, isUpdated]);
 
   const handleInsert = async () => {
     if (!departmentCode || !departmenntName) {
@@ -68,10 +116,10 @@ function DepartmentInput({ }) {
           created_by: sessionStorage.getItem("selectedUserCode"),
         }),
       });
-        if (response.ok) {
-                         toast.success("Data inserted Successfully", {
-                           onClose: () => clearInputFields()
-                         });
+      if (response.ok) {
+        toast.success("Data inserted Successfully", {
+          onClose: () => clearInputFields()
+        });
       } else if (response.status === 400) {
         const errorResponse = await response.json();
         console.error(errorResponse.message);
@@ -125,13 +173,14 @@ function DepartmentInput({ }) {
   };
 
   const handleNavigatesToForm = () => {
-  navigate("/Department", {
-    state: {
-      preservedRowData: location.state?.preservedRowData,
-      preservedInputs: location.state?.preservedInputs
-    }
-  });
-};
+    navigate("/Department", {
+      state: {
+        refreshGrid: true,
+        // preservedRowData: location.state?.preservedRowData,
+        preservedInputs: location.state?.preservedInputs
+      }
+    });
+  };
 
   const handleUpdate = async () => {
     if (!departmentCode || !departmenntName) {
@@ -154,10 +203,10 @@ function DepartmentInput({ }) {
           modified_by,
         }),
       });
-        if (response.ok) {
-                          toast.success("Data updated successfully", {
-                            // onClose: () => clearInputFields()
-                          });
+      if (response.ok) {
+        toast.success("Data updated successfully", {
+          // onClose: () => clearInputFields()
+        });
       } else if (response.status === 400) {
         const errorResponse = await response.json();
         console.error(errorResponse.message);
@@ -264,14 +313,14 @@ function DepartmentInput({ }) {
                       onChange={(e) => setDepartmenntName(e.target.value)}
                       ref={Name}
                       onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            if (mode === "create") {
-                              handleInsert();
-                            } else {
-                              handleUpdate();
-                            }
+                        if (e.key === 'Enter') {
+                          if (mode === "create") {
+                            handleInsert();
+                          } else {
+                            handleUpdate();
                           }
-                        }}
+                        }
+                      }}
                     />
                     {error && !departmenntName && (
                       <div className="text-danger">
@@ -288,7 +337,7 @@ function DepartmentInput({ }) {
                     </button>
                   ) : (
                     <button onClick={handleUpdate} className="mt-4" title="Update">
-                      <i class="fa-solid fa-floppy-disk"></i>
+                      <i class="fa-solid fa-pen-to-square"></i>
                     </button>
                   )}
                 </div>
