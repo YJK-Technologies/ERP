@@ -8,6 +8,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import './apps.css'
 import Select from 'react-select'
 import LoadingScreen from './Loading';
+import DefaultProductImage from "./DefaultIMG/Product.png";
 
 const config = require('./Apiconfig');
 
@@ -1083,6 +1084,7 @@ function Input({ }) {
                   </div>
                   </div>
                 </div>
+              <div class="row">
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
                     <label for="locno" class="exp-form-labels">
@@ -1097,7 +1099,7 @@ function Input({ }) {
                     />
                   </div>
                 </div>
-                {selectedImage && (
+                {/* {selectedImage && (
                   <div className="col-md-3 form-group mb-2">
                     <div class="exp-form-floating">
                       <img
@@ -1108,7 +1110,17 @@ function Input({ }) {
                       />
                     </div>
                   </div>
-                )}
+                )} */}
+                <div className="col-md-3 form-group mb-2">
+
+                  <div className="image-preview-frame">
+                    <img
+                      src={selectedImage || DefaultProductImage}
+                      alt="Selected Preview"
+                      className="preview-image"
+                    />
+                  </div>
+                </div>
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
                     <label for="locno" class="exp-form-labels">
@@ -1132,7 +1144,7 @@ function Input({ }) {
                     />
                   </div>
                 </div>
-                {selectedSignatureImage && (
+                {/* {selectedSignatureImage && (
                   <div className="col-md-3 form-group mb-2">
                     <div class="exp-form-floating">
                       <img
@@ -1143,7 +1155,18 @@ function Input({ }) {
                       />
                     </div>
                   </div>
-                )}
+                )} */}
+                <div className="col-md-3 form-group mb-2">
+
+                  <div className="image-preview-frame">
+                    <img
+                      src={selectedSignatureImage || DefaultProductImage}
+                      alt="Selected Preview"
+                      className="preview-image"
+                    />
+                  </div>
+                </div>
+                </div>
                 {/* <div className="col-md-3 form-group  mb-2">
                   {mode === "create" ? (
                     <div class="exp-form-floating">
@@ -1185,7 +1208,7 @@ function Input({ }) {
                     </div>
                   )}
                 </div> */}
-                <div class="col-md-3 form-group d-flex justify-content-start mb-4">
+                <div class="col-md-3 form-group">
                   {mode === "create" ? (
                     <button onClick={handleInsert} className="mt-4" title="Save">
                       <i class="fa-solid fa-floppy-disk"></i>

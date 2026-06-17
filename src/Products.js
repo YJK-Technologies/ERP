@@ -21,6 +21,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
 import { showConfirmationToast } from './ToastConfirmation';
 import ProductImagePopup from './ProductImageUpdate'
+import DefaultProductImage from "./DefaultIMG/Product.png";
 import LoadingScreen from './Loading';
 
 const config = require('./Apiconfig');
@@ -59,7 +60,7 @@ const Product = () => {
   const [selectedsaltax, setselectedsaltax] = useState('');
   const [Item_sales_Othertax_type, setItem_sales_Othertax_type] = useState('');
   const [Othersaltaxdrop, setOthersaltaxdrop] = useState('');
-  const [selectedImage, setSelectedImage] = useState('default-placeholder.png');
+  const [selectedImage, setSelectedImage] = useState(DefaultProductImage);
   const [updateButtonVisible, setUpdateButtonVisible] = useState(false);
     const [loading, setLoading] = useState(false);
   const [additionalData, setAdditionalData] = useState({
@@ -1493,14 +1494,14 @@ const Product = () => {
                           justifyContent: "center",
                         }}>
                           <img
-                            src={selectedImage || 'default-placeholder.png'}
+                            src={selectedImage || DefaultProductImage}
                             alt="Preview"
                             style={{
                               height: "120%",
                               width: "120%",
-                              objectFit: "fill"
+                              objectFit: "fill",
                             }}
-				onClick={handleClick}
+                            onClick={handleClick}
                           />
                         </div>
                       </div>
@@ -1520,12 +1521,12 @@ const Product = () => {
                           justifyContent: "center",
                         }}>
                           <img
-                            src={selectedImage || 'default-placeholder.png'}
+                            src={selectedImage || DefaultProductImage}
                             alt="Preview"
                             style={{
                               height: "120%",
                               width: "120%",
-                              objectFit: "fill"
+                              objectFit: "fill",
                             }}
                           />
                         </div>
