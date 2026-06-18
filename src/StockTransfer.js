@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
@@ -770,7 +769,8 @@ finally {
   const handleSaveButtonClick = async () => {
     if (!transactionDate) {
       setError(" ");
-      setStatus('Error: Missing required fields');
+      // setStatus('Error: Missing required fields');
+      toast.warning('Error: Missing required fields');
       return;
     }
 
@@ -795,6 +795,7 @@ finally {
         transaction_date: transactionDate,
         created_by: sessionStorage.getItem('selectedUserCode'),
         company_code: sessionStorage.getItem('selectedCompanyCode'),
+        Location_Code: sessionStorage.getItem("selectedLocationCode"),
       };
 
       const response = await fetch(`${config.apiBaseUrl}/addstocktransferhdr`, {
@@ -842,6 +843,7 @@ finally {
         const Details = {
           created_by: sessionStorage.getItem('selectedUserCode'),
           company_code: sessionStorage.getItem('selectedCompanyCode'),
+          Location_Code: sessionStorage.getItem("selectedLocationCode"),
           ItemSNo: row.serialNumber,
           transaction_no: transaction_no.toString(),
           item_code: row.itemCode,
@@ -886,7 +888,10 @@ finally {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ transaction_no: new_running_no.toString() })
+        body: JSON.stringify({ transaction_no: new_running_no.toString() ,
+          company_code: sessionStorage.getItem("selectedCompanyCode"),
+          Location_Code: sessionStorage.getItem("selectedLocationCode"),
+        })
       });
 
       if (response.ok) {
@@ -1104,22 +1109,26 @@ finally {
 
 
 
-  const handleTransactionDateChange = (date) => {
-    // Check if 'date' is a valid object and has day, month, year or is a Date object
-    if (date && typeof date === 'object') {
-      const day = date.day || date.getDate();  // Handle if it's {day, month, year} or Date object
-      const month = date.month || (date.getMonth() + 1); // Adjust for Date object month (0-based)
-      const year = date.year || date.getFullYear();
+  // const handleTransactionDateChange = (date) => {
+  //   // Check if 'date' is a valid object and has day, month, year or is a Date object
+  //   if (date && typeof date === 'object') {
+  //     const day = date.day || date.getDate();  // Handle if it's {day, month, year} or Date object
+  //     const month = date.month || (date.getMonth() + 1); // Adjust for Date object month (0-based)
+  //     const year = date.year || date.getFullYear();
 
-      // Format the selected date as DD-MM-YYYY
-      const formattedDate = `${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}-${year}`;
-      setStatus('Typing...');
-      setTransactionDate(formattedDate); // Set the formatted date
-    } else {
-      console.error('Invalid date object:', date);
-      setStatus('Invalid Date');
-    }
-  };
+  //     // Format the selected date as DD-MM-YYYY
+  //     const formattedDate = `${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}-${year}`;
+  //     setStatus('Typing...');
+  //     setTransactionDate(formattedDate); // Set the formatted date
+  //   } else {
+  //     console.error('Invalid date object:', date);
+  //     setStatus('Invalid Date');
+  //   }
+  // };
+
+  const handleTransactionDateChange = (e) => {
+  setTransactionDate(e.target.value);
+};
 
   const handleEntryDateChange = (e) => {
     const date = e.target.value;
@@ -1169,7 +1178,9 @@ finally {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ transaction_no: code }) // Send company_no and company_name as search criteria
+        body: JSON.stringify({ transaction_no: code, 
+          company_code: sessionStorage.getItem("selectedCompanyCode"),
+          Location_Code: sessionStorage.getItem("selectedLocationCode"),}) // Send company_no and company_name as search criteria
       });
       if (response.ok) {
         setSaveButtonVisible(false)
@@ -1185,7 +1196,18 @@ finally {
 
           setNew_running_no(item.transaction_no);
 
-          setTransactionDate(formatDate(item.transaction_date));
+          const dateObj = new Date(item.transaction_date);
+
+          // setTransactionDate({
+          //   year: dateObj.getFullYear(),
+          //   month: dateObj.getMonth() + 1,
+          //   day: dateObj.getDate(),
+          // });
+          const formattedDate = new Date(item.transaction_date)
+            .toISOString()
+            .split("T")[0];
+
+          setTransactionDate(formattedDate);
           setTransactionNumber(item.transaction_no);
 
 
@@ -1214,15 +1236,8 @@ finally {
               warehouseTo: item.to_Warehouse,
               purchaseQty: item.transfer_Qty,
               ItemTotalWight: parseFloat(item.total_weight).toFixed(2),
-
-
-
-
             };
           });
-
-
-
           setRowData(updatedRowData);
         }
         else {
@@ -1286,13 +1301,25 @@ finally {
 
   const handlePurchaseData = async (data) => {
     if (data && data.length > 0) {
-      const [{ TransactionNo, transaction_date, }] = data;
+      const [{ TransactionNo, transaction_date }] = data;
 
-      const transactiondate = document.getElementById('transactionDate');
-      if (transactiondate) {
-        transactiondate.value = transaction_date;
-        setTransactionDate(formatDate(transaction_date));  // You can choose to use formattedDate instead if required
-      } else {
+// if (transaction_date) {
+//   const dateObj = new Date(transaction_date);
+
+//   setTransactionDate({
+//     year: dateObj.getFullYear(),
+//     month: dateObj.getMonth() + 1,
+//     day: dateObj.getDate(),
+//   });
+// }
+if (transaction_date) {
+  const formattedDate = new Date(transaction_date)
+    .toISOString()
+    .split("T")[0];
+
+  setTransactionDate(formattedDate);
+}
+ else {
         console.error('entry element not found');
       }
 
@@ -1323,7 +1350,10 @@ finally {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ transaction_no: TransactionNo })
+        body: JSON.stringify({ transaction_no: TransactionNo ,
+          company_code: sessionStorage.getItem("selectedCompanyCode"),
+          Location_Code: sessionStorage.getItem("selectedLocationCode"),
+        })
       });
 
       if (response.ok) {
@@ -1331,31 +1361,49 @@ finally {
 
         const newRowData = [];
         searchData.forEach(item => {
-          const {
-            ItemSNo,
-            item_code,
-            Item_name,
-            weight,
-            from_Warehouse,
-            to_Warehouse,
-            transfer_Qty,
-            total_weight,
 
-          } = item;
+  const {
+    ItemSNo,
+    item_code,
+    Item_name,
+    weight,
+    from_Warehouse,
+    to_Warehouse,
+    transfer_Qty,
+    total_weight,
+    transaction_date
+  } = item;
 
-          newRowData.push({
-            serialNumber: ItemSNo,
-            itemCode: item_code,
-            itemName: Item_name,
-            unitWeight: weight,
-            purchaseQty: transfer_Qty,
-            warehouse: from_Warehouse,
-            warehouseTo: to_Warehouse,
-          
+  // if (transaction_date) {
+  //   const dt = new Date(transaction_date);
 
-            ItemTotalWight: parseFloat(total_weight).toFixed(2),
-          });
-        });
+  //   setTransactionDate({
+  //     year: dt.getFullYear(),
+  //     month: dt.getMonth() + 1,
+  //     day: dt.getDate(),
+  //   });
+  // }
+
+  if (transaction_date) {
+  const formattedDate = new Date(transaction_date)
+    .toISOString()
+    .split("T")[0];
+
+  setTransactionDate(formattedDate);
+}
+
+  newRowData.push({
+    serialNumber: ItemSNo,
+    itemCode: item_code,
+    itemName: Item_name,
+    unitWeight: weight,
+    purchaseQty: transfer_Qty,
+    warehouse: from_Warehouse,
+    warehouseTo: to_Warehouse,
+    ItemTotalWight: parseFloat(total_weight).toFixed(2),
+  });
+
+});
         setRowData(newRowData);
 
       } else if (response.status === 404) {
@@ -1372,10 +1420,6 @@ finally {
 
   };
 
-
-
-
-
   //CODE FOR TOTAL WEIGHT, TOTAL TAX AND TOTAL AMOUNT CALCULATION
   const ItemAmountCalculation = async (params) => {
     try {
@@ -1387,6 +1431,8 @@ finally {
         body: JSON.stringify({
           transfer_Qty: params.data.purchaseQty,
           weight: params.data.unitWeight,
+          company_code: sessionStorage.getItem("selectedCompanyCode"),
+          Location_Code: sessionStorage.getItem("selectedLocationCode"),
         })
       });
 
@@ -1484,7 +1530,8 @@ finally {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ Tax_amount: formattedTotalTaxAmounts, company_code:sessionStorage.getItem("selectedCompanyCode"), Putchase_amount: formattedTotalItemAmounts }),
+          body: JSON.stringify({ Tax_amount: formattedTotalTaxAmounts, company_code:sessionStorage.getItem("selectedCompanyCode",), 
+            Location_Code: sessionStorage.getItem("selectedLocationCode"),Putchase_amount: formattedTotalItemAmounts }),
         });
         if (response.ok) {
           const data = await response.json();
@@ -1511,7 +1558,10 @@ finally {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ transaction_no: new_running_no })
+        body: JSON.stringify({ transaction_no: new_running_no,
+          company_code: sessionStorage.getItem("selectedCompanyCode"),
+          Location_Code: sessionStorage.getItem("selectedLocationCode"),
+         })
       });
       if (response.ok) {
         console.log("Rows deleted successfully:", new_running_no);
@@ -1526,11 +1576,15 @@ finally {
   const handleDeleteDetail = async () => {
     try {
       const response = await fetch(`${config.apiBaseUrl}/deletestocktransfer`, {
+        
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ transaction_no: new_running_no, transaction_date: transactionDate })
+        body: JSON.stringify({ transaction_no: new_running_no, transaction_date: transactionDate ,
+          company_code: sessionStorage.getItem("selectedCompanyCode"),
+          Location_Code: sessionStorage.getItem("selectedLocationCode"),
+        })
       });
       if (response.ok) {
         console.log("Rows deleted successfully:", new_running_no);
@@ -1587,12 +1641,9 @@ setprintButtonVisible(true)
         setStatus("Reference Number Does Not Exist or Failed to delete details");
       }
     } catch (error) {
-      // Handle any errors that occur during the API call execution
-      console.error("Error executing API calls:", error);
-
-      toast.error("Reference Number Does Not Exist or Failed to delete details.")
-      setStatus("Error occurred while deleting data");
-    }
+  console.error("Error executing API calls:", error);
+  setStatus("Error occurred while deleting data");
+}
 finally {
       setLoading(false);
     }
@@ -1611,6 +1662,7 @@ finally {
   };
 
   useEffect(() => {
+    console.log("Current Transaction Date State:", transactionDate);
     const today = new Date();
     const currentYear = today.getFullYear();
     const currentMonth = today.getMonth() + 1;
@@ -1653,10 +1705,9 @@ finally {
     <div className="container-fluid Topnav-screen">
       <div>
         <div className="shadow-lg p-1 bg-body-tertiary rounded mt-2 mb-2">
-          <div className="d-flex justify-content-between" >
       {loading && <LoadingScreen />}
                   <ToastContainer position="top-right" className="toast-design" theme="colored" />
-      
+          <div className="d-flex justify-content-between" >
             <div className="d-flex justify-content-start">
               <h1 align="left" className="purbut me-5" >Stock Transfer</h1>
             </div>
@@ -1752,7 +1803,7 @@ finally {
       
 <div className="shadow-lg p-1 bg-body-tertiary rounded  pt-4 "
           align="left">
-              <div className="status">{status}</div>
+              {/* <div className="status">{status}</div> */}
         <div  
          >
 
@@ -1796,11 +1847,11 @@ finally {
               <div class="exp-form-floating" >
                 <label for="" className={`${error && !transactionDate ? 'red' : ''}`}>Transaction Date</label>
                 <span className="text-danger">*</span>
-                <DtPicker
+                <input
                   name="transactionDate"
                   id="transactionDate"
                   className="exp-input-field form-control"
-                  type="single"
+                  type="date"
                   placeholder="select the Date"
                   required
                   value={transactionDate}

@@ -208,12 +208,14 @@ export default function StockTransferItemPopup({ open, handleClose, handleItem }
   const handleSearchItem = async () => {
     setLoading(true)
     try {
+       const company_code = sessionStorage.getItem("selectedCompanyCode");
       const response = await fetch(`${config.apiBaseUrl}/itempursearchdata`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "company_code": company_code,
         },
-        body: JSON.stringify({ Item_code, Item_variant, Item_name, Item_short_name, Item_Our_Brand, status }) // Send company_no and company_name as search criteria
+        body: JSON.stringify({ Item_code, Item_variant, Item_name, Item_short_name, Item_Our_Brand, status, company_code: company_code, }) // Send company_no and company_name as search criteria
       });
       if (response.ok) {
         const searchData = await response.json();
