@@ -60,59 +60,81 @@ function VisitorMasterGrid() {
     window.location.reload();
   };
 
-  const clearInputFields = () => {
-    setVisitorId("");
-    setVisitorName("");
-    setVisitorNo("");
-    setIdProofType("");
-    setIdProofNo("");
-    setFromExpiryDate("");
-    setToExpiryDate("");
-    setCustomerType("");
-    setStatus("");
-    setCompanyName("");
-setRowData([]);
-  };
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      const isReloadShortcut =
+        (event.ctrlKey && event.key.toLowerCase() === "r") ||
+        (event.altKey && event.key.toLowerCase() === "r") ||
+        event.key === "F5";
 
+      if (isReloadShortcut) {
+        event.preventDefault();
+        clearInputFields();
+      }
+    };
 
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   useEffect(() => {
-      if (location.state?.preservedRowData) {
-        setRowData(location.state.preservedRowData);
+    // if (location.state?.preservedRowData) {
+    //   setRowData(location.state.preservedRowData);
+    // }
+
+    if (location.state?.preservedInputs) {
+      const inputs = location.state.preservedInputs;
+
+      setVisitorId(inputs.visitorId || "");
+      setVisitorName(inputs.visitorName || "");
+      setVisitorNo(inputs.visitorNo || "");
+      setIdProofType(inputs.idProofType || "");
+      setIdProofNo(inputs.idProofNo || "");
+      setFromExpiryDate(inputs.fromExpiryDate || "");
+      setToExpiryDate(inputs.toExpiryDate || "");
+      setCustomerType(inputs.customerType || "");
+      setStatus(inputs.status || "");
+      setCompanyName(inputs.companyName || "");
+
+      if (inputs.idProofType) {
+        setSelectedIdProofType({
+          label: inputs.idProofType,
+          value: inputs.idProofType,
+        });
       }
-    
-      if (location.state?.preservedInputs) {
-        setVisitorId(location.state.preservedInputs.visitorId || "");
-        setVisitorName(location.state.preservedInputs.visitorName || "");
-        setVisitorNo(location.state.preservedInputs.visitorNo || "");
-        setIdProofType(location.state.preservedInputs.idProofType || "");
-        setIdProofNo(location.state.preservedInputs.idProofNo || "");
-        setFromExpiryDate(location.state.preservedInputs.fromExpiryDate || "");
-        setToExpiryDate(location.state.preservedInputs.toExpiryDate || "");
-        setCustomerType(location.state.preservedInputs.customerType || "");
-        setStatus(location.state.preservedInputs.status || "");
-        setCompanyName(location.state.preservedInputs.companyName || "");
-    
-        if (location.state.preservedInputs.idProofType) {
-          setSelectedIdProofType({
-            label: location.state.preservedInputs.idProofType,
-            value: location.state.preservedInputs.idProofType,
-          });
-        }
-        if (location.state.preservedInputs.customerType) {
-          setSelectedCustomerType({
-            label: location.state.preservedInputs.customerType,
-            value: location.state.preservedInputs.customerType,
-          });
-        }
-        if (location.state.preservedInputs.status) {
-          setSelectedStatus({
-            label: location.state.preservedInputs.status,
-            value: location.state.preservedInputs.status,
-          });
-        }
+      if (inputs.customerType) {
+        setSelectedCustomerType({
+          label: inputs.customerType,
+          value: inputs.customerType,
+        });
       }
-    }, [location.state]);
+      if (inputs.status) {
+        setSelectedStatus({
+          label: inputs.status,
+          value: inputs.status,
+        });
+      }
+
+      if (location.state?.refreshGrid) {
+        handleSearch(inputs);
+      }
+    }
+  }, [location.state]);
+
+  const clearInputFields = () => {
+    setVisitorId("");
+    setVisitorName("");
+    setVisitorNo("");
+    setIdProofType("");
+    setIdProofNo("");
+    setFromExpiryDate("");
+    setToExpiryDate("");
+    setCustomerType("");
+    setStatus("");
+    setCompanyName("");
+    setRowData([]);
+  };
 
   useEffect(() => {
     const company_code = sessionStorage.getItem("selectedCompanyCode");
@@ -257,7 +279,7 @@ setRowData([]);
     setCustomerType(values.join(","));
   };
 
-  const handleSearch = async () => {
+  const handleSearch = async (searchParams = null) => {
     const company_code = sessionStorage.getItem("selectedCompanyCode");
 
     setLoading(true);
@@ -268,17 +290,17 @@ setRowData([]);
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          Visitor_ID: visitorId,
-          Visitor_Name: visitorName,
-          ID_Proof: idProofType,
-          ID_Proof_No: idProofNo,
-          Company_Name: companyName,
-          Customer_type: customerType,
-          Status: status,
+          Visitor_ID: searchParams?.visitorId ?? visitorId,
+          Visitor_Name: searchParams?.visitorName ?? visitorName,
+          ID_Proof: searchParams?.idProofType ?? idProofType,
+          ID_Proof_No: searchParams?.idProofNo ?? idProofNo,
+          Company_Name: searchParams?.companyName ?? companyName,
+          Customer_type: searchParams?.customerType ?? customerType,
+          Status: searchParams?.status ?? status,
           company_code,
-          Phone_No: visitorNo,
-          FromDate: fromExpiryDate,
-          ToDate: toExpiryDate
+          Phone_No: searchParams?.visitorNo ?? visitorNo,
+          FromDate: searchParams?.toExpiryDate ?? toExpiryDate,
+          ToDate: searchParams?.toExpiryDate ?? toExpiryDate
         }),
       });
       if (response.ok) {
@@ -540,30 +562,51 @@ setRowData([]);
   const handleNavigatesToForm = () => {
     navigate("/AddVisitorMaster", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
   };
-  
+
+  // const handleNavigateWithRowData = (selectedRow) => {
+  //   navigate("/AddVisitorMaster", {
+  //     state: {
+  //       mode: "update",
+  //       selectedRow,
+
+  //       preservedRowData: rowData,
+
+  //       preservedInputs: {
+  //         visitorId,
+  //         visitorName,
+  //         visitorNo,
+  //         idProofType,
+  //         idProofNo,
+  //         fromExpiryDate,
+  //         toExpiryDate,
+  //         customerType,
+  //         status,
+  //         companyName
+  //       },
+  //     },
+  //   });
+  // };
+
   const handleNavigateWithRowData = (selectedRow) => {
-  navigate("/AddVisitorMaster", {
-    state: {
-      mode: "update",
-      selectedRow,
-
-      preservedRowData: rowData,
-
-      preservedInputs: {
-        visitorId,
-        visitorName,
-        visitorNo,
-        idProofType,
-        idProofNo,
-        fromExpiryDate,
-        toExpiryDate,
-        customerType,
-        status,
-        companyName
+    navigate("/AddVisitorMaster", {
+      state: {
+        mode: "update",
+        Keyfield: selectedRow.Keyfield,
+        preservedInputs: {
+          visitorId,
+          visitorName,
+          visitorNo,
+          idProofType,
+          idProofNo,
+          fromExpiryDate,
+          toExpiryDate,
+          customerType,
+          status,
+          companyName
+        },
       },
-    },
-  });
-};
+    });
+  };
 
   const onSelectionChanged = () => {
     const selectedNodes = gridApi.getSelectedNodes();

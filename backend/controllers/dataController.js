@@ -35316,6 +35316,288 @@ const getBankAccountData = async (req, res) => {
 };
 //Code Added By Dinesh Gokul On 16-06-2026
 
+//Code Added by Pavun on 17-06-2026
+const getVisitorData = async (req, res) => {
+  const { company_code, Keyfield } = req.body;
+  try {
+    const pool = await sql.connect(dbConfig);
+    const result = await pool.request()
+      .input("mode", sql.NVarChar, "GVM")
+      .input("company_code", sql.NVarChar, company_code)
+      .input("Keyfield", sql.NVarChar, Keyfield)
+      .query(`EXEC sp_Gate_Pass_Master @mode, '', '', '', '', '','',@company_code,
+          @Keyfield, '', '', '','','','','','', '', '', ''`);
+    if (result.recordset.length > 0) {
+      res.status(200).json(result.recordset);
+    } else {
+      res.status(404).json("Data not found");
+    }
+  } catch (err) {
+    console.error("Error during Gate_Pass_Master insert:", err);
+    res.status(500).json({ message: err.message || "Internal Server Error" });
+  }
+};
+
+const getFinancialYearAccessData = async (req, res) => {
+  const { company_code, keyfield } = req.body;
+  let pool;
+  try {
+    pool = await sql.connect(dbConfig);
+    const result = await pool
+      .request()
+      .input("mode", sql.NVarChar, "GFA")
+      .input("company_code", sql.VarChar, company_code)
+      .input("keyfield", sql.VarChar, keyfield)
+      .query(`EXEC sp_financial_year_accessing @mode,'','','','',@company_code,@keyfield,'','',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL`);
+    if (result.recordset.length > 0) {
+      res.status(200).json(result.recordset);
+    } else {
+      res.status(404).json("Data not found");
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message || 'Internal Server Error' });
+  }
+};
+
+const getWarehouseData = async (req, res) => {
+  const { company_code, warehouse_code } = req.body;
+
+  try {
+    const pool = await connection.connectToDatabase();
+    const result = await pool
+      .request()
+      .input("mode", sql.NVarChar, "GW")
+      .input("company_code", sql.NVarChar, company_code)
+      .input("warehouse_code", sql.NVarChar, warehouse_code)
+      .query(` EXEC sp_warehouse_info @mode,@company_code,@warehouse_code,'','','','','','','',NULL,NULL,NULL,NULL,'',''`);
+
+    if (result.recordset.length > 0) {
+      res.status(200).json(result.recordset); 
+    } else {
+      res.status(404).json("Data not found"); 
+    }
+  } catch (err) {
+    console.error("Error", err);
+    res.status(500).json({ message: err.message || 'Internal Server Error' });
+  }
+};
+
+const getVendorData = async (req, res) => {
+  const { company_code, keyfield } = req.body;
+
+  try {
+    const pool = await connection.connectToDatabase();
+    const result = await pool
+      .request()
+      .input("mode", sql.NVarChar, "GVD")
+      .input("company_code", sql.NVarChar, company_code)
+      .input("keyfield", sql.NVarChar, keyfield)
+      .query(`EXEC sp_vendor_details_info_hdr_RAMYA @mode,'',@company_code,'','','','','','','','','','','',
+        '','','','','','' ,'',0,'','','','','','',@keyfield,0,'','','',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL`);
+    
+      if (result.recordset.length > 0) {
+        res.status(200).json(result.recordset);
+      } else {
+        res.status(404).json("Data not found");
+      }
+  } catch (err) {
+    console.error("Error", err);
+    res.status(500).json({ message: err.message || 'Internal Server Error' });
+  }
+};
+
+const getTaxData = async (req, res) => {
+  const { company_code, tax_type_header, tax_name_details, tax_accountcode } = req.body;
+
+  try {
+    const pool = await connection.connectToDatabase();
+    const result = await pool
+      .request()
+      .input("mode", sql.NVarChar, "GTD")
+      .input("company_code", sql.VarChar, company_code)
+      .input("tax_type_header", sql.NVarChar, tax_type_header)
+      .input("tax_name_details", sql.NVarChar, tax_name_details)
+      .input("tax_accountcode", sql.NVarChar, tax_accountcode)
+      .query(`EXEC sp_tax_name_details @mode,@company_code,@tax_type_header, @tax_name_details, 0 , '', @tax_accountcode, '', '',
+      NULL, NULL, NULL, NULL,'','','','','',''`);
+
+    if (result.recordset.length > 0) {
+      res.status(200).json(result.recordset);
+    } else {
+      res.status(404).json("Data not found");
+    }
+  } catch (err) {
+    console.error("Error", err);
+    res.status(500).json({ message: err.message || 'Internal Server Error' });
+  }
+};
+
+const getNumberSeriesData = async (req, res) => {
+  const { company_code, Screen_Type, Start_Year, End_Year } = req.body; 
+
+  try {
+    const pool = await connection.connectToDatabase();
+    const result = await pool
+      .request()
+      .input("mode", sql.NVarChar, "GN")
+      .input("company_code", sql.NVarChar, company_code)
+      .input("Screen_Type", sql.NVarChar, Screen_Type)
+      .input("Start_Year", sql.NVarChar, Start_Year)
+      .input("End_Year", sql.NVarChar, End_Year)
+      .query(`EXEC sp_numberseries @mode,@company_code,@Screen_Type,@Start_Year,@End_Year,0,0,0,'','','','','',
+      null,null,null,null,null,null,null,null,''`);
+    if (result.recordset.length > 0) {
+      res.status(200).json(result.recordset); 
+    } else {
+      res.status(404).json("Data not found"); 
+    }
+  } catch (err) {
+    console.error("Error", err);
+    res.status(500).json({ message: err.message || 'Internal Server Error' });
+  }
+};
+
+const getIntermediaryData = async (req, res) => {
+  const { company_code, Code, codeDetails } = req.body;
+
+  try {
+    const pool = await connection.connectToDatabase();
+    const result = await pool
+      .request()
+      .input("mode", sql.NVarChar, "GID")
+      .input("company_code", sql.NVarChar, company_code)
+      .input("Code", sql.NVarChar, Code)
+      .input("codeDetails", sql.NVarChar, codeDetails)
+      .query(`EXEC sp_intermediary_details @mode,@company_code,@Code,@codeDetails,'','','','','','','','','','','','','','','',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL`);
+
+    if (result.recordset.length > 0) {
+      res.status(200).json(result.recordset); 
+    } else {
+      res.status(404).json("Data not found"); 
+    }
+  } catch (err) {
+    console.error("Error", err.message);
+    return res.status(500).json({ message: err.message || 'Internal Server Error' });
+
+  }
+};
+
+const getItemData = async (req, res) => {
+  const { company_code, Item_code } = req.body;
+
+  try {
+    const pool = await connection.connectToDatabase();
+
+    const result = await pool
+      .request()
+      .input("mode", sql.NVarChar, "GI")
+      .input("company_code", sql.NVarChar, company_code)
+      .input("Item_code", sql.NVarChar, Item_code)
+      .query(`EXEC sp_item_brand_info @mode,@company_code,@Item_code,'','',0,'','','',0,0,0,0,'','','','','','','','','','','','','',0,0,'','','',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL`);
+    if (result.recordset.length > 0) {
+      res.status(200).json(result.recordset); 
+    } else {
+      res.status(404).json("Data not found"); 
+    }
+  } catch (err) {
+    console.error("Error", err.message);
+    return res.status(500).json({ message: err.message || "Internal Server Error" });
+  }
+};
+
+const getDesignationData = async (req, res) => {
+  const { keyfield, company_code } = req.body;
+
+  try {
+    const pool = await connection.connectToDatabase();
+    const result = await pool
+      .request()
+      .input("mode", sql.NVarChar, "GD")
+      .input("keyfield", sql.NVarChar, keyfield)
+      .input("company_code", sql.NVarChar, company_code)
+      .query(`EXEC sp_desgination @mode,'','', '', '', @company_code,@keyfield, '', '',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL`);
+
+    if (result.recordset.length > 0) {
+      res.status(200).json(result.recordset); 
+    } else {
+      res.status(404).json("Data not found"); 
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message || 'Internal Server Error' });
+  }
+};
+
+const getDepartmentData = async (req, res) => {
+  const { key_field, company_code } = req.body;
+
+  try {
+    const pool = await connection.connectToDatabase();
+    const result = await pool
+      .request()
+      .input("mode", sql.NVarChar, "GD")
+      .input("key_field", sql.NVarChar, key_field)
+      .input("company_code", sql.NVarChar, company_code)
+      .query(`EXEC sp_department @mode,'','',@company_code,@key_field, '', '',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL`);
+
+    if (result.recordset.length > 0) {
+      res.status(200).json(result.recordset);
+    } else {
+      res.status(404).json("Data not found"); 
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message || 'Internal Server Error' });
+  }
+};
+
+const getClientData = async (req, res) => {
+  const { company_code, keyfield } = req.body;
+
+  try {
+    const pool = await connection.connectToDatabase();
+    const result = await pool
+      .request()
+      .input("mode", sql.NVarChar, "GCI")
+      .input("Company_code", sql.NVarChar, company_code)
+      .input("keyfield", sql.NVarChar, keyfield)
+      .query(`EXEC sp_PMS_Client_INFO @mode,0,'','','','','','','','','','','','','','','','',0,0,'','','','','','','','','',@Company_code,@keyfield,'','','','',NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL  `);
+    if (result.recordset.length > 0) {
+      res.status(200).json(result.recordset);
+    } else {
+      res.status(404).json("Data not found");
+    }
+  } catch (err) {
+    console.error("Error", err);
+    res.status(500).json({ message: err.message || 'Internal Server Error' });
+  }
+};
+
+const getCustomerData = async (req, res) => {
+  const { company_code, keyfield } = req.body;
+
+  try {
+    const pool = await connection.connectToDatabase();
+    const result = await pool
+      .request()
+      .input("mode", sql.NVarChar, "GC")
+      .input("company_code", sql.NVarChar, company_code)
+      .input("keyfield", sql.NVarChar, keyfield)
+      .query(`EXEC sp_customer_details_info_Pavun @mode,'',@company_code,'','','','','','','','','','','',
+      '','','','','','' ,'',0,'','','','','','','',@keyfield,0,'','','',NULL,NULL,NULL,NULL,NULL,null,null,null`);
+
+    if (result.recordset.length > 0) {
+      res.status(200).json(result.recordset);
+    } else {
+      res.status(404).json("Data not found");
+    }
+  } catch (err) {
+    console.error("Error", err);
+    res.status(500).json({ message: err.message || 'Internal Server Error' });
+  }
+};
+//Code Ended by Pavun on 17-06-2026
 
 module.exports = {
   login,
@@ -36472,7 +36754,19 @@ module.exports = {
   getCompanyData,
   getCompanyMappingData,
   getLocationData,
-  getBankAccountData
+  getBankAccountData,
+  getVisitorData,
+  getFinancialYearAccessData,
+  getWarehouseData,
+  getVendorData,
+  getTaxData,
+  getNumberSeriesData,
+  getIntermediaryData,
+  getItemData,
+  getDesignationData,
+  getDepartmentData,
+  getClientData,
+  getCustomerData
 
 
 };

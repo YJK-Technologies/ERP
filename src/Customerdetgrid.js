@@ -72,42 +72,66 @@ function CustomerDetGrid() {
     .map(permission => permission.permission_type.toLowerCase());
 
   useEffect(() => {
-    if (location.state?.preservedRowData) {
-      setRowData(location.state.preservedRowData);
-    }
+    const handleKeyDown = (event) => {
+      const isReloadShortcut =
+        (event.ctrlKey && event.key.toLowerCase() === "r") ||
+        (event.altKey && event.key.toLowerCase() === "r") ||
+        event.key === "F5";
+
+      if (isReloadShortcut) {
+        event.preventDefault();
+        clearInputFields();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    // if (location.state?.preservedRowData) {
+    //   setRowData(location.state.preservedRowData);
+    // }
 
     if (location.state?.preservedInputs) {
-      setcustomer_code(location.state.preservedInputs.customer_code || "");
-      setcustomer_name(location.state.preservedInputs.customer_name || "");
-      setpanno(location.state.preservedInputs.panno || "");
-      setcustomer_gst_no(location.state.preservedInputs.customer_gst_no || "");
-      setcustomer_addr_1(location.state.preservedInputs.customer_addr_1 || "");
-      setcustomer_area(location.state.preservedInputs.customer_area || "");
-      setcustomer_state(location.state.preservedInputs.customer_state || "");
-      setcustomer_country(location.state.preservedInputs.customer_country || "");
-      setcustomer_mobile_no(location.state.preservedInputs.customer_mobile_no || "");
-      setstatus(location.state.preservedInputs.status || "");
-      setdefaultCust(location.state.preservedInputs.default_customer || "");
-      setopening_balanceSC(location.state.preservedInputs.opening_balanceSC || "");
-      setbalance_type(location.state.preservedInputs.balance_type || "");
+      const inputs = location.state.preservedInputs;
 
-      if (location.state.preservedInputs.balance_type) {
+      setcustomer_code(inputs.customer_code || "");
+      setcustomer_name(inputs.customer_name || "");
+      setpanno(inputs.panno || "");
+      setcustomer_gst_no(inputs.customer_gst_no || "");
+      setcustomer_addr_1(inputs.customer_addr_1 || "");
+      setcustomer_area(inputs.customer_area || "");
+      setcustomer_state(inputs.customer_state || "");
+      setcustomer_country(inputs.customer_country || "");
+      setcustomer_mobile_no(inputs.customer_mobile_no || "");
+      setstatus(inputs.status || "");
+      setdefaultCust(inputs.default_customer || "");
+      setopening_balanceSC(inputs.opening_balanceSC || "");
+      setbalance_type(inputs.balance_type || "");
+
+      if (inputs.balance_type) {
         setSelectedBT({
-          label: location.state.preservedInputs.balance_type,
-          value: location.state.preservedInputs.balance_type,
+          label: inputs.balance_type,
+          value: inputs.balance_type,
         });
       }
-      if (location.state.preservedInputs.status) {
+      if (inputs.status) {
         setSelectedStatus({
-          label: location.state.preservedInputs.status,
-          value: location.state.preservedInputs.status,
+          label: inputs.status,
+          value: inputs.status,
         });
       }
-      if (location.state.preservedInputs.default_customer) {
+      if (inputs.default_customer) {
         setselectedCust({
-          label: location.state.preservedInputs.default_customer,
-          value: location.state.preservedInputs.default_customer,
+          label: inputs.default_customer,
+          value: inputs.default_customer,
         });
+      }
+
+      if (location.state?.refreshGrid) {
+        handleSearch(inputs);
       }
     }
   }, [location.state]);
@@ -364,7 +388,7 @@ function CustomerDetGrid() {
     setRowData([]);
   };
 
-  const handleSearch = async () => {
+  const handleSearch = async (searchParams = null) => {
     setLoading(true);
 
     try {
@@ -373,22 +397,22 @@ function CustomerDetGrid() {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ 
-          company_code: sessionStorage.getItem('selectedCompanyCode'), 
-          customer_code, 
-          customer_name, 
-          panno, 
-          customer_gst_no, 
-          customer_addr_1, 
-          customer_area, 
-          customer_state, 
-          customer_country, 
-          customer_mobile_no, 
-          status, 
-          default_customer,
-          opening_balanceSC,
-          balance_type,
-         })
+        body: JSON.stringify({
+          company_code: sessionStorage.getItem('selectedCompanyCode'),
+          customer_code: searchParams?.customer_code ?? customer_code,
+          customer_name: searchParams?.customer_name ?? customer_name,
+          panno: searchParams?.panno ?? panno,
+          customer_gst_no: searchParams?.customer_gst_no ?? customer_gst_no,
+          customer_addr_1: searchParams?.customer_addr_1 ?? customer_addr_1,
+          customer_area: searchParams?.customer_area ?? customer_area,
+          customer_state: searchParams?.customer_state ?? customer_state,
+          customer_country: searchParams?.customer_country ?? customer_country,
+          customer_mobile_no: searchParams?.customer_mobile_no ?? customer_mobile_no,
+          opening_balanceSC: searchParams?.opening_balanceSC ?? opening_balanceSC,
+          balance_type: searchParams?.balance_type ?? balance_type,
+          status: searchParams?.status ?? status,
+          default_customer: searchParams?.default_customer ?? default_customer,
+        })
       });
       if (response.ok) {
         const searchData = await response.json();
@@ -654,7 +678,7 @@ function CustomerDetGrid() {
         maxLength: 250,
       },
     },
-     {
+    {
       headerName: "Opening Balance",
       field: "opening_balance",
       editable: true,
@@ -675,7 +699,7 @@ function CustomerDetGrid() {
         values: balance_typeAGDrop,
         maxLength: 250,
       },
-    }, 
+    },
     {
       headerName: "Transport Code",
       field: "customer_transport_code",
@@ -925,14 +949,39 @@ function CustomerDetGrid() {
   const handleNavigatesToForm = () => {
     navigate("/AddCustomerDetails", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
   };
+
+  // const handleNavigateWithRowData = (selectedRow) => {
+  //   navigate("/AddCustomerDetails", {
+  //     state: {
+  //       mode: "update",
+  //       selectedRow,
+
+  //       preservedRowData: rowData,
+
+  //       preservedInputs: {
+  //         customer_code,
+  //         customer_name,
+  //         panno,
+  //         customer_gst_no,
+  //         customer_addr_1,
+  //         customer_area,
+  //         customer_state,
+  //         customer_country,
+  //         customer_mobile_no,
+  //         opening_balanceSC,
+  //         balance_type,
+  //         status,
+  //         default_customer
+  //       },
+  //     },
+  //   });
+  // };
+
   const handleNavigateWithRowData = (selectedRow) => {
     navigate("/AddCustomerDetails", {
       state: {
         mode: "update",
-        selectedRow,
-
-        preservedRowData: rowData,
-
+        keyfield: selectedRow.keyfield,
         preservedInputs: {
           customer_code,
           customer_name,
@@ -1395,7 +1444,7 @@ function CustomerDetGrid() {
                 />
               </div>
             </div>
-             <div className="col-md-3 form-group">
+            <div className="col-md-3 form-group">
               <div class="exp-form-floating">
                 <label for="contactno" class="exp-form-labels">
                   Opening Balance

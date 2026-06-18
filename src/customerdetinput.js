@@ -16,7 +16,6 @@ function CustomerDetInput({ }) {
   const [open2, setOpen2] = React.useState(false);
   const navigate = useNavigate();
   const [customer_code, setcustomer_code] = useState("");
-  const [company_code, setcompany_code] = useState("");
   const [customer_addr_1, setcustomer_addr_1] = useState("");
   const [customer_addr_2, setcustomer_addr_2] = useState("");
   const [customer_addr_3, setcustomer_addr_3] = useState("");
@@ -98,9 +97,122 @@ function CustomerDetInput({ }) {
   const [isUpdated, setIsUpdated] = useState(false);
 
   const location = useLocation();
-  const { mode, selectedRow } = location.state || {};
+  const locationState = location.state || {};
+  const mode = locationState.mode || "create"; // ✅ default fallback
+  const selectedRow = locationState.selectedRow || null;
+  const keyfields = location.state?.keyfield;
+  const company_code = sessionStorage.getItem('selectedCompanyCode');
 
-  console.log(selectedRow);
+  const [panNo, setPanNo] = useState("");
+  const [customerGstNo, setCustomerGstNo] = useState("");
+
+  useEffect(() => {
+    if (!location.state) {
+      clearInputFields(); // ensure fresh create mode
+    }
+  }, []);
+
+  useEffect(() => {
+    if (mode === "update" && keyfields) {
+      fetchCustomerData();
+    }
+  }, [mode, keyfields]);
+
+  const fetchCustomerData = async () => {
+    try {
+      setLoading(true);
+
+      const response = await fetch(`${config.apiBaseUrl}/getCustomerData`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          keyfield: keyfields,
+          company_code
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.length > 0) {
+        const Customer = data[0];
+
+        setcustomer_addr_1(Customer.customer_addr_1 || "")
+        setcustomer_addr_2(Customer.customer_addr_2 || "");
+        setcustomer_addr_3(Customer.customer_addr_3 || "");
+        setcustomer_addr_4(Customer.customer_addr_4 || "");
+        setcustomer_imex_no(Customer.customer_imex_no || "");
+        setcustomer_office_no(Customer.customer_office_no || "");
+        setcustomer_resi_no(Customer.customer_resi_no || "");
+        setcustomer_mobile_no(Customer.customer_mobile_no || 0);
+        setcustomer_fax_no(Customer.customer_fax_no || "");
+        setcustomer_email_id(Customer.customer_email_id || "");
+        setcustomer_credit_limit(Customer.customer_credit_limit || 0);
+        setopening_balance(Customer.opening_balance || 0);
+        setcustomer_weekday_code(Customer.customer_weekday_code || "");
+        setContact_person(Customer.contact_person || "");
+        setcustomer_code(Customer.customer_code || "");
+        setcustomer_area(Customer.customer_area || "");
+        setcustomer_state(Customer.customer_state || "");
+        setcustomer_country(Customer.customer_country || "");
+        setcustomer_transport_code(Customer.customer_transport_code || "");
+        setcustomer_salesman_code(Customer.customer_salesman_code || "");
+        setcustomer_broker_code(Customer.customer_broker_code || "");
+        setOfficeType(Customer.office_type || "");
+        setdefaultCust(Customer.default_customer || "");
+        setkeyfield(Customer.keyfield || "");
+        setStatus(Customer.status || "");
+        setPanNo(Customer.panno || "");
+        setCustomerGstNo(Customer.customer_gst_no || "");
+        setSelectedCode({
+          label: Customer.customer_code,
+          value: Customer.customer_code,
+        });
+        setSelectedCity({
+          label: Customer.customer_area,
+          value: Customer.customer_area,
+        });
+        setselectedState({
+          label: Customer.customer_state,
+          value: Customer.customer_state,
+        });
+        setselectedCountry({
+          label: Customer.customer_country,
+          value: Customer.customer_country,
+        });
+        setSelectedTransport({
+          label: Customer.customer_transport_code,
+          value: Customer.customer_transport_code,
+        });
+        setSelectedBT({
+          label: Customer.balance_type,
+          value: Customer.balance_type,
+        });
+        setSelectedSales({
+          label: Customer.customer_salesman_code,
+          value: Customer.customer_salesman_code,
+        });
+        setSelectedBroker({
+          label: Customer.customer_broker_code,
+          value: Customer.customer_broker_code,
+        });
+        setselectedOffice({
+          label: Customer.office_type,
+          value: Customer.office_type,
+        });
+        setselectedCust({
+          label: Customer.default_customer,
+          value: Customer.default_customer,
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch customer details");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const clearInputFields = () => {
     setcustomer_code("");
@@ -283,79 +395,79 @@ function CustomerDetInput({ }) {
   }, []);
 
 
-  useEffect(() => {
-    if (mode === "update" && selectedRow && !isUpdated) {
-      setcustomer_addr_1(selectedRow.customer_addr_1 || "")
-      setcustomer_addr_2(selectedRow.customer_addr_2 || "");
-      setcustomer_addr_3(selectedRow.customer_addr_3 || "");
-      setcustomer_addr_4(selectedRow.customer_addr_4 || "");
-      setcustomer_imex_no(selectedRow.customer_imex_no || "");
-      setcustomer_office_no(selectedRow.customer_office_no || "");
-      setcustomer_resi_no(selectedRow.customer_resi_no || "");
-      setcustomer_mobile_no(selectedRow.customer_mobile_no || 0);
-      setcustomer_fax_no(selectedRow.customer_fax_no || "");
-      setcustomer_email_id(selectedRow.customer_email_id || "");
-      setcustomer_credit_limit(selectedRow.customer_credit_limit || 0);
-      setcustomer_weekday_code(selectedRow.customer_weekday_code || "");
-      setContact_person(selectedRow.contact_person || "");
-      setcustomer_code(selectedRow.customer_code || "");
-      setcustomer_area(selectedRow.customer_area || "");
-      setcustomer_state(selectedRow.customer_state || "");
-      setcustomer_country(selectedRow.customer_country || "");
-      setcustomer_transport_code(selectedRow.customer_transport_code || "");
-      setcustomer_salesman_code(selectedRow.customer_salesman_code || "");
-      setcustomer_broker_code(selectedRow.customer_broker_code || "");
-      setOfficeType(selectedRow.office_type || "");
-      setdefaultCust(selectedRow.default_customer || "");
-      setkeyfield(selectedRow.keyfield || "");
-      setStatus(selectedRow.status || "");
-      setopening_balance(selectedRow.opening_balance || 0);
-      setbalance_type(selectedRow.balance_type || "");
-      setSelectedCode({
-        label: selectedRow.customer_code,
-        value: selectedRow.customer_code,
-      });
-      setSelectedCity({
-        label: selectedRow.customer_area,
-        value: selectedRow.customer_area,
-      });
-      setselectedState({
-        label: selectedRow.customer_state,
-        value: selectedRow.customer_state,
-      });
-      setselectedCountry({
-        label: selectedRow.customer_country,
-        value: selectedRow.customer_country,
-      });
-      setSelectedTransport({
-        label: selectedRow.customer_transport_code,
-        value: selectedRow.customer_transport_code,
-      });
-      setSelectedSales({
-        label: selectedRow.customer_salesman_code,
-        value: selectedRow.customer_salesman_code,
-      });
-      setSelectedBroker({
-        label: selectedRow.customer_broker_code,
-        value: selectedRow.customer_broker_code,
-      });
-      setselectedOffice({
-        label: selectedRow.office_type,
-        value: selectedRow.office_type,
-      });
-      setselectedCust({
-        label: selectedRow.default_customer,
-        value: selectedRow.default_customer,
-      });
-      setSelectedBT({
-        label: selectedRow.balance_type,
-        value: selectedRow.balance_type,
-      });
+  // useEffect(() => {
+  //   if (mode === "update" && selectedRow && !isUpdated) {
+  //     setcustomer_addr_1(selectedRow.customer_addr_1 || "")
+  //     setcustomer_addr_2(selectedRow.customer_addr_2 || "");
+  //     setcustomer_addr_3(selectedRow.customer_addr_3 || "");
+  //     setcustomer_addr_4(selectedRow.customer_addr_4 || "");
+  //     setcustomer_imex_no(selectedRow.customer_imex_no || "");
+  //     setcustomer_office_no(selectedRow.customer_office_no || "");
+  //     setcustomer_resi_no(selectedRow.customer_resi_no || "");
+  //     setcustomer_mobile_no(selectedRow.customer_mobile_no || 0);
+  //     setcustomer_fax_no(selectedRow.customer_fax_no || "");
+  //     setcustomer_email_id(selectedRow.customer_email_id || "");
+  //     setcustomer_credit_limit(selectedRow.customer_credit_limit || 0);
+  //     setcustomer_weekday_code(selectedRow.customer_weekday_code || "");
+  //     setContact_person(selectedRow.contact_person || "");
+  //     setcustomer_code(selectedRow.customer_code || "");
+  //     setcustomer_area(selectedRow.customer_area || "");
+  //     setcustomer_state(selectedRow.customer_state || "");
+  //     setcustomer_country(selectedRow.customer_country || "");
+  //     setcustomer_transport_code(selectedRow.customer_transport_code || "");
+  //     setcustomer_salesman_code(selectedRow.customer_salesman_code || "");
+  //     setcustomer_broker_code(selectedRow.customer_broker_code || "");
+  //     setOfficeType(selectedRow.office_type || "");
+  //     setdefaultCust(selectedRow.default_customer || "");
+  //     setkeyfield(selectedRow.keyfield || "");
+  //     setStatus(selectedRow.status || "");
+  //     setopening_balance(selectedRow.opening_balance || 0);
+  //     setbalance_type(selectedRow.balance_type || "");
+  //     setSelectedCode({
+  //       label: selectedRow.customer_code,
+  //       value: selectedRow.customer_code,
+  //     });
+  //     setSelectedCity({
+  //       label: selectedRow.customer_area,
+  //       value: selectedRow.customer_area,
+  //     });
+  //     setselectedState({
+  //       label: selectedRow.customer_state,
+  //       value: selectedRow.customer_state,
+  //     });
+  //     setselectedCountry({
+  //       label: selectedRow.customer_country,
+  //       value: selectedRow.customer_country,
+  //     });
+  //     setSelectedTransport({
+  //       label: selectedRow.customer_transport_code,
+  //       value: selectedRow.customer_transport_code,
+  //     });
+  //     setSelectedSales({
+  //       label: selectedRow.customer_salesman_code,
+  //       value: selectedRow.customer_salesman_code,
+  //     });
+  //     setSelectedBroker({
+  //       label: selectedRow.customer_broker_code,
+  //       value: selectedRow.customer_broker_code,
+  //     });
+  //     setselectedOffice({
+  //       label: selectedRow.office_type,
+  //       value: selectedRow.office_type,
+  //     });
+  //     setselectedCust({
+  //       label: selectedRow.default_customer,
+  //       value: selectedRow.default_customer,
+  //     });
+  //     setSelectedBT({
+  //       label: selectedRow.balance_type,
+  //       value: selectedRow.balance_type,
+  //     });
 
-    } else if (mode === "create") {
-      clearInputFields();
-    }
-  }, [mode, selectedRow, isUpdated]);
+  //   } else if (mode === "create") {
+  //     clearInputFields();
+  //   }
+  // }, [mode, selectedRow, isUpdated]);
 
   const filteredOptionCode = Array.isArray(customercodedrop)
     ? customercodedrop.map((option) => ({
@@ -615,6 +727,8 @@ function CustomerDetInput({ }) {
           status,
           opening_balance,
           balance_type,
+          panno: panNo,
+          customer_gst_no: customerGstNo,
           modified_by: sessionStorage.getItem('selectedUserCode')
         }),
       });
@@ -1229,11 +1343,11 @@ function CustomerDetInput({ }) {
             </div>
 
             <div className="shadow-lg p-3 bg-body-tertiary rounded  mb-2">
-                <div className="col-md-3 form-group mb-3 mt-3" style={{ width: "150px" }}>
-                    <h6 className=""><strong>Financial Year:</strong></h6>
-                </div>
-                                  <div className="row mb-3 ">
-                  <div className="col-md-3 form-group mb-2">
+              <div className="col-md-3 form-group mb-3 mt-3" style={{ width: "150px" }}>
+                <h6 className=""><strong>Financial Year:</strong></h6>
+              </div>
+              <div className="row mb-3 ">
+                <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
                     <label for="ventrans" className={`exp-form-labels ${error && !balance_type ? 'text-danger' : ''}`}>
                       Balance Type<span className="text-danger">*</span>
@@ -1251,7 +1365,7 @@ function CustomerDetInput({ }) {
                       />
                     </div>
                   </div>
-                  </div>
+                </div>
 
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
@@ -1308,7 +1422,7 @@ function CustomerDetInput({ }) {
                   )}
                 </div>
 
-                </div>
+              </div>
 
             </div>
           </div>

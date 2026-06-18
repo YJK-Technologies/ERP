@@ -42,27 +42,49 @@ function NumberSeriesGrid() {
     .filter((permission) => permission.screen_type === "Number Series")
     .map((permission) => permission.permission_type.toLowerCase());
 
-  console.log(numberSeriesPermission);
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      const isReloadShortcut =
+        (event.ctrlKey && event.key.toLowerCase() === "r") ||
+        (event.altKey && event.key.toLowerCase() === "r") ||
+        event.key === "F5";
+
+      if (isReloadShortcut) {
+        event.preventDefault();
+        clearInputFields();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
 
   useEffect(() => {
-    if (location.state?.preservedRowData) {
-      setRowData(location.state.preservedRowData);
-    }
+    // if (location.state?.preservedRowData) {
+    //   setRowData(location.state.preservedRowData);
+    // }
 
     if (location.state?.preservedInputs) {
-      setScreen_Type(location.state.preservedInputs.Screen_Type || "");
+      const inputs = location.state.preservedInputs;
 
-      if (location.state.preservedInputs.Screen_Type) {
+      setScreen_Type(inputs.Screen_Type || "");
+      if (inputs.Screen_Type) {
         setselectedscreentype({
-          label: location.state.preservedInputs.Screen_Type,
-          value: location.state.preservedInputs.Screen_Type,
+          label: inputs.Screen_Type,
+          value: inputs.Screen_Type,
         });
+      }
+
+      if (location.state?.refreshGrid) {
+        handleSearch(inputs);
       }
     }
   }, [location.state]);
 
   useEffect(() => {
-    const company_code = sessionStorage.getItem("selectedCompanyCode");
+    const company_code = sessionStorage.getItem('selectedCompanyCode');
 
     fetch(`${config.apiBaseUrl}/screentype`, {
       method: "POST",
@@ -76,14 +98,14 @@ function NumberSeriesGrid() {
   }, []);
 
   useEffect(() => {
-    const company_code = sessionStorage.getItem("selectedCompanyCode");
+    const company_code = sessionStorage.getItem('selectedCompanyCode');
 
     fetch(`${config.apiBaseUrl}/status`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ company_code }),
+      body: JSON.stringify({ company_code })
     })
       .then((response) => response.json())
       .then((data) => {
@@ -95,14 +117,14 @@ function NumberSeriesGrid() {
   }, []);
 
   useEffect(() => {
-    const company_code = sessionStorage.getItem("selectedCompanyCode");
+    const company_code = sessionStorage.getItem('selectedCompanyCode');
 
     fetch(`${config.apiBaseUrl}/getboolean`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ company_code }),
+      body: JSON.stringify({ company_code })
     })
       .then((response) => response.json())
       .then((data) => {
@@ -135,7 +157,7 @@ function NumberSeriesGrid() {
     setRowData([]);
   };
 
-  const handleSearch = async () => {
+  const handleSearch = async (searchParams = null) => {
     setLoading(true);
     try {
       const company_code = sessionStorage.getItem("selectedCompanyCode");
@@ -145,14 +167,12 @@ function NumberSeriesGrid() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            company_code: company_code,
-            Screen_Type: Screen_Type,
           },
           body: JSON.stringify({
-            company_code: company_code,
-            Screen_Type: Screen_Type,
-          }), // Send company_no and company_name as search criteria
-        },
+            company_code,
+            Screen_Type: searchParams?.Screen_Type ?? Screen_Type,
+          }),
+        }
       );
       if (response.ok) {
         const searchData = await response.json();
@@ -444,14 +464,29 @@ function NumberSeriesGrid() {
   const handleNavigatesToForm = () => {
     navigate("/AddNumberSeries", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
   };
+  
+  // const handleNavigateWithRowData = (selectedRow) => {
+  //   navigate("/AddNumberSeries", {
+  //     state: {
+  //       mode: "update",
+  //       selectedRow,
+
+  //       preservedRowData: rowData,
+
+  //       preservedInputs: {
+  //         Screen_Type,
+  //       },
+  //     },
+  //   });
+  // };
+
   const handleNavigateWithRowData = (selectedRow) => {
     navigate("/AddNumberSeries", {
       state: {
         mode: "update",
-        selectedRow,
-
-        preservedRowData: rowData,
-
+        Screen_Type: selectedRow.Screen_Type,
+        Start_Year: selectedRow.Start_Year,
+        End_Year: selectedRow.End_Year,
         preservedInputs: {
           Screen_Type,
         },
@@ -542,6 +577,7 @@ function NumberSeriesGrid() {
         } finally {
           setLoading(false);
         }
+
       },
       () => {
         toast.info("Data updated cancelled.");
@@ -594,7 +630,7 @@ function NumberSeriesGrid() {
           }
         } catch (error) {
           console.error("Error deleting rows:", error);
-          toast.error("Error Deleting Data: " + error.message);
+          toast.error('Error Deleting Data: ' + error.message);
         } finally {
           setLoading(false);
         }
@@ -637,11 +673,7 @@ function NumberSeriesGrid() {
     <div className="container-fluid Topnav-screen">
       <div>
         {loading && <LoadingScreen />}
-        <ToastContainer
-          position="top-right"
-          className="toast-design"
-          theme="colored"
-        />
+        <ToastContainer position="top-right" className="toast-design" theme="colored" />
         <div className="shadow-lg p-1 bg-body-tertiary rounded  mb-2 mt-2">
           <div className=" d-flex justify-content-between  ">
             <div class="d-flex justify-content-start">

@@ -34,33 +34,91 @@ function WareHouseInput({ }) {
   const [isUpdated, setIsUpdated] = useState(false);
 
   const location = useLocation();
-  const { mode, selectedRow } = location.state || {};
-  console.log(selectedRow);
+  const locationState = location.state || {};
+  const mode = locationState.mode || "create"; // ✅ default fallback
+  const selectedRow = locationState.selectedRow || null;
+  const warehouseCode = location.state?.warehouse_code;
+  const company_code = sessionStorage.getItem('selectedCompanyCode');
+
+  useEffect(() => {
+    if (!location.state) {
+      clearInputFields(); // ensure fresh create mode
+    }
+  }, []);
+
+  useEffect(() => {
+    if (mode === "update" && warehouseCode) {
+      fetchWarehouseData();
+    }
+  }, [mode, warehouseCode]);
+
+  const fetchWarehouseData = async () => {
+    try {
+      setLoading(true);
+
+      const response = await fetch(`${config.apiBaseUrl}/getWarehouseData`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          warehouse_code: warehouseCode,
+          company_code
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.length > 0) {
+        const warehouse = data[0];
+
+        setSelectedLocation({
+          label: warehouse.location_no,
+          value: warehouse.location_no,
+        });
+        setLocation_No(warehouse.location_no || "");
+        setSelectedStatus({
+          label: warehouse.status,
+          value: warehouse.status,
+        });
+        setStatus(warehouse.status || "");
+        setWarehouse_Code(warehouse.warehouse_code || "");
+        setWarehouse_Name(warehouse.warehouse_name || "");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch warehouse details");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const clearInputFields = () => {
     setWarehouse_Code("");
     setWarehouse_Name("");
     setSelectedLocation("");
+    setLocation_No("");
     setSelectedStatus("");
+    setStatus("");
   };
 
-  useEffect(() => {
-    if (mode === "update" && selectedRow && !isUpdated) {
-      setSelectedLocation({
-        label: selectedRow.location_no,
-        value: selectedRow.location_no,
-      });
-      setSelectedStatus({
-        label: selectedRow.status,
-        value: selectedRow.status,
-      });
-      setWarehouse_Code(selectedRow.warehouse_code || "");
-      setWarehouse_Name(selectedRow.warehouse_name || "");
+  // useEffect(() => {
+  //   if (mode === "update" && selectedRow && !isUpdated) {
+  //     setSelectedLocation({
+  //       label: selectedRow.location_no,
+  //       value: selectedRow.location_no,
+  //     });
+  //     setSelectedStatus({
+  //       label: selectedRow.status,
+  //       value: selectedRow.status,
+  //     });
+  //     setWarehouse_Code(selectedRow.warehouse_code || "");
+  //     setWarehouse_Name(selectedRow.warehouse_name || "");
 
-    } else if (mode === "create") {
-      clearInputFields();
-    }
-  }, [mode, selectedRow, isUpdated]);
+  //   } else if (mode === "create") {
+  //     clearInputFields();
+  //   }
+  // }, [mode, selectedRow, isUpdated]);
 
 
 
@@ -167,13 +225,14 @@ function WareHouseInput({ }) {
   };
 
   const handleNavigate = () => {
-  navigate("/WareHouse", {
-    state: {
-      preservedRowData: location.state?.preservedRowData,
-      preservedInputs: location.state?.preservedInputs
-    }
-  });
-};
+    navigate("/WareHouse", {
+      state: {
+        refreshGrid: true,
+        // preservedRowData: location.state?.preservedRowData,
+        preservedInputs: location.state?.preservedInputs
+      }
+    });
+  };
 
   const handleKeyDown = async (e, nextFieldRef, value, hasValueChanged, setHasValueChanged) => {
     if (e.key === 'Enter') {
@@ -348,21 +407,21 @@ function WareHouseInput({ }) {
                         <span className="text-danger">*</span>
                       </div>
                     </div>
- <div title="Select the Status">       
-                    <Select
-                      id="status"
-                      value={selectedStatus}
-                      onChange={handleChangeStatus}
-                      options={filteredOptionStatus}
-                      className="exp-input-field"
-                      placeholder=""
-                      ref={Status}
-                      onKeyDown={(e) => handleKeyDown(e, LocatioN, Status)}
-                    />
-                    {error && !status && <div className="text-danger"> Status should not be blank</div>}
+                    <div title="Select the Status">
+                      <Select
+                        id="status"
+                        value={selectedStatus}
+                        onChange={handleChangeStatus}
+                        options={filteredOptionStatus}
+                        className="exp-input-field"
+                        placeholder=""
+                        ref={Status}
+                        onKeyDown={(e) => handleKeyDown(e, LocatioN, Status)}
+                      />
+                      {error && !status && <div className="text-danger"> Status should not be blank</div>}
 
-                  </div>
-                </div>   </div>
+                    </div>
+                  </div>   </div>
 
 
 
@@ -383,42 +442,37 @@ function WareHouseInput({ }) {
                         <span className="text-danger">*</span>
                       </div>
                     </div>
-<div title="Select the Location No">     
-                    <Select
-                      id="status"
-                      value={selectedLocation}
-                      onChange={handleChangeLocation}
-                      options={filteredOptionLocation}
-                      className="exp-input-field"
-                      placeholder=""
-                      ref={LocatioN}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          if (mode === "create") {
-                            handleInsert();
-                          } else {
-                            handleUpdate();
+                    <div title="Select the Location No">
+                      <Select
+                        id="status"
+                        value={selectedLocation}
+                        onChange={handleChangeLocation}
+                        options={filteredOptionLocation}
+                        className="exp-input-field"
+                        placeholder=""
+                        ref={LocatioN}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            if (mode === "create") {
+                              handleInsert();
+                            } else {
+                              handleUpdate();
+                            }
                           }
-                        }
-                      }}
-                    />
-                    {error && !location_no && <div className="text-danger"> Location No should not be blank</div>}
-
-
-
+                        }}
+                      />
+                      {error && !location_no && <div className="text-danger"> Location No should not be blank</div>}
+                    </div>
                   </div>
-                </div>    </div>
-
+                </div>
                 <div class="col-md-3 form-group  ">
                   {mode === "create" ? (
                     <button onClick={handleInsert} className="mt-4" title="Save">
                       <i class="fa-solid fa-floppy-disk"></i>
-
                     </button>
                   ) : (
                     <button onClick={handleUpdate} className="mt-4" title="Update">
-                      <i class="fa-solid fa-floppy-disk"></i>
-
+                      <i class="fa-solid fa-pen-to-square"></i>
                     </button>
                   )}
                 </div>
@@ -427,10 +481,6 @@ function WareHouseInput({ }) {
           </div>
         </div>
       </div>
-
-
-
-
     </div>
   );
 }

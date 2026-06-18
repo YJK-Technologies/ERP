@@ -26,7 +26,7 @@ function Department() {
   const [dept_name, setdept_name] = useState("");
   const [editedData, setEditedData] = useState([]);
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);    
+  const [loading, setLoading] = useState(false);
   const [createdBy, setCreatedBy] = useState("");
   const [modifiedBy, setModifiedBy] = useState("");
   const [createdDate, setCreatedDate] = useState("");
@@ -40,40 +40,67 @@ function Department() {
     .filter((permission) => permission.screen_type === "Attribute")
     .map((permission) => permission.permission_type.toLowerCase());
 
-    useEffect(() => {
-              if (location.state?.preservedRowData) {
-                setRowData(location.state.preservedRowData);
-              }
-            
-              if (location.state?.preservedInputs) {
-                setdept_id(location.state.preservedInputs.dept_id || "");
-                setdept_name(location.state.preservedInputs.dept_name || "");
-              }
-            }, [location.state]);
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      const isReloadShortcut =
+        (event.ctrlKey && event.key.toLowerCase() === "r") ||
+        (event.altKey && event.key.toLowerCase() === "r") ||
+        event.key === "F5";
+
+      if (isReloadShortcut) {
+        event.preventDefault();
+        clearInputFields();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    // if (location.state?.preservedRowData) {
+    //   setRowData(location.state.preservedRowData);
+    // }
+
+    if (location.state?.preservedInputs) {
+      const inputs = location.state.preservedInputs;
+
+      setdept_id(inputs.dept_id || "");
+      setdept_name(inputs.dept_name || "");
+
+      if (location.state?.refreshGrid) {
+        handleSearch(inputs);
+      }
+    }
+  }, [location.state]);
 
   const reloadGridData = () => {
     window.location.reload();
   };
 
   const clearInputFields = () => {
-    setdept_id("");
-    setdept_name("");
-    setRowData([]);
-  };
+    setdept_id("");
+    setdept_name("");
+    setRowData([]);
+  };
 
-  const handleSearch = async () => {
+  const handleSearch = async (searchParams = null) => {
     const company_code = sessionStorage.getItem("selectedCompanyCode");
-    
+
     setLoading(true);
     try {
-      const response = await fetch(
-        `${config.apiBaseUrl}/DepartmentSerachData`,
+      const response = await fetch(`${config.apiBaseUrl}/DepartmentSerachData`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ dept_id, dept_name, company_code }), // Send  as search criteria
+          body: JSON.stringify({
+            dept_id: searchParams?.dept_id ?? dept_id,
+            dept_name: searchParams?.dept_name ?? dept_name,
+            company_code
+          }),
         }
       );
       if (response.ok) {
@@ -87,8 +114,8 @@ function Department() {
       }
     } catch (error) {
       console.error("Error saving data:", error);
-      toast.error("Error updating data: " + error.message );
-    }finally {
+      toast.error("Error updating data: " + error.message);
+    } finally {
       setLoading(false);
     }
 
@@ -262,21 +289,35 @@ function Department() {
   const handleNavigatesToForm = () => {
     navigate("/AddDepartment", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
   };
+  // const handleNavigateWithRowData = (selectedRow) => {
+  //   navigate("/AddDepartment", {
+  //     state: {
+  //       mode: "update",
+  //       selectedRow,
+
+  //       preservedRowData: rowData,
+
+  //       preservedInputs: {
+  //         dept_id,
+  //         dept_name,
+  //       },
+  //     },
+  //   });
+  // };
+
   const handleNavigateWithRowData = (selectedRow) => {
-  navigate("/AddDepartment", {
-    state: {
-      mode: "update",
-      selectedRow,
+    navigate("/AddDepartment", {
+      state: {
+        mode: "update",
+        key_field: selectedRow.key_field,
 
-      preservedRowData: rowData,
-
-      preservedInputs: {
-        dept_id,
-        dept_name,
+        preservedInputs: {
+          dept_id,
+          dept_name
+        },
       },
-    },
-  });
-};
+    });
+  };
 
   const onSelectionChanged = () => {
     const selectedNodes = gridApi.getSelectedNodes();
@@ -338,10 +379,10 @@ function Department() {
         } catch (error) {
           console.error("Error saving data:", error);
           toast.error("Error Updating Data: " + error.message);
-        }finally {
+        } finally {
           setLoading(false);
         }
-    
+
       },
       () => {
         toast.info("Data updated cancelled.");
@@ -385,14 +426,14 @@ function Department() {
           } else {
             const errorResponse = await response.json();
             toast.warning(errorResponse.message || "Failed to delete  ");
-          } 
+          }
         } catch (error) {
           console.error("Error deleting rows:", error);
           toast.error('Error Deleting Data: ' + error.message);
-        }finally {
+        } finally {
           setLoading(false);
         }
-    
+
       },
       () => {
         toast.info("Data Delete cancelled.");
@@ -432,7 +473,7 @@ function Department() {
   return (
     <div className="container-fluid Topnav-screen">
       <div>
-      {loading && <LoadingScreen />}
+        {loading && <LoadingScreen />}
         <ToastContainer position="top-right" className="toast-design" theme="colored" />
         <div className="shadow-lg p-1 bg-body-tertiary rounded  mb-2 mt-2">
           <div className=" d-flex justify-content-between  ">

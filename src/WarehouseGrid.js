@@ -11,7 +11,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import labels from "./Labels";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import LoadingScreen from './Loading'; 
+import LoadingScreen from './Loading';
 import { showConfirmationToast } from './ToastConfirmation';
 const config = require('./Apiconfig');
 
@@ -33,7 +33,7 @@ function WarehouseGrid() {
   const [statusdrop, setStatusdrop] = useState([]);
   const [statusgriddrop, setStatusGriddrop] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState(null);
-  const [loading, setLoading] = useState(false);    
+  const [loading, setLoading] = useState(false);
   const [createdBy, setCreatedBy] = useState("");
   const [modifiedBy, setModifiedBy] = useState("");
   const [createdDate, setCreatedDate] = useState("");
@@ -47,31 +47,58 @@ function WarehouseGrid() {
     .filter(permission => permission.screen_type === 'Warehouse')
     .map(permission => permission.permission_type.toLowerCase());
 
-  /*testing for search criteria
-    const [showAddUserForm, setShowAddUserForm] = useState(false);
-   const [editedData, setEditedData] = useState([]);
-   const [startDate, setStartDate] = useState("");
-   const [endDate, setEndDate] = useState("");*/
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      const isReloadShortcut =
+        (event.ctrlKey && event.key.toLowerCase() === "r") ||
+        (event.altKey && event.key.toLowerCase() === "r") ||
+        event.key === "F5";
 
-   useEffect(() => {
-            if (location.state?.preservedRowData) {
-              setRowData(location.state.preservedRowData);
-            }
-          
-            if (location.state?.preservedInputs) {
-              setwarehouse_code(location.state.preservedInputs.warehouse_code || "");
-              setwarehouse_name(location.state.preservedInputs.warehouse_name || "");
-              setstatus(location.state.preservedInputs.status || "");
-              setlocation_no(location.state.preservedInputs.location_no || "");
-          
-              if (location.state.preservedInputs.status) {
-                setSelectedStatus({
-                  label: location.state.preservedInputs.status,
-                  value: location.state.preservedInputs.status,
-                });
-              }
-            }
-          }, [location.state]);
+      if (isReloadShortcut) {
+        event.preventDefault();
+        clearInputFields();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    // if (location.state?.preservedRowData) {
+    //   setRowData(location.state.preservedRowData);
+    // }
+
+    if (location.state?.preservedInputs) {
+      const inputs = location.state.preservedInputs;
+
+      setwarehouse_code(inputs.warehouse_code || "");
+      setwarehouse_name(inputs.warehouse_name || "");
+      setstatus(inputs.status || "");
+      setlocation_no(inputs.location_no || "");
+
+      if (inputs.status) {
+        setSelectedStatus({
+          label: inputs.status,
+          value: inputs.status,
+        });
+      }
+
+      if (location.state?.refreshGrid) {
+        handleSearch(inputs);
+      }
+    }
+  }, [location.state]);
+
+  const clearInputFields = () => {
+    setwarehouse_code("");
+    setwarehouse_name("");
+    setstatus("");
+    setlocation_no("");
+    setSelectedStatus("");
+    setRowData([]);
+  };
 
   useEffect(() => {
     fetch(`${config.apiBaseUrl}/locationno`)
@@ -85,14 +112,14 @@ function WarehouseGrid() {
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/status`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ company_code })
-    })      .then((response) => response.json())
+    }).then((response) => response.json())
       .then((data) => {
         // Extract city names from the fetched data
         const statusOption = data.map(option => option.attributedetails_name);
@@ -101,10 +128,10 @@ function WarehouseGrid() {
       .catch((error) => console.error('Error fetching data:', error));
   }, []);
 
-  
+
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/status`, {
       method: 'POST',
       headers: {
@@ -129,7 +156,7 @@ function WarehouseGrid() {
   };
 
 
-  const handleSearch = async () => {
+  const handleSearch = async (searchParams = null) => {
     setLoading(true);
     try {
       const company_code = sessionStorage.getItem('selectedCompanyCode');
@@ -139,7 +166,13 @@ function WarehouseGrid() {
           "Content-Type": "application/json",
           "company_code": company_code
         },
-        body: JSON.stringify({ company_code: company_code, warehouse_code, warehouse_name, status, location_no }) // Send company_no and company_name as search criteria
+        body: JSON.stringify({
+          company_code: company_code,
+          warehouse_code: searchParams?.warehouse_code ?? warehouse_code,
+          warehouse_name: searchParams?.warehouse_name ?? warehouse_name,
+          status: searchParams?.status ?? status,
+          location_no: searchParams?.location_no ?? location_no,
+        })
       });
       if (response.ok) {
         const searchData = await response.json();
@@ -156,30 +189,19 @@ function WarehouseGrid() {
     } catch (error) {
       console.error("Error saving data:", error);
       toast.error("Error updating data: " + error.message);
-    }finally {
+    } finally {
       setLoading(false);
     }
 
   };
 
-
   const reloadGridData = () => {
     window.location.reload();
   };
 
-  const clearInputFields = () => {
-setwarehouse_code("");
-setwarehouse_name("");
-setstatus("");
-setlocation_no("");
-setSelectedStatus("");
-    setRowData([]);
-  };
 
 
   const columnDefs = [
-
-
     {
       headerCheckboxSelection: true,
       checkboxSelection: true,
@@ -405,23 +427,39 @@ setSelectedStatus("");
   const handleNavigateToForm = () => {
     navigate("/AddWarehouse", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
   };
+
+  // const handleNavigateWithRowData = (selectedRow) => {
+  //   navigate("/AddWarehouse", {
+  //     state: {
+  //       mode: "update",
+  //       selectedRow,
+
+  //       preservedRowData: rowData,
+
+  //       preservedInputs: {
+  //         warehouse_code,
+  //         warehouse_name,
+  //         status,
+  //         location_no,
+  //       },
+  //     },
+  //   });
+  // };
+
   const handleNavigateWithRowData = (selectedRow) => {
-  navigate("/AddWarehouse", {
-    state: {
-      mode: "update",
-      selectedRow,
-
-      preservedRowData: rowData,
-
-      preservedInputs: {
-        warehouse_code,
-        warehouse_name,
-        status,
-        location_no,
+    navigate("/AddWarehouse", {
+      state: {
+        mode: "update",
+        warehouse_code: selectedRow.warehouse_code,
+        preservedInputs: {
+          warehouse_code,
+          warehouse_name,
+          status,
+          location_no,
+        },
       },
-    },
-  });
-};
+    });
+  };
 
   const onSelectionChanged = () => {
     const selectedNodes = gridApi.getSelectedNodes();
@@ -434,16 +472,16 @@ setSelectedStatus("");
     const rowIndex = updatedRowData.findIndex(
       (row) => row.vendor_code === params.data.vendor_code && row.company_code === params.data.company_code && row.keyfield == params.data.keyfield
     );
-  
+
     if (rowIndex !== -1) {
       updatedRowData[rowIndex][params.colDef.field] = params.newValue;
       setRowData(updatedRowData);
-  
+
       setEditedData((prevData) => {
         const existingIndex = prevData.findIndex(
           (item) => item.vendor_code === params.data.vendor_code && item.company_code === params.data.company_code && item.keyfield == params.data.keyfield
         );
-  
+
         if (existingIndex !== -1) {
           const updatedEdited = [...prevData];
           updatedEdited[existingIndex] = updatedRowData[rowIndex];
@@ -501,10 +539,10 @@ setSelectedStatus("");
         } catch (error) {
           console.error("Error saving data:", error);
           toast.error("Error Updating Data: " + error.message);
-        }finally {
+        } finally {
           setLoading(false);
         }
-    
+
       },
       () => {
         toast.info("Data updated cancelled.");
@@ -557,10 +595,10 @@ setSelectedStatus("");
         } catch (error) {
           console.error("Error saving data:", error);
           toast.error("Error Updating Data: " + error.message);
-        }finally {
+        } finally {
           setLoading(false);
         }
-    
+
       },
       () => {
         toast.info("Data Delete cancelled.");
@@ -601,7 +639,7 @@ setSelectedStatus("");
   return (
     <div className="container-fluid Topnav-screen">
       <div>
-      {loading && <LoadingScreen />}
+        {loading && <LoadingScreen />}
         <ToastContainer position="top-right" className="toast-design" theme="colored" />
         <div className="shadow-lg p-1 bg-body-tertiary rounded  mb-2 mt-2">
           <div className=" d-flex justify-content-between  ">
@@ -761,18 +799,18 @@ setSelectedStatus("");
                 <label for="status" class="exp-form-labels">
                   Status
                 </label>
-            <div title="Select the Status">        
-                <Select
-                  id="status"
-                  value={selectedStatus}
-                  onChange={handleChangeStatus}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  options={filteredOptionStatus}
-                  className="exp-input-field"
-                  placeholder=""
-                />
+                <div title="Select the Status">
+                  <Select
+                    id="status"
+                    value={selectedStatus}
+                    onChange={handleChangeStatus}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                    options={filteredOptionStatus}
+                    className="exp-input-field"
+                    placeholder=""
+                  />
 
-              </div>
+                </div>
               </div>
             </div>
             <div className="col-md-3 form-group">

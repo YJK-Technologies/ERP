@@ -1186,6 +1186,18 @@ router.post("/getCompanyData",dataController.getCompanyData)
 router.post("/getCompanyMappingData",dataController.getCompanyMappingData)
 router.post("/getLocationData",dataController.getLocationData)
 router.post("/getBankAccountData", dataController.getBankAccountData)
+router.post("/getVisitorData", dataController.getVisitorData)
+router.post("/getFinancialYearAccessData", dataController.getFinancialYearAccessData)
+router.post("/getWarehouseData", dataController.getWarehouseData)
+router.post("/getVendorData", dataController.getVendorData)
+router.post("/getTaxData", dataController.getTaxData)
+router.post("/getNumberSeriesData", dataController.getNumberSeriesData)
+router.post("/getIntermediaryData", dataController.getIntermediaryData)
+router.post("/getItemData", dataController.getItemData)
+router.post("/getDesignationData", dataController.getDesignationData)
+router.post("/getDepartmentData", dataController.getDepartmentData)
+router.post("/getClientData", dataController.getClientData)
+router.post("/getCustomerData", dataController.getCustomerData)
 
 
 module.exports = router;

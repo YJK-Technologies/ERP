@@ -53,7 +53,7 @@ function ADDClientInfo({ }) {
   const [drop, setDrop] = useState([]);
   const [condrop, setCondrop] = useState([]);
   const [statedrop, setStatedrop] = useState([]);
- 
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [officedrop, setOfficedrop] = useState([]);
@@ -63,17 +63,99 @@ function ADDClientInfo({ }) {
 
   const [hasValueChanged, setHasValueChanged] = useState(false);
   const created_by = sessionStorage.getItem('selectedUserCode')
-    const [financialYearStart, setFinancialYearStart] = useState('');
-    const [financialYearEnd, setFinancialYearEnd] = useState('');
+  const [financialYearStart, setFinancialYearStart] = useState('');
+  const [financialYearEnd, setFinancialYearEnd] = useState('');
   const [transaction_date, settransaction_date] = useState("");
 
   const modified_by = sessionStorage.getItem("selectedUserCode");
   const [isUpdated, setIsUpdated] = useState(false);
+  const [keyfield, setKeyfield] = useState('');
 
   const location = useLocation();
-  const { mode, selectedRow } = location.state || {};
+  const locationState = location.state || {};
+  const mode = locationState.mode || "create"; // ✅ default fallback
+  const selectedRow = locationState.selectedRow || null;
+  const keyfields = location.state?.keyfield;
+  const company_code = sessionStorage.getItem('selectedCompanyCode');
 
-  console.log(selectedRow);
+  useEffect(() => {
+    if (!location.state) {
+      clearInputFields(); // ensure fresh create mode
+    }
+  }, []);
+
+  useEffect(() => {
+    if (mode === "update" && keyfields) {
+      fetchClientData();
+    }
+  }, [mode, keyfields]);
+
+  const fetchClientData = async () => {
+    try {
+      setLoading(true);
+
+      const response = await fetch(`${config.apiBaseUrl}/getClientData`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          keyfield: keyfields,
+          company_code
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.length > 0) {
+        const client = data[0];
+
+        setAddress1(client.customer_addr_1 || "")
+        setAddress2(client.customer_addr_2 || "");
+        setAddress3(client.customer_addr_3 || "");
+        setClient_code(client.Client_Code || "");
+        setCompany_or_Personal(client.Company_or_Personal || "");
+        setCompanyName(client.CompanyName || "");
+        setPhone(client.Phone || "");
+        setGSTIn(client.GSTIn || "");
+        setWebsite(client.Website || "");
+        setTag(client.Tag || "");
+        setStage(client.Stage || "");
+        setAddress1(client.Address1 || "");
+        setAddress2(client.Address2 || "");
+        setAddress3(client.Address3 || "");
+        setCity(client.City || "");
+        setZip(client.Zip || "");
+        setState(client.State || "");
+        setCountry(client.Country || "");
+        setExpectedRevenue(client.ExpectedRevenue || "");
+        setPayment(client.Payment || "");
+        setProduct(client.Product || "");
+        setProduct_URL(client.Product_URL || "");
+        setEmail(client.Email || "");
+        setPayment_Mode(client.Payment_Mode || "");
+        setPayment_Type(client.Payment_Type || "");
+        setLast_Payment(client.Last_Payment || "");
+        setLive_Date(client.Last_Payment || "");
+        setNotes(client.Notes || "");
+        setselectedPayment({
+          label: client.Payment_Mode,
+          value: client.Payment_Mode,
+        });
+        setselectedPaymentType({
+          label: client.Payment_Type,
+          value: client.Payment_Type,
+        });
+        setKeyfield(client.keyfield || "")
+
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch department details");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const clearInputFields = () => {
     setClient_code("");
@@ -105,50 +187,50 @@ function ADDClientInfo({ }) {
     setLast_Payment('');
   };
 
-  useEffect(() => {
-    if (mode === "update" && selectedRow && !isUpdated) {
-      setAddress1(selectedRow.customer_addr_1 || "")
-      setAddress2(selectedRow.customer_addr_2 || "");
-      setAddress3(selectedRow.customer_addr_3 || "");
-      setClient_code(selectedRow.Client_code || "");
-      setCompany_or_Personal(selectedRow.Company_or_Personal || "");
-      setCompanyName(selectedRow.CompanyName || "");
-      setPhone(selectedRow.Phone || "");
-      setGSTIn(selectedRow.GSTIn || "");
-      setWebsite(selectedRow.Website || "");
-      setTag(selectedRow.Tag || "");
-      setStage(selectedRow.Stage || "");
-      setAddress1(selectedRow.Address1 || "");
-      setAddress2(selectedRow.Address2 || "");
-      setAddress3(selectedRow.Address3 || "");
-      setCity(selectedRow.City || "");
-      setZip(selectedRow.Zip || "");
-      setState(selectedRow.State || "");
-      setCountry(selectedRow.Country || "");
-      setExpectedRevenue(selectedRow.ExpectedRevenue || "");
-      setPayment(selectedRow.Payment || "");
-      setProduct(selectedRow.Product || "");
-      setProduct_URL(selectedRow.Product_URL || "");
-      setEmail(selectedRow.Email || "");
-      setPayment_Mode(selectedRow.Payment_Mode || "");
-      setPayment_Type(selectedRow.Payment_Type || "");
-      setLast_Payment(selectedRow.Last_Payment || "");
-      setLive_Date(selectedRow.Last_Payment || "");
-      setNotes(selectedRow.Notes || "");
-      setselectedPayment({
-        label: selectedRow.Payment_Mode,
-        value: selectedRow.Payment_Mode,
-      });
-      setselectedPaymentType({
-        label: selectedRow.Payment_Type,
-        value: selectedRow.Payment_Type,
-      });
+  // useEffect(() => {
+  //   if (mode === "update" && selectedRow && !isUpdated) {
+  //     setAddress1(selectedRow.customer_addr_1 || "")
+  //     setAddress2(selectedRow.customer_addr_2 || "");
+  //     setAddress3(selectedRow.customer_addr_3 || "");
+  //     setClient_code(selectedRow.Client_code || "");
+  //     setCompany_or_Personal(selectedRow.Company_or_Personal || "");
+  //     setCompanyName(selectedRow.CompanyName || "");
+  //     setPhone(selectedRow.Phone || "");
+  //     setGSTIn(selectedRow.GSTIn || "");
+  //     setWebsite(selectedRow.Website || "");
+  //     setTag(selectedRow.Tag || "");
+  //     setStage(selectedRow.Stage || "");
+  //     setAddress1(selectedRow.Address1 || "");
+  //     setAddress2(selectedRow.Address2 || "");
+  //     setAddress3(selectedRow.Address3 || "");
+  //     setCity(selectedRow.City || "");
+  //     setZip(selectedRow.Zip || "");
+  //     setState(selectedRow.State || "");
+  //     setCountry(selectedRow.Country || "");
+  //     setExpectedRevenue(selectedRow.ExpectedRevenue || "");
+  //     setPayment(selectedRow.Payment || "");
+  //     setProduct(selectedRow.Product || "");
+  //     setProduct_URL(selectedRow.Product_URL || "");
+  //     setEmail(selectedRow.Email || "");
+  //     setPayment_Mode(selectedRow.Payment_Mode || "");
+  //     setPayment_Type(selectedRow.Payment_Type || "");
+  //     setLast_Payment(selectedRow.Last_Payment || "");
+  //     setLive_Date(selectedRow.Last_Payment || "");
+  //     setNotes(selectedRow.Notes || "");
+  //     setselectedPayment({
+  //       label: selectedRow.Payment_Mode,
+  //       value: selectedRow.Payment_Mode,
+  //     });
+  //     setselectedPaymentType({
+  //       label: selectedRow.Payment_Type,
+  //       value: selectedRow.Payment_Type,
+  //     });
 
-    } else if (mode === "create") {
-      clearInputFields();
-    }
-  }, [mode, selectedRow, isUpdated]); 
-  
+  //   } else if (mode === "create") {
+  //     clearInputFields();
+  //   }
+  // }, [mode, selectedRow, isUpdated]);
+
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
@@ -318,11 +400,11 @@ function ADDClientInfo({ }) {
     setPayment_Type(selectedCustomer ? selectedCustomer.value : '');
   };
 
-    const filteredOptionPaymentMode = paymentdrop.map((option) => ({
+  const filteredOptionPaymentMode = paymentdrop.map((option) => ({
     value: option.attributedetails_name,
     label: option.attributedetails_name,
   }));
-    const filteredOptionPaymentType = paymenttypedrop.map((option) => ({
+  const filteredOptionPaymentType = paymenttypedrop.map((option) => ({
     value: option.attributedetails_name,
     label: option.attributedetails_name,
   }));
@@ -335,8 +417,8 @@ function ADDClientInfo({ }) {
     settransaction_date(currentDate);
   }, [currentDate]);
 
-  
- const handleDateChange = (e) => {
+
+  const handleDateChange = (e) => {
     const selectedDate = e.target.value;
 
     if (selectedDate >= financialYearStart && selectedDate <= financialYearEnd) {
@@ -350,24 +432,25 @@ function ADDClientInfo({ }) {
   };
 
   const handleNavigate = () => {
-  navigate("/ClientInfo", {
-    state: {
-      preservedRowData: location.state?.preservedRowData,
-      preservedInputs: location.state?.preservedInputs
-    }
-  });
-};
+    navigate("/ClientInfo", {
+      state: {
+        refreshGrid: true,
+        // preservedRowData: location.state?.preservedRowData,
+        preservedInputs: location.state?.preservedInputs
+      }
+    });
+  };
 
   const handleInsert = async () => {
     if (
       !Client_code ||
       !Company_or_Personal ||
-      !CompanyName||
-      !Address1||
-      !Address2||
-      !Email||
-      !Payment_Mode||
-      !Payment_Type 
+      !CompanyName ||
+      !Address1 ||
+      !Address2 ||
+      !Email ||
+      !Payment_Mode ||
+      !Payment_Type
     ) {
       setError(" ");
       return;
@@ -447,12 +530,12 @@ function ADDClientInfo({ }) {
     if (
       !Client_code ||
       !Company_or_Personal ||
-      !CompanyName||
-      !Address1||
-      !Address2||
-      !Email||
-      !Payment_Mode||
-      !Payment_Type 
+      !CompanyName ||
+      !Address1 ||
+      !Address2 ||
+      !Email ||
+      !Payment_Mode ||
+      !Payment_Type
     ) {
       setError(" ");
       return;
@@ -500,6 +583,7 @@ function ADDClientInfo({ }) {
           Payment_Mode,
           Payment_Type,
           Product_URL,
+          keyfield,
           modified_by: sessionStorage.getItem('selectedUserCode')
         }),
       });
@@ -600,25 +684,25 @@ function ADDClientInfo({ }) {
                     <div class="d-flex justify-content-start">
                       <div>
                         <label for="state" class={`exp-form-labels ${error && !Client_code ? 'text-danger' : ''}`}>
-                       Client Code
+                          Client Code
                         </label></div>
                       <div> <span className="text-danger">*</span></div>
                     </div>
-                      <input
-                        id="cusco"
-                        value={Client_code}
-                         onChange={(e) => setClient_code(e.target.value)}
-                        className="exp-input-field form-control"
-                        placeholder=""
-                        maxLength={18}
-                      />
+                    <input
+                      id="cusco"
+                      value={Client_code}
+                      onChange={(e) => setClient_code(e.target.value)}
+                      className="exp-input-field form-control"
+                      placeholder=""
+                      maxLength={18}
+                    />
                   </div>
                 </div>
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
                     <div class="d-flex justify-content-start">
                       <div><label for="rid" class={`exp-form-labels ${error && !Company_or_Personal ? 'text-danger' : ''}`}>
-                   Company or Personal 
+                        Company or Personal
                       </label></div>
                       <div> <span className="text-danger">*</span></div>
                     </div><input
@@ -627,7 +711,7 @@ function ADDClientInfo({ }) {
                       type="text"
                       placeholder=""
                       required title="Please enter the address"
-                      value={ Company_or_Personal }
+                      value={Company_or_Personal}
                       onChange={(e) => setCompany_or_Personal(e.target.value)}
                       maxLength={250}
                     />
@@ -637,7 +721,7 @@ function ADDClientInfo({ }) {
                   <div class="exp-form-floating">
                     <div class="d-flex justify-content-start">
                       <div><label for="rid" class={`exp-form-labels ${error && !CompanyName ? 'text-danger' : ''}`}>
-                     Company Name
+                        Company Name
                       </label></div>
                       <div> <span className="text-danger">*</span></div>
                     </div><input
@@ -655,7 +739,7 @@ function ADDClientInfo({ }) {
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
                     <label for="cusad3" class="exp-form-labels">
-                 Phone
+                      Phone
                     </label>  <input
                       id="cusad3"
                       class="exp-input-field form-control"
@@ -671,7 +755,7 @@ function ADDClientInfo({ }) {
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
                     <label for="cusad4" class="exp-form-labels">
-                    GST IN
+                      GST IN
                     </label><input
                       id="cusad4"
                       class="exp-input-field form-control"
@@ -681,7 +765,7 @@ function ADDClientInfo({ }) {
                       value={GSTIn}
                       onChange={(e) => setGSTIn(e.target.value)}
                       maxLength={20}
-                    
+
                     />
                   </div>
                 </div>
@@ -689,14 +773,14 @@ function ADDClientInfo({ }) {
                   <div class="exp-form-floating">
                     <div class="d-flex justify-content-start">
                       <div><label for="rid" class="exp-form-labels">
-                    Website
+                        Website
                       </label></div>
                     </div>
                     <div title="Select the City">
                       <input
                         id="city"
                         value={Website}
-                         onChange={(e) => setWebsite(e.target.value)}
+                        onChange={(e) => setWebsite(e.target.value)}
                         className="exp-input-field form-control"
                         placeholder=""
                         maxLength={150}
@@ -718,7 +802,7 @@ function ADDClientInfo({ }) {
                         placeholder=""
                         maxLength={100}
                       />
-                      
+
                     </div>
                   </div>
                 </div>
@@ -736,7 +820,7 @@ function ADDClientInfo({ }) {
                         placeholder=""
                         maxLength={50}
                       />
-                      
+
                     </div>
                   </div>
                 </div>
@@ -744,7 +828,7 @@ function ADDClientInfo({ }) {
                   <div class="exp-form-floating">
                     <div class="d-flex justify-content-start">
                       <div><label for="rid" class={`exp-form-labels ${error && !Address1 ? 'text-danger' : ''}`}>
-                       Address1
+                        Address1
                       </label></div>
                       <div> <span className="text-danger">*</span></div>
                     </div>
@@ -756,9 +840,9 @@ function ADDClientInfo({ }) {
                         className="exp-input-field form-control"
                         placeholder=""
                         maxLength={100}
-                       
+
                       />
-                     
+
                     </div>
                   </div>
                 </div>
@@ -766,7 +850,7 @@ function ADDClientInfo({ }) {
                   <div class="exp-form-floating">
                     <div class="d-flex justify-content-start">
                       <div><label for="rid" class={`exp-form-labels ${error && !Address2 ? 'text-danger' : ''}`}>
-                       Address2
+                        Address2
                       </label></div>
                       <div> <span className="text-danger">*</span></div>
                     </div> <input
@@ -778,14 +862,14 @@ function ADDClientInfo({ }) {
                       value={Address2}
                       onChange={(e) => setAddress2(e.target.value)}
                       maxLength={100}
-              
+
                     />
                   </div>
                 </div>
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
                     <label for="cusoff" class="exp-form-labels">
-                  Address3
+                      Address3
                     </label><input
                       id="cusoff"
                       class="exp-input-field form-control"
@@ -795,15 +879,15 @@ function ADDClientInfo({ }) {
                       value={Address3}
                       onChange={(e) => setAddress3(e.target.value)}
                       maxLength={100}
-                    
+
                     />
-                     
+
                   </div>
                 </div>
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
                     <label for="cusresi" class="exp-form-labels">
-                    City
+                      City
                     </label> <input
                       id="cusresi"
                       class="exp-input-field form-control"
@@ -813,18 +897,18 @@ function ADDClientInfo({ }) {
                       value={City}
                       onChange={(e) => setCity(e.target.value)}
                       maxLength={20}
-                   
+
                     />
-                    
+
                   </div>
                 </div>
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
                     <div class="d-flex justify-content-start">
                       <div><label for="rid" class="exp-form-labels">
-                     Zip Code
+                        Zip Code
                       </label></div>
-                    
+
                     </div><input
                       id="mobno"
                       class="exp-input-field form-control"
@@ -834,16 +918,16 @@ function ADDClientInfo({ }) {
                       value={Zip}
                       onChange={(e) => setZip(e.target.value)}
                       maxLength={20}
-                
+
                     />
-                    
+
                   </div>
                 </div>
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
                     <div class="d-flex justify-content-start">
                       <div><label for="rid" class="exp-form-labels">
-                    State
+                        State
                       </label></div>
                     </div> <input
                       id="cusfax"
@@ -854,7 +938,7 @@ function ADDClientInfo({ }) {
                       value={State}
                       onChange={(e) => setState(e.target.value)}
                       maxLength={20}
-                     
+
                     />
                   </div>
                 </div>
@@ -862,7 +946,7 @@ function ADDClientInfo({ }) {
                   <div class="exp-form-floating">
                     <div class="d-flex justify-content-start">
                       <div><label for="rid" class="exp-form-labels">
-                      Country
+                        Country
                       </label></div>
                       <div> </div>
                     </div><input
@@ -874,16 +958,16 @@ function ADDClientInfo({ }) {
                       value={Country}
                       onChange={(e) => setCountry(e.target.value)}
                       maxLength={250}
-                    
+
                     />
-                   
+
                   </div>
                 </div>
-                
+
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
                     <label for="custrans" class="exp-form-labels">
-                     Expected Revenue
+                      Expected Revenue
                     </label>
                     <div title="Select the Transport Code">
                       <input
@@ -900,13 +984,13 @@ function ADDClientInfo({ }) {
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
                     <label for="cussales" class="exp-form-labels">
-                    Payment
+                      Payment
                     </label>
                     <div title="Select the Salesman Code">
                       <input
                         id="Payment"
                         value={Payment}
-                        onChange={(e) => setPayment(e.target.value)}                        
+                        onChange={(e) => setPayment(e.target.value)}
                         className="exp-input-field form-control"
                         placeholder=""
                         maxLength={13}
@@ -918,13 +1002,13 @@ function ADDClientInfo({ }) {
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
                     <label for="cusbro" class="exp-form-labels">
-                    Product
+                      Product
                     </label>
                     <div title="Select the Broker Code">
                       <input
                         id="cusbro"
                         value={Product}
-                        onChange={(e) => setProduct(e.target.value)}                         
+                        onChange={(e) => setProduct(e.target.value)}
                         className="exp-input-field form-control"
                         placeholder=""
                         maxLength={50}
@@ -935,13 +1019,13 @@ function ADDClientInfo({ }) {
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
                     <label for="cusbro" class="exp-form-labels">
-                    Product URL
+                      Product URL
                     </label>
                     <div title="Select the Broker Code">
                       <input
                         id="cusbro"
                         value={Product_URL}
-                        onChange={(e) => setProduct_URL(e.target.value)}                         
+                        onChange={(e) => setProduct_URL(e.target.value)}
                         className="exp-input-field form-control"
                         placeholder=""
                         maxLength={50}
@@ -952,13 +1036,13 @@ function ADDClientInfo({ }) {
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
                     <label for="cusbro" class="exp-form-labels">
-                Client Company Code
+                      Client Company Code
                     </label>
                     <div title="Select the Broker Code">
                       <input
                         id="cusbro"
                         value={Client_Company_code}
-                        onChange={(e) => setClient_Company_code(e.target.value)}                         
+                        onChange={(e) => setClient_Company_code(e.target.value)}
                         className="exp-input-field form-control"
                         placeholder=""
                         maxLength={50}
@@ -969,13 +1053,13 @@ function ADDClientInfo({ }) {
                 <div className="col-md-3 form-group mb-2">
                   <div class="exp-form-floating">
                     <label for="cusbro" class="exp-form-labels">
-                Client Database
+                      Client Database
                     </label>
                     <div title="Select the Broker Code">
                       <input
                         id="cusbro"
                         value={Client_Database}
-                        onChange={(e) => setClient_Database(e.target.value)}                         
+                        onChange={(e) => setClient_Database(e.target.value)}
                         className="exp-input-field form-control"
                         placeholder=""
                         maxLength={50}
@@ -985,11 +1069,11 @@ function ADDClientInfo({ }) {
                 </div>
                 <div className="col-md-3 form-group mb-2 ">
                   <div class="exp-form-floating">
-                     <div class="d-flex justify-content-start">
-                    <div><label for="cusweek" class={`exp-form-labels ${error && !Email ? 'text-danger' : ''}`}>
-                     Email
-                    </label></div>
-                    <div> <span className="text-danger">*</span></div>
+                    <div class="d-flex justify-content-start">
+                      <div><label for="cusweek" class={`exp-form-labels ${error && !Email ? 'text-danger' : ''}`}>
+                        Email
+                      </label></div>
+                      <div> <span className="text-danger">*</span></div>
                     </div>
                     <input
                       id="cusweek"
@@ -1006,21 +1090,21 @@ function ADDClientInfo({ }) {
                 <div className="col-md-3 form-group mb-2 ">
                   <div class="exp-form-floating">
                     <div class="d-flex justify-content-start">
-                    <label for="cusweek" class={`exp-form-labels ${error && !Payment_Mode ? 'text-danger' : ''}`}>
-                  Payment Mode
-                    </label>
-                    <div> <span className="text-danger">*</span></div>
+                      <label for="cusweek" class={`exp-form-labels ${error && !Payment_Mode ? 'text-danger' : ''}`}>
+                        Payment Mode
+                      </label>
+                      <div> <span className="text-danger">*</span></div>
                     </div>
                     <div title="Select the Office Type">
                       <Select
                         id="officeType"
                         value={SelectedPayment_Mode}
-                      onChange={handleChangePaymentMode}
-                       options={filteredOptionPaymentMode}
+                        onChange={handleChangePaymentMode}
+                        options={filteredOptionPaymentMode}
                         className="exp-input-field"
                         placeholder=""
                         maxLength={25}
-                     
+
                       />
                     </div>
                   </div>
@@ -1028,17 +1112,17 @@ function ADDClientInfo({ }) {
                 <div className="col-md-3 form-group mb-2 ">
                   <div class="exp-form-floating">
                     <div class="d-flex justify-content-start">
-                    <label for="cusweek" class={`exp-form-labels ${error && !Payment_Type ? 'text-danger' : ''}`}>
-                     Payment Type
-                    </label>
-                    <div> <span className="text-danger">*</span></div>
+                      <label for="cusweek" class={`exp-form-labels ${error && !Payment_Type ? 'text-danger' : ''}`}>
+                        Payment Type
+                      </label>
+                      <div> <span className="text-danger">*</span></div>
                     </div>
                     <div title="Select the  Default Customer">
                       <Select
                         id="officeType"
                         value={SelectedPayment_type}
-                       onChange={handleChangePaymentType}
-                       options={filteredOptionPaymentType}
+                        onChange={handleChangePaymentType}
+                        options={filteredOptionPaymentType}
                         className="exp-input-field"
                         placeholder=""
                         maxLength={50}
@@ -1046,55 +1130,55 @@ function ADDClientInfo({ }) {
                     </div>
                   </div>
                 </div>
-                    <div className="col-md-3 form-group mb-2">
-                      <div class="exp-form-floating">
-                        <div class="d-flex justify-content-start">
-                          <div> <label for="add2" class="exp-form-labels">
-                            Last Payment
-                          </label> </div>
-                          <div><span className="text-danger"></span></div>
-                        </div>
-                        <input
-                          id="StartDate"
-                          class="exp-input-field form-control"
-                          type="date"
-                          placeholder=""
-                          required title="Please Choose the Year"
-                          value={Last_Payment}
-                          onChange={(e) => setLast_Payment(e.target.value)}
-                          maxLength={100}
-                        
-                        />
-                      </div>
+                <div className="col-md-3 form-group mb-2">
+                  <div class="exp-form-floating">
+                    <div class="d-flex justify-content-start">
+                      <div> <label for="add2" class="exp-form-labels">
+                        Last Payment
+                      </label> </div>
+                      <div><span className="text-danger"></span></div>
                     </div>
+                    <input
+                      id="StartDate"
+                      class="exp-input-field form-control"
+                      type="date"
+                      placeholder=""
+                      required title="Please Choose the Year"
+                      value={Last_Payment}
+                      onChange={(e) => setLast_Payment(e.target.value)}
+                      maxLength={100}
 
-                           <div className="col-md-3 form-group mb-2">
-                      <div class="exp-form-floating">
-                        <div class="d-flex justify-content-start">
-                          <div> <label for="add2" class="exp-form-labels">
-                            Live Date
-                          </label> </div>
-                          <div><span className="text-danger"></span></div>
-                        </div>
-                        <input
-                          id="StartDate"
-                          class="exp-input-field form-control"
-                          type="date"
-                          placeholder=""
-                          required title="Please Choose the Year"
-                          value={Live_Date}
-                          onChange={(e) => setLive_Date(e.target.value)}
-                          maxLength={100}
-                        />
-                      </div>
+                    />
+                  </div>
+                </div>
+
+                <div className="col-md-3 form-group mb-2">
+                  <div class="exp-form-floating">
+                    <div class="d-flex justify-content-start">
+                      <div> <label for="add2" class="exp-form-labels">
+                        Live Date
+                      </label> </div>
+                      <div><span className="text-danger"></span></div>
                     </div>
+                    <input
+                      id="StartDate"
+                      class="exp-input-field form-control"
+                      type="date"
+                      placeholder=""
+                      required title="Please Choose the Year"
+                      value={Live_Date}
+                      onChange={(e) => setLive_Date(e.target.value)}
+                      maxLength={100}
+                    />
+                  </div>
+                </div>
 
-                    <div className="col-md-14 form-group mb-2">
+                <div className="col-md-14 form-group mb-2">
                   <div class="exp-form-floating">
                     <div class="d-flex justify-content-start">
                       <div><label for="rid" class="exp-form-labels">
-                       Notes
-                      </label></div> 
+                        Notes
+                      </label></div>
                     </div><textarea
                       id="cuscre"
                       class="exp-input-field form-control"
@@ -1107,8 +1191,8 @@ function ADDClientInfo({ }) {
                     />
                   </div>
                 </div>
-              
-              
+
+
                 <div class="col-md-3 form-group d-flex justify-content-start p-2">
                   {mode === "create" ? (
                     <button onClick={handleInsert} className="mt-3" title="Save">

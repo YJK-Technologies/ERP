@@ -65,36 +65,60 @@ function VenDetGrid() {
     .map(permission => permission.permission_type.toLowerCase());
 
   useEffect(() => {
-    if (location.state?.preservedRowData) {
-      setRowData(location.state.preservedRowData);
-    }
+    const handleKeyDown = (event) => {
+      const isReloadShortcut =
+        (event.ctrlKey && event.key.toLowerCase() === "r") ||
+        (event.altKey && event.key.toLowerCase() === "r") ||
+        event.key === "F5";
+
+      if (isReloadShortcut) {
+        event.preventDefault();
+        clearInputFields();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    // if (location.state?.preservedRowData) {
+    //   setRowData(location.state.preservedRowData);
+    // }
 
     if (location.state?.preservedInputs) {
-      setvendor_code(location.state.preservedInputs.vendor_code || "");
-      setvendor_name(location.state.preservedInputs.vendor_name || "");
-      setpanno(location.state.preservedInputs.panno || "");
-      setvendor_gst_no(location.state.preservedInputs.vendor_gst_no || "");
-      setvendor_addr_1(location.state.preservedInputs.vendor_addr_1 || "");
-      setvendor_area_code(location.state.preservedInputs.vendor_area_code || "");
-      setvendor_state_code(location.state.preservedInputs.vendor_state_code || "");
-      setvendor_country_code(location.state.preservedInputs.vendor_country_code || "");
-      setvendor_mobile_no(location.state.preservedInputs.vendor_mobile_no || "");
-      setstatus(location.state.preservedInputs.status || "");
-      setopening_balanceSC(location.state.preservedInputs.opening_balanceSC || "");
-      setbalance_type(location.state.preservedInputs.balance_type || "");
+      const inputs = location.state.preservedInputs;
 
-      if (location.state.preservedInputs.balance_type) {
+      setvendor_code(inputs.vendor_code || "");
+      setvendor_name(inputs.vendor_name || "");
+      setpanno(inputs.panno || "");
+      setvendor_gst_no(inputs.vendor_gst_no || "");
+      setvendor_addr_1(inputs.vendor_addr_1 || "");
+      setvendor_area_code(inputs.vendor_area_code || "");
+      setvendor_state_code(inputs.vendor_state_code || "");
+      setvendor_country_code(inputs.vendor_country_code || "");
+      setvendor_mobile_no(inputs.vendor_mobile_no || "");
+      setstatus(inputs.status || "");
+      setopening_balanceSC(inputs.opening_balanceSC || "");
+      setbalance_type(inputs.balance_type || "");
+
+      if (inputs.balance_type) {
         setSelectedBT({
-          label: location.state.preservedInputs.balance_type,
-          value: location.state.preservedInputs.balance_type,
+          label: inputs.balance_type,
+          value: inputs.balance_type,
         });
       }
 
-      if (location.state.preservedInputs.status) {
+      if (inputs.status) {
         setSelectedStatus({
-          label: location.state.preservedInputs.status,
-          value: location.state.preservedInputs.status,
+          label: inputs.status,
+          value: inputs.status,
         });
+      }
+
+      if (location.state?.refreshGrid) {
+        handleSearch(inputs);
       }
     }
   }, [location.state]);
@@ -321,7 +345,7 @@ function VenDetGrid() {
     setRowData([]);
   };
 
-  const handleSearch = async () => {
+  const handleSearch = async (searchParams = null) => {
     setLoading(true);
     try {
       const response = await fetch(`${config.apiBaseUrl}/vendorsearchdata`, {
@@ -331,20 +355,18 @@ function VenDetGrid() {
         },
         body: JSON.stringify({
           company_code: sessionStorage.getItem('selectedCompanyCode'),
-          vendor_code,
-          vendor_name,
-          panno,
-          vendor_gst_no,
-          vendor_addr_1,
-          vendor_area_code,
-          vendor_state_code,
-          vendor_country_code,
-          vendor_mobile_no,
-          status,
-          opening_balance: opening_balanceSC
-            ? parseFloat(opening_balanceSC)
-            : 0,
-          balance_type,
+          vendor_code: searchParams?.vendor_code ?? vendor_code,
+          vendor_name: searchParams?.vendor_name ?? vendor_name,
+          panno: searchParams?.panno ?? panno,
+          vendor_gst_no: searchParams?.vendor_gst_no ?? vendor_gst_no,
+          vendor_addr_1: searchParams?.vendor_addr_1 ?? vendor_addr_1,
+          vendor_area_code: searchParams?.vendor_area_code ?? vendor_area_code,
+          vendor_state_code: searchParams?.vendor_state_code ?? vendor_state_code,
+          vendor_country_code: searchParams?.vendor_country_code ?? vendor_country_code,
+          vendor_mobile_no: searchParams?.vendor_mobile_no ?? vendor_mobile_no,
+          opening_balance: Number(searchParams?.opening_balanceSC ?? opening_balanceSC ?? 0) || 0,
+          balance_type: searchParams?.balance_type ?? balance_type,
+          status: searchParams?.status ?? status,
         })
       });
       if (response.ok) {
@@ -846,14 +868,38 @@ function VenDetGrid() {
   const handleNavigatesToForm = () => {
     navigate("/AddVendorDetails", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
   };
+
+  // const handleNavigateWithRowData = (selectedRow) => {
+  //   navigate("/AddVendorDetails", {
+  //     state: {
+  //       mode: "update",
+  //       selectedRow,
+
+  //       preservedRowData: rowData,
+
+  //       preservedInputs: {
+  //         vendor_code,
+  //         vendor_name,
+  //         panno,
+  //         vendor_gst_no,
+  //         vendor_addr_1,
+  //         vendor_area_code,
+  //         vendor_state_code,
+  //         vendor_country_code,
+  //         vendor_mobile_no,
+  //         status,
+  //         opening_balanceSC,
+  //         balance_type,
+  //       },
+  //     },
+  //   });
+  // };
+
   const handleNavigateWithRowData = (selectedRow) => {
     navigate("/AddVendorDetails", {
       state: {
         mode: "update",
-        selectedRow,
-
-        preservedRowData: rowData,
-
+        keyfield: selectedRow.keyfield,
         preservedInputs: {
           vendor_code,
           vendor_name,
@@ -864,9 +910,9 @@ function VenDetGrid() {
           vendor_state_code,
           vendor_country_code,
           vendor_mobile_no,
-          status,
           opening_balanceSC,
           balance_type,
+          status
         },
       },
     });

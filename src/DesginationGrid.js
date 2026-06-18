@@ -33,7 +33,7 @@ function Desgination() {
   const [selectedStatus, setSelectedStatus] = useState(null);
   const Status = useRef(null);
   const [hasValueChanged, setHasValueChanged] = useState(false);
-  const [loading, setLoading] = useState(false);    
+  const [loading, setLoading] = useState(false);
   const [createdBy, setCreatedBy] = useState("");
   const [modifiedBy, setModifiedBy] = useState("");
   const [createdDate, setCreatedDate] = useState("");
@@ -47,37 +47,60 @@ function Desgination() {
     .filter(permission => permission.screen_type === 'Company')
     .map(permission => permission.permission_type.toLowerCase());
 
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      const isReloadShortcut =
+        (event.ctrlKey && event.key.toLowerCase() === "r") ||
+        (event.altKey && event.key.toLowerCase() === "r") ||
+        event.key === "F5";
+
+      if (isReloadShortcut) {
+        event.preventDefault();
+        clearInputFields();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   useEffect(() => {
-          if (location.state?.preservedRowData) {
-            setRowData(location.state.preservedRowData);
-          }
-        
-          if (location.state?.preservedInputs) {
-            setdept_id(location.state.preservedInputs.dept_id || "");
-            setdesgination_id(location.state.preservedInputs.desgination_id || "");
-            setStatus(location.state.preservedInputs.status || "");
-        
-            if (location.state.preservedInputs.status) {
-              setSelectedStatus({
-                label: location.state.preservedInputs.status,
-                value: location.state.preservedInputs.status,
-              });
-            }
-          }
-        }, [location.state]);
+    // if (location.state?.preservedRowData) {
+    //   setRowData(location.state.preservedRowData);
+    // }
+
+    if (location.state?.preservedInputs) {
+      const inputs = location.state.preservedInputs;
+
+      setdept_id(inputs.dept_id || "");
+      setdesgination_id(inputs.desgination_id || "");
+      setStatus(inputs.status || "");
+
+      if (inputs.status) {
+        setSelectedStatus({
+          label: inputs.status,
+          value: inputs.status,
+        });
+      }
+
+      if (location.state?.refreshGrid) {
+        handleSearch(inputs);
+      }
+    }
+  }, [location.state]);
 
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/status`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ company_code })
-    })      .then((response) => response.json())
+    }).then((response) => response.json())
       .then((data) => {
         // Extract city names from the fetched data
         const statusOption = data.map(option => option.attributedetails_name);
@@ -88,7 +111,7 @@ function Desgination() {
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
-    
+
     fetch(`${config.apiBaseUrl}/status`, {
       method: 'POST',
       headers: {
@@ -128,7 +151,7 @@ function Desgination() {
         console.log("Grid data reloaded successfully");
       } else {
         console.error("Failed to reload grid data");
-      
+
         toast.error("Failed to reload grid data. Please try again later")
       }
     } catch (error) {
@@ -137,17 +160,22 @@ function Desgination() {
     }
   };
 
-  const handleSearch = async () => {
+  const handleSearch = async (searchParams = null) => {
     const company_code = sessionStorage.getItem('selectedCompanyCode')
     setLoading(true);
-        
+
     try {
       const response = await fetch(`${config.apiBaseUrl}/DesginationSerachData`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ dept_id, desgination_id, status, company_code }) // Send company_no and company_name as search criteria
+        body: JSON.stringify({
+          dept_id: searchParams?.dept_id ?? dept_id,
+          desgination_id: searchParams?.desgination_id ?? desgination_id,
+          status: searchParams?.status ?? status,
+          company_code
+        })
       });
       if (response.ok) {
         const searchData = await response.json();
@@ -166,7 +194,7 @@ function Desgination() {
     } catch (error) {
       console.error("Error saving data:", error);
       toast.error("Error updating data: " + error.message);
-    }finally {
+    } finally {
       setLoading(false);
     }
 
@@ -177,12 +205,12 @@ function Desgination() {
   };
 
   const clearInputFields = () => {
-setdept_id("");
-setdesgination_id("");
-setStatus("");
-setSelectedStatus("");
-    setRowData([]);
-  };
+    setdept_id("");
+    setdesgination_id("");
+    setStatus("");
+    setSelectedStatus("");
+    setRowData([]);
+  };
 
   const columnDefs = [
 
@@ -228,7 +256,7 @@ setSelectedStatus("");
       headerName: "Desgination",
       field: "desgination",
       editable: true,
-      cellStyle: { textAlign: "left"},
+      cellStyle: { textAlign: "left" },
       // minWidth: 150,
       cellEditorParams: {
         maxLength: 50,
@@ -388,22 +416,38 @@ setSelectedStatus("");
   const handleNavigateToForm = () => {
     navigate("/AddDesgination", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
   };
+  // const handleNavigateWithRowData = (selectedRow) => {
+  //   navigate("/AddDesgination", {
+  //     state: {
+  //       mode: "update",
+  //       selectedRow,
+
+  //       preservedRowData: rowData,
+
+  //       preservedInputs: {
+  //         dept_id,
+  //         desgination_id,
+  //         status,
+  //       },
+  //     },
+  //   });
+
+  // };
+
   const handleNavigateWithRowData = (selectedRow) => {
-  navigate("/AddDesgination", {
-    state: {
-      mode: "update",
-      selectedRow,
-
-      preservedRowData: rowData,
-
-      preservedInputs: {
-        dept_id,
-        desgination_id,
-        status,
+    navigate("/AddDesgination", {
+      state: {
+        mode: "update",
+        keyfield: selectedRow.keyfield,
+        preservedInputs: {
+          dept_id,
+          desgination_id,
+          status,
+        },
       },
-    },
-  });
-};
+    });
+  };
+
   const onSelectionChanged = () => {
     const selectedNodes = gridApi.getSelectedNodes();
     const selectedData = selectedNodes.map((node) => node.data);
@@ -436,8 +480,8 @@ setSelectedStatus("");
     showConfirmationToast(
       "Are you sure you want to update the data in the selected rows?",
       async () => {
-        
-setLoading(true);
+
+        setLoading(true);
 
         try {
           const response = await fetch(`${config.apiBaseUrl}/UpdateDesgintion`, {
@@ -462,10 +506,10 @@ setLoading(true);
         } catch (error) {
           console.error("Error saving data:", error);
           toast.error("Error Updating Data: " + error.message);
-        }finally {
+        } finally {
           setLoading(false);
         }
-    
+
       },
       () => {
         toast.info("Data updated cancelled.");
@@ -518,7 +562,7 @@ setLoading(true);
         finally {
           setLoading(false);
         }
-    
+
       },
       () => {
         toast.info("Data Delete cancelled.");
@@ -566,7 +610,7 @@ setLoading(true);
   return (
     <div className="container-fluid Topnav-screen">
       <div>
-      {loading && <LoadingScreen />}
+        {loading && <LoadingScreen />}
         <ToastContainer position="top-right" className="toast-design" theme="colored" />
         <div className="shadow-lg p-1 bg-body-tertiary rounded  mb-2 mt-2">
           <div className=" d-flex justify-content-between  ">
@@ -733,18 +777,18 @@ setLoading(true);
                 <label class="exp-form-labels">
                   Status
                 </label>
-<div title="Select the Status">
-                <Select
-                  id="status"
-                  value={selectedStatus}
-                  onChange={handleChangeStatus}
-                  options={filteredOptionStatus}
-                  className="exp-input-field"
-                  placeholder=""
-                  onKeyDown={handleKeyDownStatus}
-                  ref={Status}
-                />
-</div>
+                <div title="Select the Status">
+                  <Select
+                    id="status"
+                    value={selectedStatus}
+                    onChange={handleChangeStatus}
+                    options={filteredOptionStatus}
+                    className="exp-input-field"
+                    placeholder=""
+                    onKeyDown={handleKeyDownStatus}
+                    ref={Status}
+                  />
+                </div>
               </div>
             </div>
 
