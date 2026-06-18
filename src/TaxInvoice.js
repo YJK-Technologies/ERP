@@ -1396,7 +1396,7 @@ function TaxInvoice() {
                 sale_amt: totalamt,
                 Performa_bill_no: new_running_no,
                 tax_amount: TotalTax,
-                bill_amt: TotalBill,
+                bill_amt: TotalBill ? TotalBill : 0,
                 roff_amt: round_difference,
                 customer_code: billToData['Customer Code'],
                 billTo_customer_name: billToData['Customer Name'],
@@ -3674,9 +3674,9 @@ function TaxInvoice() {
                                     <printbutton className="purbut" onClick={handleReload} title='reload'>
                                         <i class="fa-solid fa-arrow-rotate-right"></i>
                                     </printbutton>
-                                    <button className="purbut" onClick={navigateToSalesSettings}>
+                                    <printbutton className="purbut" onClick={navigateToSalesSettings}>
                                         <i className="fa-solid fa-cog"></i>
-                                    </button>
+                                    </printbutton>
                                 </div>
                             </div>
                             <div class="mobileview">

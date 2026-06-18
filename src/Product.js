@@ -6,13 +6,12 @@ import "ag-grid-enterprise";
 import "./apps.css";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ToastContainer,toast } from 'react-toastify';
-import Select from 'react-select';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ToastContainer, toast } from "react-toastify";
+import Select from "react-select";
 
-import { Dropdown, DropdownButton } from 'react-bootstrap';
-const config = require('./Apiconfig');
-
+import { Dropdown, DropdownButton } from "react-bootstrap";
+const config = require("./Apiconfig");
 
 function Product() {
   const [rowData, setRowData] = useState([]);
@@ -34,15 +33,12 @@ function Product() {
   const [item_name, setitem_name] = useState("");
 
   //code added by Harish purpose of set user permisssion
-  const permissions = JSON.parse(sessionStorage.getItem('permissions')) || {};
+  const permissions = JSON.parse(sessionStorage.getItem("permissions")) || {};
   const attributePermission = permissions
-    .filter(permission => permission.screen_type === 'Attribute')
-    .map(permission => permission.permission_type.toLowerCase());
+    .filter((permission) => permission.screen_type === "Attribute")
+    .map((permission) => permission.permission_type.toLowerCase());
 
-
-
-  useEffect(() => {
-  }, []);
+  useEffect(() => {}, []);
 
   // const fetchData = async () => {
   //   try {
@@ -52,7 +48,7 @@ function Product() {
   //   } catch (error) {
   //     console.error("Error fetching data:", error);
   //   }
-  // };   
+  // };
   // Define the function to reload the grid data
   const reloadGridData = () => {
     window.location.reload();
@@ -70,7 +66,6 @@ function Product() {
       .then((val) => setourbranddrop(val));
   }, []);
 
-
   const handleSearch = async () => {
     try {
       const response = await fetch(`${config.apiBaseUrl}/getproductsearch`, {
@@ -78,40 +73,43 @@ function Product() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ Product_Code, Product_name, item_code, item_name })
+        body: JSON.stringify({
+          Product_Code,
+          Product_name,
+          item_code,
+          item_name,
+        }),
       });
       if (response.ok) {
         const searchData = await response.json();
         setRowData(searchData);
-        console.log("data fetched successfully")
-
+        console.log("data fetched successfully");
       } else if (response.status === 404) {
         console.log("Data not found");
-        toast.warning("No data matching the search criteria.").then((result) => {
-          if (result.isConfirmed) {
-            if (gridApi) {
-              gridApi.refreshClientSideRowModel();
-            } else {
-              console.error("Grid API is not available.");
+        toast
+          .warning("No data matching the search criteria.")
+          .then((result) => {
+            if (result.isConfirmed) {
+              if (gridApi) {
+                gridApi.refreshClientSideRowModel();
+              } else {
+                console.error("Grid API is not available.");
+              }
             }
-          }
-        });
-      }
-
-      else {
+          });
+      } else {
         console.log("Bad request");
-        toast.error("An error occurred. Please try again later.")
+        toast.error("An error occurred. Please try again later.");
       } // Log the message for other errors
-
     } catch (error) {
       console.error("Error fetching search data:", error);
-      toast.error("An error occurred while fetching data. Please try again later")
+      toast.error(
+        "An error occurred while fetching data. Please try again later",
+      );
     }
   };
 
-
   const columnDefs = [
-
     {
       headerCheckboxSelection: true,
       checkboxSelection: true,
@@ -167,9 +165,7 @@ function Product() {
       },
     },
 
-
     {
-
       headerName: "Qty",
       field: "quantity",
       // editable: true,
@@ -180,7 +176,6 @@ function Product() {
       },
     },
     {
-
       headerName: "Tax",
       field: "tax",
       editable: false,
@@ -191,7 +186,6 @@ function Product() {
       },
     },
     {
-
       headerName: "Tot Amt",
       field: "tot_amt",
       editable: false,
@@ -201,7 +195,6 @@ function Product() {
         maxLength: 250,
       },
     },
-
   ];
 
   const defaultColDef = {
@@ -241,7 +234,7 @@ function Product() {
         "product code": row.Product_Code,
         "product name": row.Product_name,
         "item name": row.item_name,
-        "DESCRIPTION": row.description,
+        DESCRIPTION: row.description,
         //"Status": row.status,
         //"Founded Date": row.FoundedDate,
         //"Website URL": row.WebsiteURL,
@@ -341,12 +334,11 @@ function Product() {
     reportWindow.document.write("</tbody></table>");
 
     reportWindow.document.write(
-      '<button class="report-button" onclick="window.print()">Print</button>'
+      '<button class="report-button" onclick="window.print()">Print</button>',
     );
     reportWindow.document.write("</body></html>");
     reportWindow.document.close();
   };
-
 
   /*const handleNavigateToForm = () => {
     navigate("/form");
@@ -366,7 +358,7 @@ function Product() {
   const onCellValueChanged = (params) => {
     const updatedRowData = [...rowData];
     const rowIndex = updatedRowData.findIndex(
-      (row) => row.Product_Code === params.data.Product_Code
+      (row) => row.Product_Code === params.data.Product_Code,
     );
     if (rowIndex !== -1) {
       updatedRowData[rowIndex][params.colDef.field] = params.newValue;
@@ -377,17 +369,16 @@ function Product() {
     }
   };
 
-
-
   const saveEditedData = async () => {
     try {
-      const company_code = sessionStorage.getItem('selectedCompanyCode');
-      const modified_by = sessionStorage.getItem('selectedUserCode');
+      const company_code = sessionStorage.getItem("selectedCompanyCode");
+      const modified_by = sessionStorage.getItem("selectedUserCode");
 
       // Filter the editedData state to include only the selected rows
-      const selectedRowsData = editedData.filter(row =>
-        selectedRows.some(selectedRow => selectedRow.Product_Code === row.Product_Code
-        )
+      const selectedRowsData = editedData.filter((row) =>
+        selectedRows.some(
+          (selectedRow) => selectedRow.Product_Code === row.Product_Code,
+        ),
       );
 
       const saveConfirmation = await swal.fire({
@@ -396,7 +387,7 @@ function Product() {
         icon: "question",
         showCancelButton: true,
         confirmButtonText: "Yes",
-        cancelButtonText: "No"
+        cancelButtonText: "No",
       });
 
       if (!saveConfirmation.value) {
@@ -407,33 +398,30 @@ function Product() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "company_code": company_code,
+          company_code: company_code,
           "Modified-By": modified_by,
-
-
         },
         body: JSON.stringify({
-          Product_Codetoupdate: selectedRowsData.map(row => row.Product_Code),
+          Product_Codetoupdate: selectedRowsData.map((row) => row.Product_Code),
           updatedData: selectedRowsData,
-          "company_code": company_code,
-          "modified_by": modified_by,
-
-
-
+          company_code: company_code,
+          modified_by: modified_by,
         }), // Send the selected rows for saving along with their header and detail codes
       });
 
       if (response.ok) {
         setTimeout(() => {
-          swal.fire({
-            text: "Data updated successfully!",
-            icon: "success",
-            timer: 1000,
-            timerProgressBar: true,
-            showConfirmButton: false,
-          }).then(() => {
-            handleSearch();
-          });
+          swal
+            .fire({
+              text: "Data updated successfully!",
+              icon: "success",
+              timer: 1000,
+              timerProgressBar: true,
+              showConfirmButton: false,
+            })
+            .then(() => {
+              handleSearch();
+            });
         }, 1000);
       } else {
         console.error("Failed to save data");
@@ -441,7 +429,7 @@ function Product() {
           title: "Error!",
           text: "Failed to update data. Please try again later",
           icon: "error",
-          confirmButtonText: "OK"
+          confirmButtonText: "OK",
         });
       }
     } catch (error) {
@@ -450,13 +438,10 @@ function Product() {
         title: "Error!",
         text: "An error occurred while saving data. Please try again later",
         icon: "error",
-        confirmButtonText: "OK"
+        confirmButtonText: "OK",
       });
     }
   };
-
-
-
 
   const deleteSelectedRows = async () => {
     const selectedRows = gridApi.getSelectedRows();
@@ -466,11 +451,10 @@ function Product() {
         title: "No Rows Selected",
         text: "Please select at least one row to delete",
         icon: "warning",
-        confirmButtonText: "OK"
+        confirmButtonText: "OK",
       });
       return;
     }
-
 
     const confirmDelete = await swal.fire({
       title: "Confirm Delete",
@@ -478,31 +462,29 @@ function Product() {
       icon: "question",
       showCancelButton: true,
       confirmButtonText: "Yes",
-      cancelButtonText: "No"
+      cancelButtonText: "No",
     });
 
     if (!confirmDelete.isConfirmed) {
       return;
     }
 
-    const company_code = sessionStorage.getItem('selectedCompanyCode');
-    const modified_by = sessionStorage.getItem('selectedUserCode');
+    const company_code = sessionStorage.getItem("selectedCompanyCode");
+    const modified_by = sessionStorage.getItem("selectedUserCode");
 
     const productcode_todelete = selectedRows.map((row) => row.Product_Code);
-
 
     try {
       const response = await fetch(`${config.apiBaseUrl}/delproductdetdata`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "company_code": company_code,
-          "Modified-By": modified_by
-
+          company_code: company_code,
+          "Modified-By": modified_by,
         },
         body: JSON.stringify({ productcode_todelete }),
-        "company_code": company_code,
-        "modified_by": modified_by
+        company_code: company_code,
+        modified_by: modified_by,
         // Corrected the key name to match the server-side expectation
       });
 
@@ -513,7 +495,7 @@ function Product() {
           title: "Success",
           text: "Rows deleted successfully",
           icon: "success",
-          confirmButtonText: "OK"
+          confirmButtonText: "OK",
         });
       } else {
         // Check if the response status is 400 for custom error handling
@@ -523,7 +505,7 @@ function Product() {
             title: "Error",
             text: errorMessage,
             icon: "error",
-            confirmButtonText: "OK"
+            confirmButtonText: "OK",
           }); // Display error message to the user
         } else {
           console.error("Failed to delete rows");
@@ -536,11 +518,10 @@ function Product() {
         title: "Error",
         text: "An error occurred while deleting rows. Please try again later.",
         icon: "error",
-        confirmButtonText: "OK"
+        confirmButtonText: "OK",
       });
     }
   };
-
 
   useEffect(() => {
     fetch(`${config.apiBaseUrl}/getItem`)
@@ -555,12 +536,12 @@ function Product() {
 
   const handleChangeProduct = (selectedOption) => {
     setSelectedProduct(selectedOption);
-    if (selectedOption.value === 'Product') {
+    if (selectedOption.value === "Product") {
       fetchProductCodes();
-    } else if (selectedOption.value === 'Single') {
+    } else if (selectedOption.value === "Single") {
       fetchItemCodes();
     }
-    setProduct(selectedOption ? selectedOption.value : '');
+    setProduct(selectedOption ? selectedOption.value : "");
   };
 
   const fetchProductCodes = () => {
@@ -573,9 +554,8 @@ function Product() {
         }));
         setDynamicOptions(formattedData);
       })
-      .catch((error) => console.error('Error fetching product codes:', error));
+      .catch((error) => console.error("Error fetching product codes:", error));
   };
-
 
   const fetchItemCodes = () => {
     fetch(`${config.apiBaseUrl}/itemcode`)
@@ -587,86 +567,101 @@ function Product() {
         }));
         setDynamicOptions(formattedData);
       })
-      .catch((error) => console.error('Error fetching item codes:', error));
+      .catch((error) => console.error("Error fetching item codes:", error));
   };
 
-
-
-
   return (
+    <div className="container-fluid Topnav-screen">
+      <ToastContainer
+        position="top-right"
+        className="toast-design"
+        theme="colored"
+      />
 
-
-    <div className="container-fluid Topnav-screen" >
-            <ToastContainer position="top-right" className="toast-design" theme="colored"/>
-      
       <div class="d-flex justify-content-between" className="head mx-1">
-        <h1 align="left" class="purbut">Product Mapping</h1>
-
+        <h1 align="left" class="purbut">
+          Product Mapping
+        </h1>
 
         <div className="mobileview">
-
           <div class="d-flex justify-content-between">
-            <div className="" style={{ marginRight: "50px", marginLeft: "80px", textAlign: "left" }}><h1  >
-              Product Mapping
-            </h1></div>
+            <div
+              className=""
+              style={{
+                marginRight: "50px",
+                marginLeft: "80px",
+                textAlign: "left",
+              }}
+            >
+              <h1>Product Mapping</h1>
+            </div>
             <div class="dropdown">
-              <button class="btn btn-primary dropdown-toggle p-1" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <button
+                class="btn btn-primary dropdown-toggle p-1"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
                 <i class="fa-solid fa-list"></i>
               </button>
 
               <ul class="dropdown-menu">
-
                 <li class="iconbutton d-flex justify-content-center text-success">
-                  {['add', 'all permission'].some(permission => attributePermission.includes(permission)) && (
-                    <icon
-                      class="icon"
-                      onClick={handleChangeProduct}
-                    >
-                      <i class="fa-solid fa-user-plus"></i>
-                      {" "}
+                  {["add", "all permission"].some((permission) =>
+                    attributePermission.includes(permission),
+                  ) && (
+                    <icon class="icon" onClick={handleChangeProduct}>
+                      <i class="fa-solid fa-user-plus"></i>{" "}
                     </icon>
                   )}
                 </li>
                 <li class="iconbutton  d-flex justify-content-center text-danger">
-                  {['delete', 'all permission'].some(permission => attributePermission.includes(permission)) && (
-                    <icon
-                      class="icon"
-                      onClick={deleteSelectedRows}
-                    >
-
+                  {["delete", "all permission"].some((permission) =>
+                    attributePermission.includes(permission),
+                  ) && (
+                    <icon class="icon" onClick={deleteSelectedRows}>
                       <i class="fa-solid fa-user-minus"></i>
                     </icon>
                   )}
                 </li>
                 <li class="iconbutton  d-flex justify-content-center text-primary mb-0">
-                  {['update', 'all permission'].some(permission => attributePermission.includes(permission)) && (
-                    <icon
-                      class="icon"
-                      onClick={saveEditedData}
-                    >
+                  {["update", "all permission"].some((permission) =>
+                    attributePermission.includes(permission),
+                  ) && (
+                    <icon class="icon" onClick={saveEditedData}>
                       <i class="fa-solid fa-floppy-disk"></i>
                     </icon>
                   )}
                 </li>
                 <li class="iconbutton  d-flex justify-content-center text-dark  mt-0">
-                  {['all permission', 'view'].some(permission => attributePermission.includes(permission)) && (
-                    <icon
-                      class="icon"
-                      onClick={generateReport}
-                    >
-
+                  {["all permission", "view"].some((permission) =>
+                    attributePermission.includes(permission),
+                  ) && (
+                    <icon class="icon" onClick={generateReport}>
                       <i class="fa-solid fa-print"></i>
                     </icon>
                   )}
                 </li>
-              </ul></div></div>
+              </ul>
+            </div>
+          </div>
         </div>
-        <div class="d-flex me-3 " >
-          {['add', 'all permission'].some(permission => attributePermission.includes(permission)) && (
-            <addbutton onClick={handleNavigatesToForm}
-              required title="Add Attribute"> <i class="fa-solid fa-user-plus"></i> </addbutton>
+        <div class="d-flex me-3 ">
+          {["add", "all permission"].some((permission) =>
+            attributePermission.includes(permission),
+          ) && (
+            <addbutton
+              onClick={handleNavigatesToForm}
+              required
+              title="Add Attribute"
+            >
+              {" "}
+              <i class="fa-solid fa-user-plus"></i>{" "}
+            </addbutton>
           )}
-          {['delete', 'all permission'].some(permission => attributePermission.includes(permission)) && (
+          {["delete", "all permission"].some((permission) =>
+            attributePermission.includes(permission),
+          ) && (
             <delbutton onClick={deleteSelectedRows} required title="Delete">
               <i class="fa-solid fa-user-minus"></i>
             </delbutton>
@@ -678,33 +673,40 @@ function Product() {
           {/* <div class="d-flex flex-row my-2 mt-3 ">
           <button  onClick={} title="print"><i class="fa fa-print" aria-hidden="true"></i></button>
          */}
-          {['all permission', 'view'].some(permission => attributePermission.includes(permission)) && (
-            <button class="print" onClick={generateReport} required title="Generate Report"  ><i class="fa-solid fa-print"></i></button>
+          {["all permission", "view"].some((permission) =>
+            attributePermission.includes(permission),
+          ) && (
+            <button
+              class="print"
+              onClick={generateReport}
+              required
+              title="Generate Report"
+            >
+              <i class="fa-solid fa-print"></i>
+            </button>
           )}
-        </div></div>
+        </div>
+      </div>
       <p>Search Criteria</p>
       <hr />
 
-
       <div className="row ms-4">
-
-
-
-
         <div className="col-md-3 form-group">
           <div class="exp-form-floating">
             <label for="locno" class="exp-form-labels">
               Product Code
-            </label><input
+            </label>
+            <input
               id="locno"
               className="exp-input-field form-control"
               type="text"
               placeholder=""
-              required title="Please fill the header code here"
+              required
+              title="Please fill the header code here"
               value={Product_Code}
               maxLength={18}
               onChange={(e) => setProduct_Code(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             />
           </div>
         </div>
@@ -713,25 +715,27 @@ function Product() {
           <div class="exp-form-floating">
             <label for="lname" class="exp-form-labels">
               Product Na
-            </label><input
+            </label>
+            <input
               id="lname"
               className="exp-input-field form-control"
               type="text"
               placeholder=""
-              required title="Please fill the sub code here"
+              required
+              title="Please fill the sub code here"
               value={Product_name}
               maxLength={18}
               onChange={(e) => setProduct_name(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             />
-
           </div>
         </div>
 
-
-        <div className="col-md-3 form-group mb-2" style={{ justifyContent: "center" }}>
-
-          <label for="lname" class="exp-form-labels" >
+        <div
+          className="col-md-3 form-group mb-2"
+          style={{ justifyContent: "center" }}
+        >
+          <label for="lname" class="exp-form-labels">
             Item code
           </label>
 
@@ -745,31 +749,28 @@ function Product() {
                 placeholder=""
                 required
                 data-tip="Please select a payment type" // Attach ref to Purchase Type
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               />
             </div>
           </div>
         </div>
 
-
         <div className="col-md-3 form-group">
           <div class="exp-form-floating">
-            <label for="lname" class="exp-form-labels" >
+            <label for="lname" class="exp-form-labels">
               Item Name
             </label>
             <input
               className="exp-input-field"
-              id='itemCode'
+              id="itemCode"
               required
               placeholder=""
               maxLength={18}
               value={item_name}
               onChange={(e) => setitem_name(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              autoComplete='off'
-
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              autoComplete="off"
             />
-
 
             {/* <div className="col-md-3 form-group">
             <div class="exp-form-floating">
@@ -806,34 +807,37 @@ function Product() {
                 
               </div>
             </div> */}
-
-
           </div>
         </div>
         <div className="col-md-3 form-group mt-4">
           <div class="exp-form-floating">
             <div class="d-flex justify-content-center">
-              <button className="searchBtn" onClick={handleSearch} required title="Search"><i className="fas fa-search"></i></button>
-              <button className="searchBtn" onClick={reloadGridData} required title="Refresh"><FontAwesomeIcon icon="fa-solid fa-arrow-rotate-right" /></button>
-            </div> </div></div>
+              <button
+                className="searchBtn"
+                onClick={handleSearch}
+                required
+                title="Search"
+              >
+                <i className="fas fa-search"></i>
+              </button>
+              <button
+                className="searchBtn"
+                onClick={reloadGridData}
+                required
+                title="Refresh"
+              >
+                <FontAwesomeIcon icon="fa-solid fa-arrow-rotate-right" />
+              </button>
+            </div>{" "}
+          </div>
+        </div>
       </div>
-
-
-
-
-
-
-
-
-
-
-
 
       <hr />
 
       {/* <p>Result Set</p> */}
 
-      <div class="ag-theme-alpine" style={{ height: 530, width: "100%", }}>
+      <div class="ag-theme-alpine" style={{ height: 530, width: "100%" }}>
         <AgGridReact
           rowData={rowData}
           columnDefs={columnDefs}
@@ -845,7 +849,6 @@ function Product() {
           paginationAutoPageSize={true}
           onSelectionChanged={onSelectionChanged}
           onCellValueChanged={onCellValueChanged}
-
         />
       </div>
     </div>

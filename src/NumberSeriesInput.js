@@ -4,14 +4,14 @@ import "./input.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import * as icons from "react-bootstrap-icons";
 import { useNavigate } from "react-router-dom";
-import Select from 'react-select'
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import LoadingScreen from './Loading';
+import Select from "react-select";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import LoadingScreen from "./Loading";
 import { useLocation } from "react-router-dom";
-const config = require('./Apiconfig');
+const config = require("./Apiconfig");
 
-function NumberSeriesInput({ }) {
+function NumberSeriesInput({}) {
   const [Screen_Type, setScreen_Type] = useState("");
   const [screentypedrop, setscreentypedrop] = useState([]);
   const [Start_Year, setStart_Year] = useState("");
@@ -20,13 +20,13 @@ function NumberSeriesInput({ }) {
   const [Running_No, setRunning_No] = useState(0);
   const [End_No, setEnd_No] = useState(10000);
   const [comtext, secomtext] = useState("");
-  const [selectedscreentype, setselectedscreentype] = useState('');
+  const [selectedscreentype, setselectedscreentype] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
   const [statusdrop, setStatusdrop] = useState([]);
   const [booleandrop, setBooleandrop] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [selectedStatus, setselectedStatus] = useState('');
-  const [selectedBoolean, setselectedBoolean] = useState('');
+  const [selectedStatus, setselectedStatus] = useState("");
+  const [selectedBoolean, setselectedBoolean] = useState("");
   const [status, setStatus] = useState("");
   const [number_prefix, setNumber_prefix] = useState("");
   const [error, setError] = useState("");
@@ -226,14 +226,11 @@ function NumberSeriesInput({ }) {
       }
     } catch (error) {
       console.error("Error Update data:", error);
-      toast.error('Error inserting data: ' + error.message);
-    }
-    finally {
+      toast.error("Error inserting data: " + error.message);
+    } finally {
       setLoading(false);
     }
   };
-
-
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
@@ -254,33 +251,31 @@ function NumberSeriesInput({ }) {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
 
     fetch(`${config.apiBaseUrl}/status`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ company_code })
+      body: JSON.stringify({ company_code }),
     })
       .then((data) => data.json())
       .then((val) => setStatusdrop(val))
-      .catch((error) => console.error('Error fetching data:', error));
+      .catch((error) => console.error("Error fetching data:", error));
   }, []);
-
 
   useEffect(() => {
     const company_code = sessionStorage.getItem('selectedCompanyCode');
 
     fetch(`${config.apiBaseUrl}/getboolean`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ company_code })
+      body: JSON.stringify({ company_code }),
     })
       .then((data) => data.json())
       .then((val) => setBooleandrop(val))
-      .catch((error) => console.error('Error fetching data:', error));
+      .catch((error) => console.error("Error fetching data:", error));
   }, []);
-
 
   const filteredOptionscreentype = screentypedrop.map((option) => ({
     value: option.attributedetails_name,
@@ -304,7 +299,8 @@ function NumberSeriesInput({ }) {
 
     let financialYearStartDate, financialYearEndDate;
 
-    if (currentMonth < 3) {  // If current month is less than April (March)
+    if (currentMonth < 3) {
+      // If current month is less than April (March)
       // Set the previous year's start date and the current year's end date
       financialYearStartDate = `${currentYear - 1}-04-01`;
       financialYearEndDate = `${currentYear}-03-31`;
@@ -317,9 +313,7 @@ function NumberSeriesInput({ }) {
     // Set the calculated dates to the state
     setStart_Year(financialYearStartDate);
     setEnd_Year(financialYearEndDate);
-
   }, []);
-
 
   const handleChangescreentype = (selectedscreentype) => {
     setselectedscreentype(selectedscreentype);
@@ -340,9 +334,12 @@ function NumberSeriesInput({ }) {
   };
 
   const handleInsert = async () => {
-    if (
-      !Screen_Type
-    ) {
+    if (!Start_Year ||
+      !End_Year ||
+      !Start_No ||
+      !Running_No ||
+      !End_No ||
+      !comtext ) {
       setError(" ");
       toast.warning("Missing Required Fields");
       return;
@@ -356,7 +353,7 @@ function NumberSeriesInput({ }) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          company_code: sessionStorage.getItem('selectedCompanyCode'),
+          company_code: sessionStorage.getItem("selectedCompanyCode"),
           Screen_Type,
           Start_Year,
           End_Year,
@@ -366,7 +363,7 @@ function NumberSeriesInput({ }) {
           comtext,
           number_prefix,
           status,
-          created_by: sessionStorage.getItem('selectedUserCode')
+          created_by: sessionStorage.getItem("selectedUserCode"),
         }),
       });
       if (response.ok) {
@@ -427,7 +424,8 @@ function NumberSeriesInput({ }) {
   };
 
   const handleKeyDownStatus = async (e) => {
-    if (e.key === 'Enter' && hasValueChanged) { // Only trigger search if the value has changed
+    if (e.key === "Enter" && hasValueChanged) {
+      // Only trigger search if the value has changed
       // Trigger the search function
       setHasValueChanged(false); // Reset the flag after search
     }
