@@ -535,7 +535,7 @@ const UnplannedReturn = () => {
     },
     {
       headerName: 'Serial No',
-      field: 'SerialNo',
+      field: 'Serial_no',
       editable: true,
       filter: true,
       sortable: false
@@ -969,7 +969,7 @@ const UnplannedReturn = () => {
               approvalStatus: item.ApprovalStatus,
               actionTaken: item.ActionTaken,
               notes: item.Notes,
-              SerialNo: item.Serial_No
+              Serial_no: item.Serial_No
             };
           });
 
@@ -1124,7 +1124,8 @@ const UnplannedReturn = () => {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ transaction_no: ReturnID })
+        body: JSON.stringify({ company_code: sessionStorage.getItem('selectedCompanyCode'),
+        Location_Code: sessionStorage.getItem('selectedLocationCode'),transaction_no: ReturnID })
       });
 
       if (response.ok) {
@@ -1145,7 +1146,7 @@ const UnplannedReturn = () => {
             approvalStatus: ApprovalStatus,
             actionTaken: ActionTaken,
             notes: Notes,
-            SerialNo: Serial_no
+            Serial_no: Serial_no
 
           });
         });
