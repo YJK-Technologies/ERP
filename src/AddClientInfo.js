@@ -9,6 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer, toast } from 'react-toastify';
 import LoadingScreen from './Loading';
 import ClientInfo from "./ClientInfo";
+import { number } from "framer-motion";
 
 const config = require('./Apiconfig');
 
@@ -490,10 +491,10 @@ function ADDClientInfo({ }) {
           Country,
           Website,
           ExpectedRevenue,
-          Payment,
+          Payment: Payment ? parseFloat(Payment) : 0,
           Product,
-          Live_Date,
-          Last_Payment,
+          Live_Date: Live_Date ? (Live_Date) : null,
+          Last_Payment: Last_Payment ? (Last_Payment) : null,
           Email,
           Payment_Mode,
           Payment_Type,
@@ -524,7 +525,6 @@ function ADDClientInfo({ }) {
       setLoading(false);
     }
   };
-
 
   const handleUpdate = async () => {
     if (
