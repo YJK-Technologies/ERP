@@ -619,6 +619,7 @@ function CustomerDetInput({ }) {
         },
         body: JSON.stringify({
           company_code: sessionStorage.getItem('selectedCompanyCode'),
+          Location_Code: sessionStorage.getItem('selectedLocationCode'),
           customer_code,
           customer_addr_1,
           customer_addr_2,
