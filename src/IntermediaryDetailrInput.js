@@ -4,7 +4,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Select from 'react-select';
+import Select from "react-select";
+import 'react-toastify/dist/ReactToastify.css';
 import IntermediaryHdrInputPopup from "./IntermediaryHeaderInput";
 import { useLocation } from "react-router-dom";
 import LoadingScreen from "./Loading";
@@ -43,6 +44,8 @@ function IntermediaryDetailInput({}) {
   const modified_by = sessionStorage.getItem("selectedUserCode");
   const [isUpdated, setIsUpdated] = useState(false);
   const location = useLocation();
+  // const { mode, selectedRow } = location.state || {};
+  console.log(selectedRow);
 
   const locationState = location.state || {};
   const mode = locationState.mode || "create"; // ✅ default fallback
@@ -249,6 +252,8 @@ function IntermediaryDetailInput({}) {
 
   useEffect(() => {
     const company_code = sessionStorage.getItem("selectedCompanyCode");
+
+    // const company_code = sessionStorage.getItem('selectedCompanyCode');
 
     fetch(`${config.apiBaseUrl}/state`, {
       method: "POST",
