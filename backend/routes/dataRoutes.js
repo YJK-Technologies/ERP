@@ -1198,6 +1198,10 @@ router.post("/getDesignationData", dataController.getDesignationData)
 router.post("/getDepartmentData", dataController.getDepartmentData)
 router.post("/getClientData", dataController.getClientData)
 router.post("/getCustomerData", dataController.getCustomerData)
+router.post("/getDefaultScreens",dataController.getDefaultScreens)
+router.post("/userSettingsInsert",dataController.userSettingsInsert)
+router.post("/getUserSettings",dataController.getUserSettings)
+router.post("/getDefaultUserCompany",dataController.getDefaultUserCompany)
 
 
 module.exports = router;
