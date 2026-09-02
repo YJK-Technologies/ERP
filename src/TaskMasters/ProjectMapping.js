@@ -547,6 +547,7 @@ const filteredOptionUserSC = Array.isArray(userDropSC)
                       onChange={handleChangeProject}
                       value={selectedProject}
                       options={filteredOptionProject}
+                      styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                     />
                   </div>
                 </div>
@@ -565,6 +566,7 @@ const filteredOptionUserSC = Array.isArray(userDropSC)
                       onChange={handleChangeUser}
                       value={selectedUser}
                       options={filteredOptionUser}
+                      styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                     />
                   </div>
                 </div>
@@ -603,6 +605,7 @@ const filteredOptionUserSC = Array.isArray(userDropSC)
                       onChange={handleChangeProjectSC}
                       value={selectedProjectSC}
                       options={filteredOptionProjectSC}
+                      styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                     />
                   </div>
                 </div>
@@ -641,6 +644,7 @@ const filteredOptionUserSC = Array.isArray(userDropSC)
                       onChange={handleChangeUserSC}
                       value={selectedUserSC}
                       options={filteredOptionUserSC}
+                      styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                     />
                   </div>
                 </div>

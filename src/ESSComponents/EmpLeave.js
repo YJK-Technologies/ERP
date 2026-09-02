@@ -614,6 +614,7 @@ function Input({ }) {
                       value={SelectedType}
                       onChange={handleType}
                       options={filterOptionType}
+                      styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                     />
                       </div>
                   </div>
@@ -631,6 +632,7 @@ function Input({ }) {
                       options={filterOptionAccrual}
                       className="exp-input-field"
                       maxLength={50}
+                      styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                     />
                   </div>
                   </div>
@@ -706,6 +708,7 @@ function Input({ }) {
                       value={SelectedLeaveReason}
                       onChange={handleLeaveReason}
                       options={filterOptionLeaveReason}
+                      styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                     />
                       </div>
                   </div>
@@ -762,6 +765,7 @@ function Input({ }) {
                         onChange={handletype}
                         options={filterOptiontype}
                         placeholder=""
+                        styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                         onKeyDown={(e) => e.key === 'Enter' && handleSearch()} />
                     </div>
                     </div>
@@ -779,6 +783,7 @@ function Input({ }) {
                         value={selectedaccrual}
                         onChange={handleaccrual}
                         options={filterOptionaccrual}
+                        styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                         onKeyDown={(e) => e.key === 'Enter' && handleSearch()} />
                     </div>
                     </div>

@@ -1187,6 +1187,7 @@ function GatePass({ }) {
                           value={selectedVisitor_ID}
                           onChange={handlevisitor}
                           options={filterOptionVisitor}
+                          styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                         />
                       </div>
                     </div>
@@ -1358,6 +1359,7 @@ function GatePass({ }) {
                         value={selectedVisitor_IDsearch}
                         onChange={handlevisitorSC}
                         options={filterOptionVisitorSC}
+                        styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                       />
                     </div>
                   </div>
@@ -1481,6 +1483,7 @@ function GatePass({ }) {
                         options={filteredOptionPurpose}
                         isMulti
                         placeholder="Select purpose"
+                        styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                       />
                     </div>
                   </div>

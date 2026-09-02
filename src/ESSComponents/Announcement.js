@@ -777,6 +777,7 @@ function Input({ }) {
                       onChange={handleChangeType}
                       options={filteredOptionType}
                       required title="Please Select the Type"
+                      styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                     />
                   </div>
                 </div>
@@ -794,6 +795,7 @@ function Input({ }) {
                       value={selectDetails}
                       onChange={handleChangeDetails}
                       options={filteredOptionDetails}
+                      styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                     />
                   </div>
                 </div>
@@ -904,6 +906,7 @@ function Input({ }) {
                       options={filteredOptionMsgType}
                       className="exp-input-field"
                       required title="Please Select the Message Type"
+                      styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                     />
                   </div>
                 </div>
@@ -939,6 +942,7 @@ function Input({ }) {
                       onChange={handleChangeStatus}
                       options={filteredOptionStatus}
                       className="exp-input-field"
+                      styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                     />
                   </div>
                 </div>
@@ -983,6 +987,7 @@ function Input({ }) {
                       onChange={handlechangetype}
                       options={filteredOptiontype}
                       onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                      styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                     />
                   </div>
                 </div>
@@ -1001,6 +1006,7 @@ function Input({ }) {
                       onChange={handlechangedetails}
                       options={filteredoptiondetails}
                       onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                      styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                     />
                   </div>
                 </div>
@@ -1122,6 +1128,7 @@ function Input({ }) {
                       options={filteredoptionmsgtype}
                       className="exp-input-field"
                       onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                      styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                     />
                   </div>
                 </div>
@@ -1159,6 +1166,7 @@ function Input({ }) {
                       required title="Please Select the Status"
                       onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                       className="exp-input-field"
+                      styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                     />
                   </div>
                 </div>

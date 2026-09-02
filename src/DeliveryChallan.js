@@ -2902,6 +2902,7 @@ function DeliveryChallan() {
                                                 data-tip="Please select a sales type"
                                                 autoComplete="off"
                                                 ref={salesTypeRef}
+                                                styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                                             />
                                         </div>
                                     </div>
@@ -3035,9 +3036,10 @@ function DeliveryChallan() {
                                     </div>
                                 </div>
                                 <div className="col-md-3 form-group mb-2" style={{ justifyContent: "center" }}>
+                                   <div className="exp-form-floating">
                                     <label htmlFor="party_code">Product/Items Filter</label>
-                                    <div className="exp-form-floating">
-                                        <div class="d-flex justify-content-between">
+                                    
+                                        <div className="d-flex justify-content-between">
                                             <Select
                                                 id="Product"
                                                 value={selectedProduct}
@@ -3046,7 +3048,8 @@ function DeliveryChallan() {
                                                 className="exp-input-field"
                                                 placeholder=""
                                                 required
-
+                                                classNamePrefix="react-select"
+                                                styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                                             />
                                         </div>
                                     </div>
@@ -3064,6 +3067,7 @@ function DeliveryChallan() {
                                                 autoComplete='off'
                                                 options={dynamicOptions}
                                                 onChange={handleItemCode}
+                                                styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                                             />
                                         </div>
                                     </div>

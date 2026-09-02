@@ -724,6 +724,7 @@ function Payment() {
                   options={productOptions}
                   value={productOptions.find(option => option.value === Product) || null}
                   onChange={(selectedOption) => setProduct(selectedOption ? selectedOption.value : "")}
+                  styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                 />
               </div>
             </div>
@@ -832,6 +833,7 @@ function Payment() {
                     className="exp-input-field"
                     placeholder=""
                   // onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                   />
                 </div>
               </div>

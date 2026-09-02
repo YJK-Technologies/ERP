@@ -140,6 +140,7 @@ const ItemPage = () => {
                 value={selectedItem}
                 onChange={handleChangeItem}
                 options={filteredOptionItem}
+                styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
               />
             </div>
           </div>

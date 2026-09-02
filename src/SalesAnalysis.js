@@ -431,6 +431,7 @@ const ItemPage = () => {
               placeholder=""
               required title="Please select a item code"
               maxLength={18}
+              styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
             />
           </div>
           {selectedPeriod.label === "Custom Date" && (
@@ -470,6 +471,7 @@ const ItemPage = () => {
               placeholder=""
               required
               maxLength={18}
+              styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
             />
           </div>
           <div className="col-12 col-md-2">
@@ -484,6 +486,7 @@ const ItemPage = () => {
               required
               data-tip="Please select a payment type"
               autoComplete="off"
+              styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
             />
           </div>
           {selectedType.label === "Sales" && (
@@ -498,6 +501,7 @@ const ItemPage = () => {
                 placeholder=""
                 required
                 autoComplete="off"
+                styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
               />
             </div>
           )}

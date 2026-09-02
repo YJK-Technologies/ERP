@@ -1519,6 +1519,7 @@ const handleDroppedFiles = async (selection, files) => {
                     value={selectedProject}
                     onChange={handleChangeProject}
                     options={filteredOptionProject}
+                    styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                   />
                 </div>
               </div>
@@ -1915,6 +1916,7 @@ const handleDroppedFiles = async (selection, files) => {
                   required title="Please Select the User Code"
                   onChange={handleChangeUser}
                   options={filteredOptionUser}
+                  styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                 />
               </div>
             </div>
@@ -1950,6 +1952,7 @@ const handleDroppedFiles = async (selection, files) => {
                   value={selectedtstatusSC}
                   onChange={handleChangestatusSC}
                   options={filteredOptionTransactionSC}
+                  styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                 />
               </div>
             </div>
@@ -1965,6 +1968,7 @@ const handleDroppedFiles = async (selection, files) => {
                   value={selectedPriortyLeavel}
                   onChange={handleChangePriorityLevel}
                   options={filteredOptionPriorityLevel}
+                  styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                 />
               </div>
             </div>

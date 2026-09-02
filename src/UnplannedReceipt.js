@@ -1493,10 +1493,12 @@ const UnplannedReceipt = () => {
               {!showAsterisk && <span className="text-danger">*</span>}
             </label>
               <div class="exp-form-floating">
-                <div title="Selecta Transaction Type">
+                <div title="Select Transaction Type">
                 <Select
                   id="receiptType"
                   className="exp-input-field"
+                  classNamePrefix="react-select"
+                  styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                   placeholder=""
                   required
                   value={selectedReceipt}
@@ -1514,12 +1516,14 @@ const UnplannedReceipt = () => {
                 <Select
                   id="returnType"
                   className="exp-input-field"
+                  classNamePrefix="react-select"
                   placeholder=""
                   required
                   value={selectedWarehouse}
                   onChange={handleChangeWarehouse}
                   options={filteredOptionWarehouse}
                   data-tip="Please select a default warehouse"
+                  styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                 />
                 </div>
               </div>

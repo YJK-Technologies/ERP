@@ -3760,6 +3760,7 @@ function Sales() {
                         onChange={handleChangePay}
                         options={filteredOptionPay}
                         className="exp-input-field"
+                        styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                         placeholder=""
                         required
                         data-tip="Please select a payment type"
@@ -3860,6 +3861,7 @@ function Sales() {
                         onChange={handleChangeWarehouse}
                         options={filteredOptionWarehouse}
                         data-tip="Please select a default warehouse"
+                        styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                       />
                     </div>
                   </div>
@@ -3979,6 +3981,7 @@ function Sales() {
                           value={selectedItem}
                           onChange={handleChangeItem}
                           options={filteredOptionItem}
+                          styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                         />
                       </div>
                     </div>
@@ -4037,6 +4040,7 @@ function Sales() {
                       className="exp-input-field"
                       placeholder=""
                       required
+                      styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                     />
                   </div>
 
@@ -4051,6 +4055,7 @@ function Sales() {
                       autoComplete="off"
                       options={dynamicOptions}
                       onChange={handleItemCode}
+                      styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                     />
                   </div>
                   <div className="form-group mb-2">
@@ -4062,6 +4067,7 @@ function Sales() {
                       options={filteredOptionCount}
                       className="exp-input-field"
                       required
+                      styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                     />
                   </div>
                   <div className="form-group md-3 mb-2">
