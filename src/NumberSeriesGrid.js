@@ -814,6 +814,7 @@ function NumberSeriesGrid() {
                     required
                     title="Please select a screen type"
                     maxLength={50}
+                    styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                   />
                 </div>
               </div>

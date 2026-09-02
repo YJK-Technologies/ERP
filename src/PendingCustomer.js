@@ -359,6 +359,7 @@ function AssetsReturn({ }) {
                                     options={filteredOptionCustomer}
                                     className="exp-input-field"
                                     placeholder=""
+                                    styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                                 />
                             </div>
                             </div>
@@ -390,6 +391,7 @@ function AssetsReturn({ }) {
                                     options={filteredOptionType}
                                     className="exp-input-field"
                                     placeholder=""
+                                    styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                                 />
                             </div>
                         </div>

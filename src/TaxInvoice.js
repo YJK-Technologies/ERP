@@ -3796,6 +3796,7 @@ function TaxInvoice() {
                                             onChange={handleChangePay}
                                             options={filteredOptionPay}
                                             className="exp-input-field"
+                                            styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                                             placeholder=""
                                             required
                                             data-tip="Please select a payment type"
@@ -3812,6 +3813,7 @@ function TaxInvoice() {
                                             value={selectedSales}
                                             onChange={handleChangeSales}
                                             options={filteredOptionSales}
+                                            styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                                             className="exp-input-field"
                                             placeholder=""
                                             required
@@ -3964,7 +3966,7 @@ function TaxInvoice() {
                                                 className="exp-input-field"
                                                 placeholder=""
                                                 required
-
+                                                styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                                             />
                                         </div>
                                     </div>
@@ -3982,6 +3984,7 @@ function TaxInvoice() {
                                                 autoComplete='off'
                                                 options={dynamicOptions}
                                                 onChange={handleItemCode}
+                                                styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                                             />
                                         </div>
                                     </div>
@@ -4213,6 +4216,7 @@ function TaxInvoice() {
                                                 required
                                                 data-tip="Please select a payment type"
                                                 autoComplete="off"
+                                                styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                                             />
                                         </div>
                                     </div>
@@ -4229,6 +4233,7 @@ function TaxInvoice() {
                                                 required
                                                 data-tip="Please select a sales type"
                                                 autoComplete="off"
+                                                styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                                             />
                                         </div>
                                     </div>

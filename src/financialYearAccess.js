@@ -1007,8 +1007,8 @@ function Grid() {
                   onChange={handleChangeTransaction}
                   options={filteredOptionTransaction}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                 />
-
               </div>
             </div>
           </div>
@@ -1025,6 +1025,7 @@ function Grid() {
                   onChange={handleChangeLockType}
                   options={filteredOptionLockType}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                 />
               </div>
             </div>

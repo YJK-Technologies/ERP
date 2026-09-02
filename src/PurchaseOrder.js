@@ -3366,6 +3366,7 @@ function PurchaseOrder() {
                       <div title="Select a Ship To">
                         <Select
                           id="status"
+                          styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                           value={selectedParty}
                           onChange={handleChangeParty}
                           options={filteredOptionParty}

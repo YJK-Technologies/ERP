@@ -1041,6 +1041,7 @@ function Input({}) {
                     onChange={handleChangeProject}
                     value={selectedProject}
                     options={filteredOptionProject}
+                    styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                   />
                 </div>
               </div>
@@ -1164,6 +1165,7 @@ function Input({}) {
                         value={selectedUser}
                         options={filteredOptionUser}
                         maxLength={30}
+                        styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                       />
                     </div>
                   </div>
@@ -1314,6 +1316,7 @@ function Input({}) {
                         value={selectedtstatus}
                         onChange={handleChangestatus}
                         options={filteredOptionTransaction}
+                        styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                       />
                     </div>
                   </div>
@@ -1345,6 +1348,7 @@ function Input({}) {
                         onChange={handleChangePriorityLevel}
                         options={filteredOptionPriorityLevel}
                         maxLength={15}
+                        styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                       />
                       {/* {error && !PriorityLevel && <div className="text-danger"></div>} */}
                     </div>
@@ -1571,6 +1575,7 @@ function Input({}) {
                     options={filteredOptionproject}
                     maxLength={50}
                     onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                    styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                   />
                 </div>
               </div>
@@ -1622,6 +1627,7 @@ function Input({}) {
                     options={filteredOptionuser}
                     maxLength={30}
                     onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                    styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                   />
                 </div>
               </div>
@@ -1660,6 +1666,7 @@ function Input({}) {
                     value={selectedtstatusSC}
                     onChange={handleChangestatusSC}
                     options={filteredOptionTransactionSC}
+                    styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                   />
                 </div>
               </div>

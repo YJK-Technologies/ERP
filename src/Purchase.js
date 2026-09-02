@@ -3203,6 +3203,7 @@ const videoRef = useRef(null);
                       placeholder=""
                       required
                       data-tip="Please select a payment type"
+                      styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                       onKeyDown={(e) => handleKeyDown(e, purchasetype, paytype)} // No next field after this
                       ref={paytype} // Attach ref to Purchase Type
                     />
@@ -3221,6 +3222,7 @@ const videoRef = useRef(null);
                       onChange={handleChangePurchase}
                       options={filteredOptionPurchase}
                       className="exp-input-field"
+                      styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                       placeholder=""
                       onKeyDown={(e) => handleKeyDown(e, DatE, purchasetype)} // No next field after this
                       ref={purchasetype} // Attach ref to Purchase Type
@@ -3253,6 +3255,7 @@ const videoRef = useRef(null);
                     <Select
                       id="returnType"
                       className="exp-input-field"
+                      styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                       placeholder=""
                       required
                       value={selectedWarehouse}

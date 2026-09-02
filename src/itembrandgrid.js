@@ -1233,6 +1233,7 @@ function ItemBrandGrid() {
                     className="exp-input-field"
                     placeholder=""
                     maxLength={30}
+                    styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                   />
                 </div>
               </div>
@@ -1253,6 +1254,7 @@ function ItemBrandGrid() {
                     options={filteredOptionStatus}
                     className="exp-input-field"
                     placeholder=""
+                    styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                   />
                 </div>
               </div>

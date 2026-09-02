@@ -1420,6 +1420,7 @@ function ClientInfo() {
                   options={filteredOptionPaymentMode}
                   className="exp-input-field"
                   placeholder=""
+                  styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                 />
               </div>
             </div>
@@ -1435,6 +1436,7 @@ function ClientInfo() {
                   options={filteredOptionPaymemntType}
                   className="exp-input-field"
                   placeholder=""
+                  styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                 />
               </div>
             </div>

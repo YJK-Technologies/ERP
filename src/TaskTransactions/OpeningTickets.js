@@ -858,6 +858,7 @@ function Input({ }) {
                     options={filteredOptionproject}
                     maxLength={50}
                     onKeyDown={(e) => e.key === "Enter" && handleKeyPress()}
+                    styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                   />
                 </div>
                   </div>
@@ -916,6 +917,7 @@ function Input({ }) {
                         onKeyDown={handleKeyPress}
                         onChange={handleChangeStatus}
                         options={filteredOptionStatus}
+                        styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                       />
                     </div> </div>
                     <div className="col-md-3 form-group mb-2">
@@ -931,6 +933,7 @@ function Input({ }) {
                         options={filteredOptionUser}
                         maxLength={30}
                         onKeyDown={handleKeyPress}
+                        styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                       />
                     </div>
                     </div>
@@ -980,6 +983,7 @@ function Input({ }) {
                         options={filteredOptionPriority}
                         maxLength={15}
                         onKeyDown={handleKeyPress}
+                        styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                       />
                     </div>
                     

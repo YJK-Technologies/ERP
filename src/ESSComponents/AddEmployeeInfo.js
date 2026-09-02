@@ -1163,6 +1163,7 @@ function Input({ }) {
                       onChange={Handlegender}
                       maxLength={10}
                       autoComplete="off"
+                      styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                     />
                   </div>
                 </div>
@@ -1204,6 +1205,7 @@ function Input({ }) {
                       value={Grade_id}
                       onChange={handleGradeID}
                       options={filteredOptionGradeid}
+                      styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                     />
                   </div>
                 </div>
@@ -1390,6 +1392,7 @@ function Input({ }) {
                       onChange={handlemartial}
                       options={filteredOptionmartial}
                       autoComplete="off"
+                      styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                     />
                   </div>
                 </div>
@@ -1451,6 +1454,7 @@ function Input({ }) {
                       onChange={handleKids}
                       options={filteredOptionKids}
                       autoComplete="off"
+                      styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                     />
                   </div>
                 </div>

@@ -1476,6 +1476,7 @@ function CustomerDetGrid() {
                     className="exp-input-field"
                     placeholder=""
                     isClearable
+                    styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                   />
                 </div>
               </div>
@@ -1493,6 +1494,7 @@ function CustomerDetGrid() {
                   options={filteredOptionStatus}
                   className="exp-input-field"
                   placeholder=""
+                  styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                 />
               </div>
             </div>
@@ -1508,6 +1510,7 @@ function CustomerDetGrid() {
                   options={filteredOptioncustomer}
                   className="exp-input-field"
                   placeholder=""
+                  styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                 />
               </div>
             </div>

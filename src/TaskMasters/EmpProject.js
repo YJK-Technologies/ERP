@@ -961,6 +961,7 @@ function Input({ }) {
                         options={filteredOptionManager}
                         onChange={handleChangemanager}
                         maxLength={18}
+                        styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                       />
                     </div>
                   </div>
@@ -1065,6 +1066,7 @@ function Input({ }) {
                         onChange={handleChangePriorityLevel}
                         options={filteredOptionPriorityLevel}
                         maxLength={15}
+                        styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                       />
                     </div>
                   </div>
@@ -1085,6 +1087,7 @@ function Input({ }) {
                         onChange={handleChangestatus}
                         options={filteredOptionTransaction}
                         maxLength={25}
+                        styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                       />
                     </div>
                   </div>
@@ -1162,6 +1165,7 @@ function Input({ }) {
                           onChange={handleChangeCode}
                           onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                           maxLength={18}
+                          styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                         />
                       </div>
                     </div>
@@ -1219,6 +1223,7 @@ function Input({ }) {
                           options={filteredOptionPriority}
                           onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                           maxLength={15}
+                          styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                         />
                       </div>
                     </div>
@@ -1238,6 +1243,7 @@ function Input({ }) {
                           options={filteredOptionTask}
                           onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                           maxLength={25}
+                          styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                         />
                       </div>
                     </div>
