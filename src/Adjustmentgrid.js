@@ -1087,6 +1087,7 @@ function AdjustmentGrid() {
                   onChange={handleChangetransaction}
                   options={filteredOptionTransaction}
                   className="exp-input-field"
+                  styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                   placeholder=""
                   required title="Please select a transaction type here"
                 />

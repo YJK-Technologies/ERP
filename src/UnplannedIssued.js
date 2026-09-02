@@ -1517,6 +1517,7 @@ const UnplannedIssued = () => {
                 <Select
                   id="issuedType"
                   className="exp-input-field"
+                  styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                   placeholder=""
                   required
                   value={selectedIssued}
@@ -1538,6 +1539,7 @@ const UnplannedIssued = () => {
                   <div title="select a department ID">
                   <Select
                     id="deptid"
+                    styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                     value={selecteddept}
                     onChange={handleChangedept}
                     options={filteredOptionDepartment}
@@ -1556,6 +1558,7 @@ const UnplannedIssued = () => {
                 <div title='Select a default warehouse'>
                 <Select
                   id="returnType"
+                  styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                   className="exp-input-field"
                   placeholder=""
                   required

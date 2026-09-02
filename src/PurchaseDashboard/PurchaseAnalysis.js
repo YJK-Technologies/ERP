@@ -362,6 +362,7 @@ const ItemPage = () => {
                 placeholder=""
                 required
                 maxLength={18}
+                styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
               />
             </div>
             <div className="col-12 col-md-2">
@@ -375,6 +376,7 @@ const ItemPage = () => {
                 placeholder=""
                 required title="Please select a item code"
                 maxLength={18}
+                styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
               />
             </div>
             <div className='col-lg-8'>

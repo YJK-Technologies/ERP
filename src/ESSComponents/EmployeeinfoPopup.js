@@ -427,6 +427,7 @@ const [selectedStatus, setSelectedStatus] = useState({
                                 required title="Please Select the User ID"
                                 options={filteredOptionStatus}
                                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                                 styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                               />
                           </div>
                           <div className="mb-2 mt-2 d-flex justify-content-end">

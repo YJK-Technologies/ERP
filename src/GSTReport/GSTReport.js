@@ -570,6 +570,7 @@ function Grid() {
               options={filteredOptionPeriod}
               className="border-secondary"
               placeholder=""
+              styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
             />
           </div>
           {selectedPeriod && selectedPeriod.label === "Custom Date" && (
@@ -605,6 +606,7 @@ function Grid() {
               options={filteredOptionTax}
               className="border-secondary"
               placeholder=""
+              styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
             />
           </div>
           <div className="col-md-3">
@@ -618,6 +620,7 @@ function Grid() {
               options={filteredOptionParty}
               className="border-secondary"
               placeholder=""
+              styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
             />
           </div>
           <div className="col-md-1">

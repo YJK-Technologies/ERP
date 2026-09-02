@@ -1407,6 +1407,7 @@ function Attendance({ }) {
                                     value={selectedVisitor_IDsearch}
                                     onChange={handlevisitorSC}
                                     options={filterOptionVisitorSC}
+                                    styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                                 />
                             </div>
                         </div>
@@ -1530,6 +1531,7 @@ function Attendance({ }) {
                                     options={filteredOptionPurposeSC}
                                     isMulti
                                     placeholder="Select purpose"
+                                    styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                                 />
                             </div>
                         </div>

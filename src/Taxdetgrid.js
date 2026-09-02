@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
@@ -7,13 +6,13 @@ import "ag-grid-enterprise";
 import "./apps.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Select from 'react-select';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Select from "react-select";
 import labels from "./Labels";
-import { ToastContainer, toast } from 'react-toastify';
-import LoadingScreen from './Loading';
-import 'react-toastify/dist/ReactToastify.css';
-import { showConfirmationToast } from './ToastConfirmation';
+import { ToastContainer, toast } from "react-toastify";
+import LoadingScreen from "./Loading";
+import "react-toastify/dist/ReactToastify.css";
+import { showConfirmationToast } from "./ToastConfirmation";
 
 function TaxDetGrid() {
   const [rowData, setRowData] = useState([]);
@@ -22,7 +21,7 @@ function TaxDetGrid() {
   const [searchValue, setSearchValue] = useState("");
   const navigate = useNavigate();
   const [selectedRows, setSelectedRows] = useState([]);
-  const config = require('./Apiconfig');
+  const config = require("./Apiconfig");
   const [tax_type_header, settax_type_header] = useState("");
   const [tax_name_details, settax_name_details] = useState("");
   const [tax_percentage, settax_percentage] = useState(0);
@@ -33,7 +32,7 @@ function TaxDetGrid() {
   const [editedData, setEditedData] = useState([]);
   const [statusdrop, setStatusdrop] = useState([]);
   const [transactiondrop, setTransactiondrop] = useState([]);
-  const [selectedStatus, setSelectedStatus] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState("");
   const [statusgriddrop, setStatusGriddrop] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -44,12 +43,11 @@ function TaxDetGrid() {
 
   const location = useLocation();
 
-
   //code added by Harish purpose of set user permisssion
-  const permissions = JSON.parse(sessionStorage.getItem('permissions')) || {};
+  const permissions = JSON.parse(sessionStorage.getItem("permissions")) || {};
   const taxDetGrid = permissions
-    .filter(permission => permission.screen_type === 'Tax')
-    .map(permission => permission.permission_type.toLowerCase());
+    .filter((permission) => permission.screen_type === "Tax")
+    .map((permission) => permission.permission_type.toLowerCase());
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -98,7 +96,6 @@ function TaxDetGrid() {
     }
   }, [location.state]);
 
-
   const reloadGridData = () => {
     window.location.reload();
   };
@@ -116,51 +113,52 @@ function TaxDetGrid() {
   };
 
   useEffect(() => {
-    const company_code = sessionStorage.getItem('selectedCompanyCode');
+    const company_code = sessionStorage.getItem("selectedCompanyCode");
 
     fetch(`${config.apiBaseUrl}/status`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ company_code })
-    }).then((response) => response.json())
-      .then((data) => {
-        // Extract city names from the fetched data
-        const statusOption = data.map(option => option.attributedetails_name);
-        setStatusGriddrop(statusOption);
-      })
-      .catch((error) => console.error('Error fetching data:', error));
-  }, []);
-
-  useEffect(() => {
-    const company_code = sessionStorage.getItem('selectedCompanyCode');
-
-    fetch(`${config.apiBaseUrl}/Transaction`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ company_code })
+      body: JSON.stringify({ company_code }),
     })
       .then((response) => response.json())
       .then((data) => {
         // Extract city names from the fetched data
-        const Status = data.map(option => option.attributedetails_name);
-        setTransactiondrop(Status);
+        const statusOption = data.map((option) => option.attributedetails_name);
+        setStatusGriddrop(statusOption);
       })
-      .catch((error) => console.error('Error fetching data:', error));
+      .catch((error) => console.error("Error fetching data:", error));
   }, []);
 
   useEffect(() => {
-    const company_code = sessionStorage.getItem('selectedCompanyCode');
+    const company_code = sessionStorage.getItem("selectedCompanyCode");
+
+    fetch(`${config.apiBaseUrl}/Transaction`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ company_code }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        // Extract city names from the fetched data
+        const Status = data.map((option) => option.attributedetails_name);
+        setTransactiondrop(Status);
+      })
+      .catch((error) => console.error("Error fetching data:", error));
+  }, []);
+
+  useEffect(() => {
+    const company_code = sessionStorage.getItem("selectedCompanyCode");
 
     fetch(`${config.apiBaseUrl}/status`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ company_code })
+      body: JSON.stringify({ company_code }),
     })
       .then((data) => data.json())
       .then((val) => setStatusdrop(val));
@@ -172,10 +170,9 @@ function TaxDetGrid() {
 
   const handleChangeStatus = (selectedStatus) => {
     setSelectedStatus(selectedStatus);
-    setstatus(selectedStatus ? selectedStatus.value : '');
+    setstatus(selectedStatus ? selectedStatus.value : "");
     setError(false);
   };
-
 
   const handleSearch = async (searchParams = null) => {
     setLoading(true);
@@ -183,27 +180,26 @@ function TaxDetGrid() {
       const response = await fetch(`${config.apiBaseUrl}/taxSearchdata`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          company_code: sessionStorage.getItem('selectedCompanyCode'),
+          company_code: sessionStorage.getItem("selectedCompanyCode"),
           tax_type_header: searchParams?.tax_type_header || tax_type_header,
           tax_name_details: searchParams?.tax_name_details || tax_name_details,
           tax_percentage: searchParams?.tax_percentage || tax_percentage,
           tax_shortname: searchParams?.tax_shortname || tax_shortname,
           transaction_type: searchParams?.transaction_type || transaction_type,
           status: searchParams?.status || status,
-          tax_accountcode: searchParams?.tax_accountcode || tax_accountcode
-        })
+          tax_accountcode: searchParams?.tax_accountcode || tax_accountcode,
+        }),
       });
       if (response.ok) {
         const searchData = await response.json();
         setRowData(searchData);
-        console.log("data fetched successfully")
-
+        console.log("data fetched successfully");
       } else if (response.status === 404) {
         console.log("Data not found");
-        toast.warning("Data not found")
+        toast.warning("Data not found");
         setRowData([]);
       } else {
         const errorResponse = await response.json();
@@ -215,12 +211,9 @@ function TaxDetGrid() {
     } finally {
       setLoading(false);
     }
-
   };
 
-
   const columnDefs = [
-
     {
       headerCheckboxSelection: true,
       checkboxSelection: true,
@@ -235,10 +228,7 @@ function TaxDetGrid() {
         };
 
         return (
-          <span
-            style={{ cursor: "pointer" }}
-            onClick={handleClick}
-          >
+          <span style={{ cursor: "pointer" }} onClick={handleClick}>
             {params.value}
           </span>
         );
@@ -248,7 +238,6 @@ function TaxDetGrid() {
       cellEditorParams: {
         maxLength: 18,
       },
-
     },
     {
       headerName: "Tax Details",
@@ -263,7 +252,6 @@ function TaxDetGrid() {
       },
     },
     {
-
       headerName: "Tax Percentage",
       field: "tax_percentage",
       editable: true,
@@ -273,7 +261,6 @@ function TaxDetGrid() {
       // minWidth: 150,
     },
     {
-
       headerName: "Short Name",
       field: "tax_shortname",
       editable: true,
@@ -313,12 +300,9 @@ function TaxDetGrid() {
       // minWidth: 150,
       cellEditor: "agSelectCellEditor",
       cellEditorParams: {
-        values: statusgriddrop
+        values: statusgriddrop,
       },
-
     },
-
-
   ];
 
   const defaultColDef = {
@@ -346,8 +330,8 @@ function TaxDetGrid() {
     const selectedRows = gridApi.getSelectedRows();
     if (selectedRows.length === 0) {
       toast.warning("Please select at least one row to generate a report");
-      return
-    };
+      return;
+    }
 
     const reportData = selectedRows.map((row) => {
       return {
@@ -362,7 +346,7 @@ function TaxDetGrid() {
         "Tax Short Name": row.tax_shortname,
         "Tax Account Code": row.tax_accountcode,
         "Transaction Type": row.transaction_type,
-        "Status": row.status,
+        Status: row.status,
         //"Founded Date": row.FoundedDate,
         //"Website URL": row.WebsiteURL,
         //"Company Logo": row.Company_logo,
@@ -461,13 +445,11 @@ function TaxDetGrid() {
     reportWindow.document.write("</tbody></table>");
 
     reportWindow.document.write(
-      '<button class="report-button" onclick="window.print()">Print</button>'
+      '<button class="report-button" onclick="window.print()">Print</button>',
     );
     reportWindow.document.write("</body></html>");
     reportWindow.document.close();
   };
-
-
 
   /*const handleNavigateToForm = () => {
     navigate("/form");
@@ -511,7 +493,7 @@ function TaxDetGrid() {
           tax_shortname,
           tax_accountcode,
           transaction_type,
-          status
+          status,
         },
       },
     });
@@ -523,13 +505,12 @@ function TaxDetGrid() {
     setSelectedRows(selectedData);
   };
 
-
-
-
   const onCellValueChanged = (params) => {
     const updatedRowData = [...rowData];
     const rowIndex = updatedRowData.findIndex(
-      (row) => row.tax_type_header === params.data.tax_type_header && row.tax_name_details === params.data.tax_name_details
+      (row) =>
+        row.tax_type_header === params.data.tax_type_header &&
+        row.tax_name_details === params.data.tax_name_details,
     );
 
     if (rowIndex !== -1) {
@@ -538,7 +519,9 @@ function TaxDetGrid() {
 
       setEditedData((prevData) => {
         const existingIndex = prevData.findIndex(
-          (item) => item.tax_type_header === params.data.tax_type_header && item.tax_name_details === params.data.tax_name_details
+          (item) =>
+            item.tax_type_header === params.data.tax_type_header &&
+            item.tax_name_details === params.data.tax_name_details,
         );
 
         if (existingIndex !== -1) {
@@ -552,14 +535,14 @@ function TaxDetGrid() {
     }
   };
 
-
   const saveEditedData = async () => {
-
     // Filter the editedData state to include only the selected rows
-    const selectedRowsData = editedData.filter(row =>
-      selectedRows.some(selectedRow =>
-        selectedRow.tax_type_header === row.tax_type_header && selectedRow.tax_name_details === row.tax_name_details
-      )
+    const selectedRowsData = editedData.filter((row) =>
+      selectedRows.some(
+        (selectedRow) =>
+          selectedRow.tax_type_header === row.tax_type_header &&
+          selectedRow.tax_name_details === row.tax_name_details,
+      ),
     );
 
     if (selectedRowsData.length === 0) {
@@ -572,36 +555,40 @@ function TaxDetGrid() {
       async () => {
         setLoading(true);
         try {
-          const modified_by = sessionStorage.getItem('selectedUserCode');
-          const company_code = sessionStorage.getItem("selectedCompanyCode")
+          const modified_by = sessionStorage.getItem("selectedUserCode");
+          const company_code = sessionStorage.getItem("selectedCompanyCode");
 
           const response = await fetch(`${config.apiBaseUrl}/updTaxdetData`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               "Modified-By": modified_by,
-              "company_code": company_code
-
+              company_code: company_code,
             },
             body: JSON.stringify({
-              tax_type_headersToUpdate: selectedRowsData.map(row => row.tax_type_header),
-              tax_name_detailssToUpdate: selectedRowsData.map(row => row.tax_name_details),
-              company_code: (sessionStorage.getItem("selectedCompanyCode")),
+              tax_type_headersToUpdate: selectedRowsData.map(
+                (row) => row.tax_type_header,
+              ),
+              tax_name_detailssToUpdate: selectedRowsData.map(
+                (row) => row.tax_name_details,
+              ),
+              company_code: sessionStorage.getItem("selectedCompanyCode"),
               updatedData: selectedRowsData,
-              "modified_by": modified_by
-
+              modified_by: modified_by,
             }), // Send the selected rows for saving along with their header and detail codes
           });
 
           if (response.ok) {
             setTimeout(() => {
-              toast.success("Data Updated Successfully")
+              toast.success("Data Updated Successfully");
               handleSearch();
             }, 1000);
             return;
           } else {
             const errorResponse = await response.json();
-            toast.warning(errorResponse.message || "Failed to insert sales data");
+            toast.warning(
+              errorResponse.message || "Failed to insert sales data",
+            );
           }
         } catch (error) {
           console.error("Error saving data:", error);
@@ -609,28 +596,30 @@ function TaxDetGrid() {
         } finally {
           setLoading(false);
         }
-
       },
       () => {
         toast.info("Data updated cancelled.");
-      }
+      },
     );
   };
-
 
   const deleteSelectedRows = async () => {
     const selectedRows = gridApi.getSelectedRows();
 
     if (selectedRows.length === 0) {
-      toast.warning("Please select atleast One Row to Delete")
+      toast.warning("Please select atleast One Row to Delete");
       return;
     }
 
-    const modified_by = sessionStorage.getItem('selectedUserCode');
-    const company_code = sessionStorage.getItem("selectedCompanyCode")
+    const modified_by = sessionStorage.getItem("selectedUserCode");
+    const company_code = sessionStorage.getItem("selectedCompanyCode");
 
-    const tax_type_headersToDelete = selectedRows.map((row) => row.tax_type_header);
-    const tax_name_detailsToDelete = selectedRows.map((row) => row.tax_name_details);
+    const tax_type_headersToDelete = selectedRows.map(
+      (row) => row.tax_type_header,
+    );
+    const tax_name_detailsToDelete = selectedRows.map(
+      (row) => row.tax_name_details,
+    );
 
     showConfirmationToast(
       "Are you sure you want to Delete the data in the selected rows?",
@@ -642,39 +631,40 @@ function TaxDetGrid() {
             headers: {
               "Content-Type": "application/json",
               "Modified-By": modified_by,
-              "company_code": company_code
-
+              company_code: company_code,
             },
-            body: JSON.stringify({ tax_type_headersToDelete, tax_name_detailsToDelete, company_code }),
-            "modified_by": modified_by,
-            "company_code": company_code
-
+            body: JSON.stringify({
+              tax_type_headersToDelete,
+              tax_name_detailsToDelete,
+              company_code,
+            }),
+            modified_by: modified_by,
+            company_code: company_code,
 
             // Corrected the key name to match the server-side expectation
           });
 
           if (response.ok) {
             setTimeout(() => {
-              toast.success("Data Deleted successfully")
+              toast.success("Data Deleted successfully");
               handleSearch();
             }, 1000);
-
           } else {
             const errorResponse = await response.json();
-            toast.warning(errorResponse.message || "Failed to insert sales data");
+            toast.warning(
+              errorResponse.message || "Failed to insert sales data",
+            );
           }
         } catch (error) {
           console.error("Error deleting rows:", error);
-          toast.error('Error Deleting Data: ' + error.message);
-        }
-        finally {
+          toast.error("Error Deleting Data: " + error.message);
+        } finally {
           setLoading(false);
         }
-
       },
       () => {
         toast.info("Data Delete cancelled.");
-      }
+      },
     );
   };
 
@@ -706,27 +696,40 @@ function TaxDetGrid() {
     }
   };
 
-
-
   return (
     <div className="container-fluid Topnav-screen">
       <div>
         {loading && <LoadingScreen />}
-        <ToastContainer position="top-right" className="toast-design" theme="colored" />
+        <ToastContainer
+          position="top-right"
+          className="toast-design"
+          theme="colored"
+        />
         <div className="shadow-lg p-1 bg-body-tertiary rounded  mb-2 mt-2">
           <div className=" d-flex justify-content-between  ">
             <div class="d-flex justify-content-start">
               <h1 align="left" className="purbut me-5">
                 Tax
-              </h1></div>
-
+              </h1>
+            </div>
 
             <div className="d-flex justify-content-end purbut me-3">
-              {['add', 'all permission'].some(permission => taxDetGrid.includes(permission)) && (
-                <addbutton className="purbut" onClick={handleNavigatesToForm}
-                  required title="Add Tax"> <i class="fa-solid fa-user-plus"></i> </addbutton>
+              {["add", "all permission"].some((permission) =>
+                taxDetGrid.includes(permission),
+              ) && (
+                <addbutton
+                  className="purbut"
+                  onClick={handleNavigatesToForm}
+                  required
+                  title="Add Tax"
+                >
+                  {" "}
+                  <i class="fa-solid fa-user-plus"></i>{" "}
+                </addbutton>
               )}
-              {['delete', 'all permission'].some(permission => taxDetGrid.includes(permission)) && (
+              {["delete", "all permission"].some((permission) =>
+                taxDetGrid.includes(permission),
+              ) && (
                 <delbutton
                   className="purbut"
                   onClick={deleteSelectedRows}
@@ -736,7 +739,9 @@ function TaxDetGrid() {
                   <i class="fa-solid fa-user-minus"></i>
                 </delbutton>
               )}
-              {['update', 'all permission'].some(permission => taxDetGrid.includes(permission)) && (
+              {["update", "all permission"].some((permission) =>
+                taxDetGrid.includes(permission),
+              ) && (
                 <savebutton
                   className="purbut"
                   onClick={saveEditedData}
@@ -747,9 +752,9 @@ function TaxDetGrid() {
                 </savebutton>
               )}
 
-
-
-              {['all permission', 'view'].some(permission => taxDetGrid.includes(permission)) && (
+              {["all permission", "view"].some((permission) =>
+                taxDetGrid.includes(permission),
+              ) && (
                 <printbutton
                   class="purbut"
                   onClick={generateReport}
@@ -764,54 +769,54 @@ function TaxDetGrid() {
             <div class="mobileview">
               <div class="d-flex justify-content-between">
                 <div className="d-flex justify-content-start me-5">
-                  <h1 align="left" className="h1">Tax</h1>
+                  <h1 align="left" className="h1">
+                    Tax
+                  </h1>
                 </div>
 
-                <div class="dropdown mt-1 me-5 " >
-                  <button class="btn btn-primary dropdown-toggle p-1" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <div class="dropdown mt-1 me-5 ">
+                  <button
+                    class="btn btn-primary dropdown-toggle p-1"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
                     <i class="fa-solid fa-list"></i>
                   </button>
 
                   <ul class="dropdown-menu">
                     <li class="iconbutton d-flex justify-content-center text-success">
-                      {['add', 'all permission'].some(permission => taxDetGrid.includes(permission)) && (
-                        <icon
-                          class="icon"
-                          onClick={handleNavigatesToForm}
-                        >
-                          <i class="fa-solid fa-user-plus"></i>
-                          {" "}
+                      {["add", "all permission"].some((permission) =>
+                        taxDetGrid.includes(permission),
+                      ) && (
+                        <icon class="icon" onClick={handleNavigatesToForm}>
+                          <i class="fa-solid fa-user-plus"></i>{" "}
                         </icon>
                       )}
                     </li>
                     <li class="iconbutton  d-flex justify-content-center text-danger">
-                      {['delete', 'all permission'].some(permission => taxDetGrid.includes(permission)) && (
-                        <icon
-                          class="icon"
-                          onClick={deleteSelectedRows}
-                        >
-
+                      {["delete", "all permission"].some((permission) =>
+                        taxDetGrid.includes(permission),
+                      ) && (
+                        <icon class="icon" onClick={deleteSelectedRows}>
                           <i class="fa-solid fa-user-minus"></i>
                         </icon>
                       )}
                     </li>
                     <li class="iconbutton  d-flex justify-content-center text-primary ">
-                      {['update', 'all permission'].some(permission => taxDetGrid.includes(permission)) && (
-                        <icon
-                          class="icon"
-                          onClick={saveEditedData}
-                        >
+                      {["update", "all permission"].some((permission) =>
+                        taxDetGrid.includes(permission),
+                      ) && (
+                        <icon class="icon" onClick={saveEditedData}>
                           <i class="fa-solid fa-floppy-disk"></i>
                         </icon>
                       )}
                     </li>
                     <li class="iconbutton  d-flex justify-content-center ">
-                      {['all permission', 'view'].some(permission => taxDetGrid.includes(permission)) && (
-                        <icon
-                          class="icon"
-                          onClick={generateReport}
-                        >
-
+                      {["all permission", "view"].some((permission) =>
+                        taxDetGrid.includes(permission),
+                      ) && (
+                        <icon class="icon" onClick={generateReport}>
                           <i class="fa-solid fa-print"></i>
                         </icon>
                       )}
@@ -824,56 +829,62 @@ function TaxDetGrid() {
         </div>
 
         <div className="shadow-lg p-1 bg-body-tertiary rounded  mb-2 mt-2">
-
           <div className="row ms-4 mt-3 mb-3 me-4">
             <div className="col-md-3 form-group">
               <div class="exp-form-floating">
                 <label for="tcode" class="exp-form-labels">
                   Tax Type
-                </label><input
+                </label>
+                <input
                   id="wcode"
                   className="exp-input-field form-control"
                   type="text"
                   placeholder=""
-                  required title="Please fill the tax type here"
+                  required
+                  title="Please fill the tax type here"
                   value={tax_type_header}
                   onChange={(e) => settax_type_header(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   maxLength={18}
                 />
-
               </div>
             </div>
             <div className="col-md-3 form-group">
               <div class="exp-form-floating">
                 <label for="tname" class="exp-form-labels">
                   Tax Name Details
-                </label><input
+                </label>
+                <input
                   id="wname"
                   className="exp-input-field form-control"
                   type="text"
                   placeholder=""
-                  required title="Please fill the tax detail here"
+                  required
+                  title="Please fill the tax detail here"
                   value={tax_name_details}
                   onChange={(e) => settax_name_details(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   maxLength={250}
                 />
-
               </div>
             </div>
             <div className="col-md-3 form-group">
               <div className="exp-form-floating">
-                <label htmlFor="Tax percentage" className="exp-form-labels">Tax percentage</label>
+                <label htmlFor="Tax percentage" className="exp-form-labels">
+                  Tax percentage
+                </label>
                 <input
                   id="status"
                   className="exp-input-field form-control"
                   type="number" // Change input type to "number"
                   placeholder=""
-                  required title="Please fill the tax percentage here"
+                  required
+                  title="Please fill the tax percentage here"
                   value={tax_percentage}
-                  onChange={(e) => settax_percentage(parseFloat(e.target.value))} // Ensure value is parsed as a number
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  onChange={(e) =>
+                    settax_percentage(parseFloat(e.target.value))
+                  } // Ensure value is parsed as a number
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                 />
               </div>
             </div>
@@ -882,61 +893,62 @@ function TaxDetGrid() {
               <div class="exp-form-floating">
                 <label for="name" class="exp-form-labels">
                   Tax Short Name
-                </label><input
+                </label>
+                <input
                   id="wloc"
                   className="exp-input-field form-control"
                   type="text"
                   placeholder=""
-                  required title="Please fill the tax name here"
+                  required
+                  title="Please fill the tax name here"
                   value={tax_shortname}
                   onChange={(e) => settax_shortname(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   maxLength={250}
                 />
-
               </div>
             </div>
             <div className="col-md-3 form-group">
               <div class="exp-form-floating">
                 <label for="account" class="exp-form-labels">
                   Tax Account Code
-                </label><input
+                </label>
+                <input
                   id="wloc"
                   className="exp-input-field form-control"
                   type="text"
                   placeholder=""
-                  required title="Please fill the tax account code here"
+                  required
+                  title="Please fill the tax account code here"
                   value={tax_accountcode}
                   onChange={(e) => settax_accountcode(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   maxLength={9}
                 />
-
               </div>
             </div>
             <div className="col-md-3 form-group">
               <div class="exp-form-floating">
                 <label for="Transaction" class="exp-form-labels">
                   Transaction Type
-                </label><input
+                </label>
+                <input
                   id="wloc"
                   className="exp-input-field form-control"
                   type="text"
                   placeholder=""
-                  required title="Please fill the transaction type here"
+                  required
+                  title="Please fill the transaction type here"
                   value={transaction_type}
                   onChange={(e) => settransaction_type(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   maxLength={250}
                 />
-
               </div>
             </div>
             <div className="col-md-3 form-group">
               <div class="exp-form-floating">
-                <label class="exp-form-labels">
-                  Status
-                </label>
+                <label class="exp-form-labels">Status</label>
                 <div title="Select the Status">
                   <Select
                     id="status"
@@ -947,12 +959,12 @@ function TaxDetGrid() {
                     className="exp-input-field"
                     placeholder=""
                     maxLength={18}
+                    styles={{
+                      menu: (provided) => ({ ...provided, zIndex: 9999 }),
+                    }}
                   />
-
                 </div>
               </div>
-
-
             </div>
             <div className="col-md-2 form-group mt-4">
               <div class="exp-form-floating">
@@ -982,12 +994,6 @@ function TaxDetGrid() {
             </div>
           </div>
 
-
-
-
-
-
-
           {/* <p>Result Set</p>  */}
 
           <div class="ag-theme-alpine" style={{ height: 547, width: "100%" }}>
@@ -1010,7 +1016,9 @@ function TaxDetGrid() {
       <div className="shadow-lg p-2 bg-body-tertiary rounded mt-2 mb-2">
         <div className="row ms-2">
           <div className="d-flex justify-content-start">
-            <p className="col-md-6">{labels.createdBy}: {createdBy}</p>
+            <p className="col-md-6">
+              {labels.createdBy}: {createdBy}
+            </p>
             <p className="col-md-">
               {labels.createdDate}: {createdDate}
             </p>

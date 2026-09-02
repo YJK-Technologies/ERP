@@ -510,6 +510,7 @@ function Input({ }) {
                         onChange={HandleLoan}
                         options={filteredOptionLoan}
                         maxLength={20}
+                        styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                       />
                     </div>
                     </div>
@@ -532,6 +533,7 @@ function Input({ }) {
                           onChange={HandleApproved}
                           options={filteredOptionApproved}
                           maxLength={35}
+                          styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                         />
                       </div>
                       </div>
@@ -669,6 +671,7 @@ function Input({ }) {
                             onChange={Handleloan}
                             options={filteredOptionloan}
                             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                            styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                           />
                         </div>
                       </div>
@@ -687,6 +690,7 @@ function Input({ }) {
                             onChange={handleapproved}
                             options={filteredOptionapproved}
                             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                            styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                           />
                         </div>
                       </div>

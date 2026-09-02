@@ -692,6 +692,7 @@ const handleExportToExcel = () => {
                     required title="Please Select the User ID"
                     options={filteredOptionStatus}
                     onKeyDown={(e) => e.key === "Enter" && handleChange()}
+                    styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                   />
                 </div>
               </div>
@@ -706,6 +707,7 @@ const handleExportToExcel = () => {
                     required title="Please Select the User ID"
                     options={filteredOptionUser}
                     onKeyDown={(e) => e.key === "Enter" && handleChange()}
+                    styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                   />
                 </div>
               </div>

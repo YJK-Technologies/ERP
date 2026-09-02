@@ -549,6 +549,7 @@ const Products = () => {
         required
         title="Please select a transaction type"
         maxLength={250}
+        styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
       />
     </div>
 

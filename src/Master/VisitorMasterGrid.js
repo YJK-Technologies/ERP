@@ -1031,6 +1031,7 @@ function VisitorMasterGrid() {
                   onChange={handleChangeIdProofType}
                   options={filteredOptionIdProofType}
                   className="exp-input-field"
+                  styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                   placeholder=""
                 />
               </div>
@@ -1092,6 +1093,7 @@ function VisitorMasterGrid() {
                   value={selectedCustomerType}
                   onChange={handleChangeCustomerType}
                   options={filteredOptionCustomerType}
+                  styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                   className="exp-input-field"
                   placeholder=""
                   isMulti
@@ -1107,6 +1109,7 @@ function VisitorMasterGrid() {
                   onChange={handleChangeStatus}
                   options={filteredOptionStatus}
                   className="exp-input-field"
+                  styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
                   placeholder=""
                 />
               </div>
