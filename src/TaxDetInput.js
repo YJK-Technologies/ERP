@@ -47,12 +47,11 @@ function TaxDetInput({ }) {
   const location = useLocation();
   const locationState = location.state || {};
   const mode = locationState.mode || "create"; // ✅ default fallback
-  const selectedRow = locationState.selectedRow || null;
-  const keyfields = location.state?.keyfield;
   const tax_type_headers = location.state?.tax_type_header;
   const tax_name_detail = location.state?.tax_name_details;
   const tax_accountcodes = location.state?.tax_accountcode;
   const company_code = sessionStorage.getItem('selectedCompanyCode');
+  const [tax_name, settax_name] = useState('');
 
   useEffect(() => {
     if (!location.state) {
@@ -93,6 +92,7 @@ function TaxDetInput({ }) {
           value: Tax.tax_type_header,
         });
         settax_type_header(Tax.tax_type_header || "")
+        settax_name(Tax.tax_name || "");
         setSelectedTransaction({
           label: Tax.transaction_type,
           value: Tax.transaction_type,
@@ -119,6 +119,7 @@ function TaxDetInput({ }) {
 
   const clearInputFields = () => {
     setSelectedTax("");
+    settax_name("");
     setSelectedTransaction("");
     setSelectedStatus("");
     settax_name_details("");
@@ -383,6 +384,7 @@ function TaxDetInput({ }) {
         body: JSON.stringify({
           tax_type_header: selectedTax.value,
           company_code: sessionStorage.getItem("selectedCompanyCode"),
+          tax_name,
           tax_name_details,
           tax_percentage,
           tax_shortname,

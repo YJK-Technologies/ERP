@@ -162,6 +162,16 @@ function AttriDetGrid() {
       }
     },
     {
+      headerName: "Name",
+      field: "attributeheader_name",
+      editable: true,
+      cellStyle: { textAlign: "center" },
+      // minWidth: 150,
+      cellEditorParams: {
+        maxLength: 250,
+      },
+    },
+    {
       headerName: "Sub Code",
       field: "attributedetails_code",
       //editable: true,
@@ -222,26 +232,11 @@ function AttriDetGrid() {
     };
     const reportData = selectedRows.map((row) => {
       return {
-        /* Date: moment(row.expenses_date).format("YYYY-MM-DD"),
-        Type: row.expenses_type,
-        Expenditure: row.expenses_amount,
-        "Spent By": row.expenses_spentby,
-        Remarks: row.remarks,*/
         "Attri Hdr Code": row.attributeheader_code,
+        "Attri Hdr Name": row.attributeheader_name,
         "Attri Det Code": row.attributedetails_code,
         "Attr Det Name": row.attributedetails_name,
         "DESCRIPTION": row.descriptions,
-        //"Status": row.status,
-        //"Founded Date": row.FoundedDate,
-        //"Website URL": row.WebsiteURL,
-        //"Company Logo": row.Company_logo,
-        //"Contact Number": row.contact_no,
-        //  "CEO Name": row.CEOName,
-        // "Annual Report URL": row.AnnualReportURL,
-        // "created by": row.created_by,
-        // "created date": row.created_date,
-        // "modfied by": row.modfied_by,
-        // "modfied date": row.modfied_date,
       };
     });
 
