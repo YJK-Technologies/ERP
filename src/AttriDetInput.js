@@ -29,22 +29,21 @@ function AttriDetInput({ }) {
   const description = useRef(null);
   const [hasValueChanged, setHasValueChanged] = useState(false);
   const created_by = sessionStorage.getItem('selectedUserCode')
-
-
   const modified_by = sessionStorage.getItem("selectedUserCode");
 
   const location = useLocation();
   const locationState = location.state || {};
-  const mode = locationState.mode || "create"; // ✅ default fallback
+  const mode = locationState.mode || "create";
   const selectedRow = locationState.selectedRow || null;
   const attributeHeaderCode = location.state?.attributeheader_code;
   const attributeDetailsCode = location.state?.attributedetails_code;
   const company_code = sessionStorage.getItem('selectedCompanyCode');
-  const [isUpdated, setIsUpdated] = useState(false);
+  const [attributeheader_name, setAttributeheader_name] = useState("");
 
 
   const clearInputFields = () => {
     setSelectedHeader("");
+    setAttributeheader_name("");
     setAttributedetails_code("");
     setAttributedetails_name("");
     setDescriptions("");
@@ -88,6 +87,7 @@ function AttriDetInput({ }) {
           value: attribute.attributeheader_code,
         });
         setAttributeheader_Code(attribute.attributeheader_code || "");
+        setAttributeheader_name(attribute.attributeheader_name || "");
         setAttributedetails_code(attribute.attributedetails_code || "");
         setAttributedetails_name(attribute.attributedetails_name || "");
         setDescriptions(attribute.descriptions || "");
@@ -181,9 +181,7 @@ function AttriDetInput({ }) {
     }
   };
 
-  const handleNavigateToForm = () => {
-    navigate("/AddAttributeHeader", { selectedRows }); // Pass selectedRows as props to the Input component
-  };
+
   const handleNavigate = () => {
     navigate("/Attribute", {
       state: {
@@ -250,6 +248,7 @@ function AttriDetInput({ }) {
         body: JSON.stringify({
           company_code: sessionStorage.getItem('selectedCompanyCode'),
           attributeheader_code,
+          attributeheader_name,
           attributedetails_code,
           attributedetails_name,
           descriptions,
