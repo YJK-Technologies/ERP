@@ -240,6 +240,18 @@ function TaxDetGrid() {
       },
     },
     {
+      headerName: "Tax Name",
+      field: "tax_name",
+      editable: true,
+      cellStyle: {
+        textAlign: "center",
+      },
+      // minWidth: 150,
+      cellEditorParams: {
+        maxLength: 250,
+      },
+    },
+    {
       headerName: "Tax Details",
       field: "tax_name_details",
       editable: true,
@@ -335,28 +347,14 @@ function TaxDetGrid() {
 
     const reportData = selectedRows.map((row) => {
       return {
-        /* Date: moment(row.expenses_date).format("YYYY-MM-DD"),
-        Type: row.expenses_type,
-        Expenditure: row.expenses_amount,
-        "Spent By": row.expenses_spentby,
-        Remarks: row.remarks,*/
         "Tax Type Header": row.tax_type_header,
+        "Tax Name": row.tax_name,
         "Tax Name Details": row.tax_name_details,
         "Tax Percentage": row.tax_percentage,
         "Tax Short Name": row.tax_shortname,
         "Tax Account Code": row.tax_accountcode,
         "Transaction Type": row.transaction_type,
         Status: row.status,
-        //"Founded Date": row.FoundedDate,
-        //"Website URL": row.WebsiteURL,
-        //"Company Logo": row.Company_logo,
-        //"Contact Number": row.contact_no,
-        //  "CEO Name": row.CEOName,
-        // "Annual Report URL": row.AnnualReportURL,
-        // "created by": row.created_by,
-        // "created date": row.created_date,
-        // "modfied by": row.modfied_by,
-        // "modfied date": row.modfied_date,
       };
     });
 
