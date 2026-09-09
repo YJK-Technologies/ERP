@@ -2921,8 +2921,8 @@ const Sidebar = () => {
                     )}
                   </div>
                   <div className="ms-3">
-                    {screenType.includes("AddYjkCustomer") && (
-                      <Link to="/AddYjkCustomer" className="nav-link" title="Task">
+                    {screenType.includes("YjkCustomer") && (
+                      <Link to="/YjkCustomer" className="nav-link" title="Task">
                         <div class="menu-item">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"

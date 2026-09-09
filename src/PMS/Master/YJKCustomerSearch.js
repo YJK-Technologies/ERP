@@ -7,11 +7,13 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const YJKCustomerScreen = () => {
     // Grid Data State
     const [rowData, setRowData] = useState([]);
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     // Filter Input States
     const [customerName, setCustomerName] = useState("");
@@ -78,6 +80,10 @@ const YJKCustomerScreen = () => {
         setRowData([]);
     };
 
+    const handleNavigateToForm = () => {
+        navigate("/AddYjkCustomer", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
+    };
+
     return (
         <div className="container-fluid Topnav-screen">
             {loading && <LoadingScreen />}
@@ -92,24 +98,24 @@ const YJKCustomerScreen = () => {
                     </div>
                     <div className="d-flex justify-content-end purbut me-3">
                         {['add', 'all permission'].some(permission => YjkCustomerPermission.includes(permission)) && (
-                        <addbutton className="" title="Add New Customer">
-                            <i className="fa-solid fa-user-plus"></i>
-                        </addbutton>
+                            <addbutton className="" title="Add New Customer" onClick={handleNavigateToForm}>
+                                <i className="fa-solid fa-user-plus"></i>
+                            </addbutton>
                         )}
                         {['delete', 'all permission'].some(permission => YjkCustomerPermission.includes(permission)) && (
-                        <delbutton className="purbut" title="Delete Selected Customer">
-                            <i className="fa-solid fa-user-minus"></i>
-                        </delbutton>
+                            <delbutton className="purbut" title="Delete Selected Customer">
+                                <i className="fa-solid fa-user-minus"></i>
+                            </delbutton>
                         )}
                         {['update', 'all permission'].some(permission => YjkCustomerPermission.includes(permission)) && (
-                        <savebutton className="purbut" title="Update Customer Records">
-                            <i className="fa-solid fa-floppy-disk"></i>
-                        </savebutton>
+                            <savebutton className="purbut" title="Update Customer Records">
+                                <i className="fa-solid fa-floppy-disk"></i>
+                            </savebutton>
                         )}
                         {['all permission', 'view'].some(permission => YjkCustomerPermission.includes(permission)) && (
-                        <printbutton className="purbut" title="Generate Customer Report">
-                            <i className="fa-solid fa-print"></i>
-                        </printbutton>
+                            <printbutton className="purbut" title="Generate Customer Report">
+                                <i className="fa-solid fa-print"></i>
+                            </printbutton>
                         )}
                     </div>
 
@@ -128,7 +134,7 @@ const YJKCustomerScreen = () => {
 
                                     <li class="iconbutton d-flex justify-content-center text-success">
                                         {['add', 'all permission'].some(permission => YjkCustomerPermission.includes(permission)) && (
-                                            <icon class="icon">
+                                            <icon class="icon" onClick={handleNavigateToForm}> 
                                                 <i class="fa-solid fa-user-plus"></i>
                                             </icon>
                                         )}
