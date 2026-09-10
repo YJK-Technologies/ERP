@@ -1767,9 +1767,7 @@ const addattridetData = async (req, res) => {
       .query(`EXEC sp_attribute_Info_pavun @mode,@company_code,@attributeheader_code, '',@attributedetails_code,@attributedetails_name,@descriptions,@created_by,@modified_by,@tempstr1, @tempstr2, @tempstr3, @tempstr4, 
         @datetime1, @datetime2, @datetime3, @datetime4`);
     // Return success response
-    if (result.rowsAffected && result.rowsAffected[0] > 0) {
-      return res.status(200).json({ success: true, message: 'Data inserted successfully' });
-    }
+    res.status(200).json("Data inserted successfully");
   } catch (err) {
     if (err.class === 16 && err.number === 50000) {
       // Custom error from the stored procedure
