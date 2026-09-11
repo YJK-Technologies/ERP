@@ -35527,7 +35527,7 @@ const YJKcustomer_DetailsDelete = async (req, res) => {
 };
 
 const getYJKcustomer_Details = async (req, res) => {
-  const { customer_id, customer_name, company_name, phone, email, regarding, url, status, company_code, Start_Year, End_Year } = req.body;
+  const { customer_id, customer_name, company_name, phone, email, regarding, url, status, company_code, From_RenewalExpired,To_RenewalExpired } = req.body;
   try {
     const pool = await connection.connectToDatabase();
     const result = await pool
@@ -35542,10 +35542,10 @@ const getYJKcustomer_Details = async (req, res) => {
       .input("url", sql.NVarChar, url)
       .input("status", sql.NVarChar, status)
       .input("company_code", sql.NVarChar, company_code)
-      .input("Start_Year", sql.NVarChar, Start_Year)
-      .input("End_Year", sql.NVarChar, End_Year)
+      .input("From_RenewalExpired", sql.NVarChar, From_RenewalExpired)
+      .input("To_RenewalExpired", sql.NVarChar, To_RenewalExpired)
 
-      .query(`EXEC sp_YJKcustomer_Details @mode, @customer_id, @customer_name, @company_name, @phone, @email, @regarding, @url, '', '', '', '', 0, '', '', 0, '', '', '', @status, '', '', '', @company_code, '', '', '', '', @Start_Year, @End_Year`);
+      .query(`EXEC sp_YJKcustomer_Details @mode, @customer_id, @customer_name, @company_name, @phone, @email, @regarding, @url, '', '', '', '', 0, '', '', 0, '', '', '', @status, '', '', '', @company_code, '', '', '', '', @From_RenewalExpired, @To_RenewalExpired`);
     if (result.recordset.length > 0) {
       res.status(200).json(result.recordset);
     } else {

@@ -8,8 +8,12 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate, useLocation } from "react-router-dom";
+import { ToastContainer, toast } from 'react-toastify';
+import Select from 'react-select';
 
 const YJKCustomerScreen = () => {
+    const config = require('../../Apiconfig');
+
     // Grid Data State
     const [rowData, setRowData] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -22,6 +26,32 @@ const YJKCustomerScreen = () => {
     const [email, setEmail] = useState("");
     const [regarding, setRegarding] = useState("");
     const [url, setUrl] = useState("");
+    const location = useLocation();
+    const [From_RenewalExpired, setFrom_RenewalExpired] = useState("");
+    const [To_RenewalExpired, setTo_RenewalExpired] = useState("");
+    const [selectedStatus, setSelectedStatus] = useState("");
+    const [status, setStatus] = useState("");
+    const [statusDrop, setStatusDrop] = useState([]);
+
+    useEffect(() => {
+        const company_code = sessionStorage.getItem('selectedCompanyCode');
+
+        fetch(`${config.apiBaseUrl}/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ company_code })
+        })
+            .then((data) => data.json())
+            .then((val) => setStatusDrop(val))
+            .catch((error) => console.error('Error fetching data:', error));
+    }, []);
+
+    const filteredOptionStatus = statusDrop.map((option) => ({
+        value: option.attributedetails_name,
+        label: option.attributedetails_name,
+    }));
 
     //code added by Harish purpose of set user permisssion
     const permissions = JSON.parse(sessionStorage.getItem('permissions')) || {};
@@ -29,47 +59,142 @@ const YJKCustomerScreen = () => {
         .filter(permission => permission.screen_type === 'YjkCustomer')
         .map(permission => permission.permission_type.toLowerCase());
 
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      const isReloadShortcut =
+        (event.ctrlKey && event.key.toLowerCase() === "r") ||
+        (event.altKey && event.key.toLowerCase() === "r") ||
+        event.key === "F5";
+
+      if (isReloadShortcut) {
+        event.preventDefault();
+        clearInputFields();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    // if (location.state?.preservedRowData) {
+    //   setRowData(location.state.preservedRowData);
+    // }
+
+    if (location.state?.preservedInputs) {
+      const inputs = location.state.preservedInputs;
+
+      setCustomerName(inputs.customerName || "");
+      setCompanyName(inputs.companyName || "");
+      setPhone(inputs.phone || "");
+      setEmail(inputs.email || "");
+      setRegarding(inputs.regarding || "");
+      setUrl(inputs.url || "");
+      setFrom_RenewalExpired(inputs.From_RenewalExpired || "");
+      setTo_RenewalExpired(inputs.setTo_RenewalExpired || "");
+      setStatus(inputs.status || "");
+      if (inputs.status) {
+        setSelectedStatus({
+          label: inputs.status,
+          value: inputs.status,
+        });
+      }
+      
+       if (location.state?.refreshGrid) {
+        handleSearch(inputs);
+      }
+    }
+  }, [location.state]);
+  
+
     const columnDefs = [
-        { headerName: "Customer ID", field: "Customer_ID" },
-        { headerName: "Customer Name", field: "Customer_Name" },
-        { headerName: "Company Name", field: "Company_Name" },
-        { headerName: "Phone", field: "Phone" },
-        { headerName: "Email", field: "Email" },
-        { headerName: "Regarding", field: "Regarding" },
-        { headerName: "URL", field: "URL" },
-        { headerName: "Demo Status", field: "Demo_Status" },
-        { headerName: "Feedback", field: "Feedback" },
-        { headerName: "Website URL", field: "Website_URL" },
-        { headerName: "Website Date", field: "Website_Date" },
-        { headerName: "No of Users", field: "No_of_Users" },
-        { headerName: "Reference", field: "Reference" },
-        { headerName: "Live Date", field: "Live_Date" },
-        { headerName: "Amount", field: "Amount" },
-        { headerName: "New Requirement 1", field: "New_Requirement_1" },
-        { headerName: "New Requirement 2", field: "New_Requirement_2" },
-        { headerName: "Development Status", field: "Development_Status" },
-        { headerName: "Status", field: "Status" },
-        { headerName: "Website Renewal", field: "Website_Renewal" },
-        { headerName: "Renewal Reminder", field: "Renewal_Remaider" },
-        { headerName: "Renewal Expired", field: "Renewal_Expired" },
-    ];
+        { headerName: "Customer ID", field: "Customer_ID" },
+        { headerName: "Customer Name", field: "Customer_Name" },
+        { headerName: "Company Name", field: "Company_Name" },
+        { headerName: "Phone", field: "Phone" },
+        { headerName: "Email", field: "Email" },
+        { headerName: "Regarding", field: "Regarding" },
+        { headerName: "URL", field: "URL" },
+        { headerName: "Demo Status", field: "Demo_Status" },
+        { headerName: "Feedback", field: "Feedback" },
+        { headerName: "Website URL", field: "Website_URL" },
+        { headerName: "Website Date", field: "Website_Date" },
+        { headerName: "No of Users", field: "No_of_Users" },
+        { headerName: "Reference", field: "Reference" },
+        { headerName: "Live Date", field: "Live_Date" },
+        { headerName: "Amount", field: "Amount" },
+        { headerName: "New Requirement 1", field: "New_Requirement_1" },
+        { headerName: "New Requirement 2", field: "New_Requirement_2" },
+        { headerName: "Development Status", field: "Development_Status" },
+        { headerName: "Status", field: "Status" },
+        { headerName: "Website Renewal", field: "Website_Renewal" },
+        { headerName: "Renewal Reminder", field: "Renewal_Remaider" },
+        { headerName: "Renewal Expired", field: "Renewal_Expired" },
+    ];
 
     const defaultColDef = {
         resizable: true,
         wrapText: true,
     };
 
-    const handleSearch = () => {
-        console.log("Searching for:", {
-            customerName,
-            companyName,
-            phone,
-            email,
-            regarding,
-            url,
-        });
-    };
+    // const handleSearch = () => {
+    //     console.log("Searching for:", {
+    //         customerName,
+    //         companyName,
+    //         phone,
+    //         email,
+    //         regarding,
+    //         url,
+    //     });
+    // };
 
+    
+
+     const handleSearch = async (searchParams = null) => {
+        setLoading(true);
+    
+        try {
+          const response = await fetch(`${config.apiBaseUrl}/getYJKcustomer_Details`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              customerName: searchParams?.customerName ?? customerName,
+              companyName: searchParams?.companyName ?? companyName,
+              phone: searchParams?.phone ?? phone,
+              email: searchParams?.email ?? email,
+              regarding: searchParams?.regarding ?? regarding,
+              url: searchParams?.url ?? url,
+              From_RenewalExpired: searchParams?.From_RenewalExpired ?? From_RenewalExpired,
+              To_RenewalExpired: searchParams?.To_RenewalExpired ?? To_RenewalExpired,
+              status: searchParams?.status ?? status,
+              company_code: sessionStorage.getItem('selectedCompanyCode'),
+              
+                    })
+          });
+          if (response.ok) {
+            const searchData = await response.json();
+            setRowData(searchData);
+            console.log("Data fetched successfully");
+          } else if (response.status === 404) {
+            console.log("Data not found");
+            toast.warning("Data not found")
+            setRowData([]);
+          } else {
+            const errorResponse = await response.json();
+            toast.warning(errorResponse.message || "Failed to insert sales data");
+          }
+        } catch (error) {
+          console.error("Error saving data:", error);
+          toast.error("Error updating data: " + error.message);
+        }
+        finally {
+          setLoading(false);
+        }
+      };
+    
     const clearInputFields = () => {
         setCustomerName("");
         setCompanyName("");
@@ -77,7 +202,15 @@ const YJKCustomerScreen = () => {
         setEmail("");
         setRegarding("");
         setUrl("");
+        setFrom_RenewalExpired("");
+        setTo_RenewalExpired("");
+        setStatus("");
+        setSelectedStatus("");
         setRowData([]);
+    };
+   const handleChangeStatus = (selectedStatus) => {
+        setSelectedStatus(selectedStatus);
+        setStatus(selectedStatus ? selectedStatus.value : '');
     };
 
     const handleNavigateToForm = () => {
@@ -87,7 +220,7 @@ const YJKCustomerScreen = () => {
     return (
         <div className="container-fluid Topnav-screen">
             {loading && <LoadingScreen />}
-
+  <ToastContainer position="top-right" className="toast-design" theme="colored" />
             {/* Header Bar */}
             <div className="shadow-lg p-1 bg-body-tertiary rounded mb-2 mt-2">
                 <div className="d-flex justify-content-between">
@@ -253,6 +386,47 @@ const YJKCustomerScreen = () => {
                             />
                         </div>
                     </div>
+
+                    <div className="col-md-3 form-group mb-2">
+                        <div className="exp-form-floating">
+                            <label className="exp-form-labels">RenewalExpired From</label>
+                            <input
+                                className="exp-input-field form-control"
+                                placeholder="Enter URL"
+                                title="Search by Project or Website URL"
+                                value={From_RenewalExpired}
+                                onChange={(e) => setFrom_RenewalExpired(e.target.value)}
+                                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="col-md-3 form-group mb-2">
+                        <div className="exp-form-floating">
+                            <label className="exp-form-labels">RenewalExpired To</label>
+                            <input
+                                className="exp-input-field form-control"
+                                placeholder="Enter URL"
+                                title="Search by Project or Website URL"
+                                value={To_RenewalExpired}
+                                onChange={(e) => setTo_RenewalExpired(e.target.value)}
+                                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                            />
+                        </div>
+                    </div>
+                         <div className="col-md-3 form-group">
+                            <div className="exp-form-floating">
+                                <label className="exp-form-labels">Status</label>
+                                <Select
+                                    className="exp-input-field"
+                                    options={filteredOptionStatus}
+                                    placeholder="Select Status"
+                                    title="Select overall customer account status"
+                                    value={selectedStatus}
+                                    onChange={handleChangeStatus}
+                                />
+                            </div>
+                        </div>
 
                     <div className="col-md-3 form-group mt-4">
                         <div className="exp-form-floating">
