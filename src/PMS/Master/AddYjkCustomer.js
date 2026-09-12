@@ -18,7 +18,8 @@ const AddYJKCustomerScreen = () => {
     const location = useLocation();
     const locationState = location.state || {};
     const mode = locationState.mode || "create";
-
+    const customer_id = locationState.customer_id;
+    const customerData = locationState.customerData || {};
     // Form Field States
     const [customerName, setCustomerName] = useState("");
     const [companyName, setCompanyName] = useState("");
@@ -45,6 +46,7 @@ const AddYJKCustomerScreen = () => {
     const [renewalRemainder, setRenewalRemainder] = useState("");
     const [renewalExpired, setRenewalExpired] = useState("");
     const [statusDrop, setStatusDrop] = useState([]);
+    
 
     useEffect(() => {
         const company_code = sessionStorage.getItem('selectedCompanyCode');
@@ -66,6 +68,63 @@ const AddYJKCustomerScreen = () => {
         label: option.attributedetails_name,
     }));
 
+    useEffect(() => {
+    if (mode === "update" && customerData.customer_id) {
+
+        setCustomerName(customerData.customer_name || "");
+        setCompanyName(customerData.company_name || "");
+        setPhone(customerData.phone || "");
+        setEmail(customerData.email || "");
+        setRegarding(customerData.regarding || "");
+        setUrl(customerData.url || "");
+
+        setDemoStatus(customerData.demo_status || "");
+        setSelectedDemoStatus(
+            customerData.demo_status
+                ? {
+                    value: customerData.demo_status,
+                    label: customerData.demo_status
+                }
+                : null
+        );
+
+        setFeedback(customerData.feedback || "");
+        setWebsiteUrl(customerData.website_url || "");
+        setWebsiteDate(customerData.website_date || "");
+        setNoOfUsers(customerData.no_of_users || "");
+        setReference(customerData.reference || "");
+        setLiveDate(customerData.live_date || "");
+        setAmount(customerData.amount || "");
+
+        setNewRequirement1(customerData.new_requirement_1 || "");
+        setNewRequirement2(customerData.new_requirement_2 || "");
+
+        setDevelopmentStatus(customerData.development_status || "");
+        setSelectedDevelopmentStatus(
+            customerData.development_status
+                ? {
+                    value: customerData.development_status,
+                    label: customerData.development_status
+                }
+                : null
+        );
+
+        setStatus(customerData.status || "");
+        setSelectedStatus(
+            customerData.status
+                ? {
+                    value: customerData.status,
+                    label: customerData.status
+                }
+                : null
+        );
+
+        setWebsiteRenewal(customerData.WebsiteRenewal || "");
+        setRenewalRemainder(customerData.RenewalRemaider || "");
+        setRenewalExpired(customerData.RenewalExpired || "");
+    }
+}, [mode, customerData]);
+
     const handleChangeDemoStatus = (selectedDemoStatus) => {
         setSelectedDemoStatus(selectedDemoStatus);
         setDemoStatus(selectedDemoStatus ? selectedDemoStatus.value : '');
@@ -80,6 +139,269 @@ const AddYJKCustomerScreen = () => {
         setSelectedStatus(selectedStatus);
         setStatus(selectedStatus ? selectedStatus.value : '');
     };
+
+    const handleAdd = async () => {
+    try {
+        setLoading(true);
+
+        const company_code =
+            sessionStorage.getItem("selectedCompanyCode");
+
+        const created_by =
+            sessionStorage.getItem("selectedUserCode");
+
+        const payload = {
+            customer_name: customerName,
+            company_name: companyName,
+            phone: phone,
+            email: email,
+            regarding: regarding,
+            url: url,
+            demo_status: demoStatus,
+            feedback: feedback,
+            website_url: websiteUrl,
+            website_date: websiteDate || "",
+            no_of_users: Number(noOfUsers) || 0,
+            reference: reference,
+            live_date: liveDate || "",
+            amount: Number(amount) || 0,
+            new_requirement_1: newRequirement1,
+            new_requirement_2: newRequirement2,
+            development_status: developmentStatus,
+            status: status,
+
+            WebsiteRenewal: websiteRenewal || "",
+            RenewalRemaider: renewalRemainder,
+            RenewalExpired: renewalExpired || "",
+
+            company_code: company_code,
+
+            created_by: created_by,
+            
+        };
+
+        const response = await fetch(
+            `${config.apiBaseUrl}/YJKcustomer_DetailsInsert`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.message || "Failed to add customer"
+            );
+        }
+
+        toast.success("Customer added successfully");
+
+        
+    } catch (error) {
+        console.error("Add Customer Error:", error);
+        toast.error(error.message || "Something went wrong");
+    } finally {
+        setLoading(false);
+    }
+};
+const handleUpdate = async () => {
+    try {
+        setLoading(true);
+
+        const company_code =
+            sessionStorage.getItem("selectedCompanyCode");
+
+        const modified_by =
+            sessionStorage.getItem("selectedUserCode");
+
+        const payload = {
+            customer_id: customerData.customer_id,
+            customer_name: customerName,
+            company_name: companyName,
+            phone: phone,
+            email: email,
+            regarding: regarding,
+            url: url,
+            demo_status: demoStatus,
+            feedback: feedback,
+            website_url: websiteUrl,
+            website_date: websiteDate || "",
+            no_of_users: Number(noOfUsers) || 0,
+            reference: reference,
+            live_date: liveDate || "",
+            amount: Number(amount) || 0,
+            new_requirement_1: newRequirement1,
+            new_requirement_2: newRequirement2,
+            development_status: developmentStatus,
+            status: status,
+            WebsiteRenewal: websiteRenewal || "",
+            RenewalRemaider: renewalRemainder,
+            RenewalExpired: renewalExpired || "",
+            company_code: company_code,
+            modified_by: modified_by,
+        };
+
+        const response = await fetch(
+            `${config.apiBaseUrl}/getYJKcustomer_Details`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.message || "Failed to update customer"
+            );
+        }
+
+        toast.success("Customer updated successfully");
+
+        setTimeout(() => {
+            handleNavigate();
+        }, 1000);
+
+    } catch (error) {
+        console.error("Update Customer Error:", error);
+        toast.error(error.message || "Something went wrong");
+    } finally {
+        setLoading(false);
+    }
+};
+
+const fetchCustomerData = async () => {
+    try {
+        setLoading(true);
+
+        const response = await fetch(
+            `${config.apiBaseUrl}/getYJKcustomer_Details`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    customerName: "",
+                    companyName: "",
+                    phone: "",
+                    email: "",
+                    regarding: "",
+                    url: "",
+                    From_RenewalExpired: "",
+                    To_RenewalExpired: "",
+                    status: "",
+                    company_code: sessionStorage.getItem("selectedCompanyCode")
+                })
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error("Failed to fetch customer data");
+        }
+
+        const data = await response.json();
+
+        const selectedCustomer = data.find(
+            (item) => String(item.customer_id) === String(customer_id)
+        );
+
+        if (!selectedCustomer) {
+            toast.error("Customer data not found");
+            return;
+        }
+
+        console.log("Selected Customer:", selectedCustomer);
+
+        setCustomerName(selectedCustomer.customer_name || "");
+        setCompanyName(selectedCustomer.company_name || "");
+        setPhone(selectedCustomer.phone || "");
+        setEmail(selectedCustomer.email || "");
+        setRegarding(selectedCustomer.regarding || "");
+        setUrl(selectedCustomer.url || "");
+
+        setDemoStatus(selectedCustomer.demo_status || "");
+        setSelectedDemoStatus(
+            selectedCustomer.demo_status
+                ? {
+                    value: selectedCustomer.demo_status,
+                    label: selectedCustomer.demo_status
+                }
+                : null
+        );
+
+        setFeedback(selectedCustomer.feedback || "");
+        setWebsiteUrl(selectedCustomer.website_url || "");
+        setWebsiteDate(
+            selectedCustomer.website_date
+                ? selectedCustomer.website_date.split("T")[0]
+                : ""
+        );
+
+        setNoOfUsers(selectedCustomer.no_of_users || "");
+        setReference(selectedCustomer.reference || "");
+
+        setLiveDate(
+            selectedCustomer.live_date
+                ? selectedCustomer.live_date.split("T")[0]
+                : ""
+        );
+
+        setAmount(selectedCustomer.amount || "");
+
+        setNewRequirement1(selectedCustomer.new_requirement_1 || "");
+        setNewRequirement2(selectedCustomer.new_requirement_2 || "");
+
+        setDevelopmentStatus(selectedCustomer.development_status || "");
+        setSelectedDevelopmentStatus(
+            selectedCustomer.development_status
+                ? {
+                    value: selectedCustomer.development_status,
+                    label: selectedCustomer.development_status
+                }
+                : null
+        );
+
+        setStatus(selectedCustomer.status || "");
+        setSelectedStatus(
+            selectedCustomer.status
+                ? {
+                    value: selectedCustomer.status,
+                    label: selectedCustomer.status
+                }
+                : null
+        );
+
+        setWebsiteRenewal(selectedCustomer.WebsiteRenewal || "");
+        setRenewalRemainder(selectedCustomer.RenewalRemaider || "");
+        setRenewalExpired(
+            selectedCustomer.RenewalExpired
+                ? selectedCustomer.RenewalExpired.split("T")[0]
+                : ""
+        );
+
+    } catch (error) {
+        console.error("Fetch Customer Data Error:", error);
+        toast.error("Failed to load customer data");
+    } finally {
+        setLoading(false);
+    }
+};
+
+useEffect(() => {
+    if (mode === "update" && customer_id) {
+        fetchCustomerData();
+    }
+}, [mode, customer_id]);
 
 
     const handleNavigate = () => {
@@ -401,17 +723,25 @@ const AddYJKCustomerScreen = () => {
                     </div>
 
                     {/* ACTION BUTTONS */}
-                    <div className="d-flex justify-content-end gap-2 mt-3">
-                        {mode === "create" ? (
-                            <button type="button" className="" title="Save New Customer Details">
-                                <i class="fa-solid fa-floppy-disk"></i>
-                            </button>
-                        ) : (
-                            <button type="button" className="" title="Update Customer Details">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-                        )}
-                    </div>
+{mode === "create" ? (
+    <button
+        type="button"
+        className=""
+        title="Save New Customer Details"
+        onClick={handleAdd}
+    >
+        <i className="fa-solid fa-floppy-disk"></i>
+    </button>
+) : (
+    <button
+        type="button"
+        className=""
+        title="Update Customer Details"
+        onClick={handleUpdate}
+    >
+        <i className="fa-solid fa-pen-to-square"></i>
+    </button>
+)}
 
                 </div>
             </div>

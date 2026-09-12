@@ -35451,11 +35451,10 @@ const YJKcustomer_DetailsInsert = async (req, res) => {
       .input("RenewalExpired", sql.Date, RenewalExpired)
       .input("company_code", sql.NVarChar, company_code)
       .input("created_by", sql.NVarChar, created_by)
-      .input("created_date", sql.DateTime, created_date)
       .query(`EXEC sp_YJKcustomer_Details @mode, @customer_id, @customer_name, @company_name, @phone, @email, @regarding, @url, 
 	  @demo_status, @feedback, @website_url, @website_date, @no_of_users, @reference, @live_date, @amount, @new_requirement_1, 
 	  @new_requirement_2, @development_status, @status, @WebsiteRenewal, @RenewalRemaider, @RenewalExpired, @company_code, 
-	  @created_by, @created_date, '', '', '', ''`);
+	  @created_by, '', '', '', '', ''`);
 
     res.status(200).json({ success: true, message: "YJKcustomer Details inserted successfully" });
   } catch (err) {
