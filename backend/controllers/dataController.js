@@ -35525,7 +35525,7 @@ const YJKcustomer_DetailsDelete = async (req, res) => {
   }
 };
 
-const getYJKcustomer_Details = async (req, res) => {
+const getYJKcustomerDetailsSearch = async (req, res) => {
   const { customer_id, customer_name, company_name, phone, email, regarding, url, status, company_code, From_RenewalExpired,To_RenewalExpired } = req.body;
   try {
     const pool = await connection.connectToDatabase();
@@ -35543,7 +35543,6 @@ const getYJKcustomer_Details = async (req, res) => {
       .input("company_code", sql.NVarChar, company_code)
       .input("From_RenewalExpired", sql.NVarChar, From_RenewalExpired)
       .input("To_RenewalExpired", sql.NVarChar, To_RenewalExpired)
-
       .query(`EXEC sp_YJKcustomer_Details @mode, @customer_id, @customer_name, @company_name, @phone, @email, @regarding, @url, '', '', '', '', 0, '', '', 0, '', '', '', @status, '', '', '', @company_code, '', '', '', '', @From_RenewalExpired, @To_RenewalExpired`);
     if (result.recordset.length > 0) {
       res.status(200).json(result.recordset);
@@ -35638,13 +35637,12 @@ const YJKcustomer_DetailsLoopUpdate = async (req, res) => {
         .input("WebsiteRenewal", sql.Date, item.WebsiteRenewal)
         .input("RenewalRemaider", sql.NVarChar, item.RenewalRemaider)
         .input("RenewalExpired", sql.Date, item.RenewalExpired)
-        .input("company_code", sql.NVarChar, item.company_code)
-        .input("modified_by", sql.NVarChar, item.modified_by)
-        .input("modified_date", sql.DateTime, item.modified_date)
+        .input("company_code", sql.NVarChar, req.headers['company_code'])
+        .input("modified_by", sql.NVarChar, req.headers['modified-by'])
         .query(`EXEC sp_YJKcustomer_Details @mode, @customer_id, @customer_name, @company_name, @phone, @email, 
 		@regarding, @url, @demo_status, @feedback, @website_url, @website_date, @no_of_users, @reference, @live_date, 
 		@amount, @new_requirement_1, @new_requirement_2, @development_status, @status, @WebsiteRenewal, @RenewalRemaider, 
-		@RenewalExpired, @company_code, '', '', @modified_by, @modified_date, '', ''`);
+		@RenewalExpired, @company_code, '', '', @modified_by, '', '', ''`);
     }
     res.status(200).json("YJKcustomer_Details data updated successfully");
   } catch (err) {
@@ -35661,11 +35659,11 @@ const YJKcustomer_DetailsLoopDelete = async (req, res) => {
 
   try {
     const pool = await sql.connect(dbConfig);
-    for (const item of YJKcustomer_DetailsData) {
+    for (const customer_id of YJKcustomer_DetailsData) {
       await pool.request()
         .input("mode", sql.NVarChar, "D")
-        .input("customer_id", sql.BigInt, item.customer_id)
-        .input("company_code", sql.NVarChar, item.company_code)
+        .input("customer_id", customer_id)
+        .input("company_code", sql.NVarChar, req.headers['company_code'])
         .query(`EXEC sp_YJKcustomer_Details @mode, @customer_id, '', '', '', '', '', '', '', '', '', '', 0, '', '', 0, '', '', '', '', '', '', '', @company_code, '', '', '', '', '', ''`);
     }
     res.status(200).json("YJKcustomer_Details data deleted successfully");
@@ -35675,6 +35673,29 @@ const YJKcustomer_DetailsLoopDelete = async (req, res) => {
   }
 };
 //Code Ended by Pavun on 09-09-2026
+
+//Code Added by Pavun on 12-09-2026
+const getYJKcustomerDetails = async (req, res) => {
+  const { customer_id, company_code } = req.body;
+  try {
+    const pool = await connection.connectToDatabase();
+    const result = await pool
+      .request()
+      .input("mode", sql.NVarChar, "GYC")
+      .input("customer_id", sql.BigInt, customer_id)
+      .input("company_code", sql.NVarChar, company_code)
+      .query(`EXEC sp_YJKcustomer_Details @mode, @customer_id, '', '', '', '', '', '', '', '', '', '', 0, '', '', 0, '', '', '', '', '', '', '', @company_code, '', '', '', '', '', ''`);
+    if (result.recordset.length > 0) {
+      res.status(200).json(result.recordset);
+    } else {
+      res.status(404).json("Data not found");
+    }
+  } catch (err) {
+    console.error("Error", err);
+    res.status(500).json({ message: err.message || "Internal Server Error" });
+  }
+};
+//Code Ended by Pavun on 12-09-2026
 
 module.exports = {
   login,
@@ -36854,7 +36875,8 @@ module.exports = {
   YJKcustomer_DetailsInsert, 
   YJKcustomer_DetailsUpdate, 
   YJKcustomer_DetailsDelete,
-  getYJKcustomer_Details
+  getYJKcustomerDetailsSearch,
+  getYJKcustomerDetails
 
 
 };

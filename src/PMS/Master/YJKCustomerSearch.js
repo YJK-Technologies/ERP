@@ -33,6 +33,8 @@ const YJKCustomerScreen = () => {
     const [status, setStatus] = useState("");
     const [statusDrop, setStatusDrop] = useState([]);
     const [gridApi, setGridApi] = useState(null);
+    const [editedData, setEditedData] = useState([]);
+    const [selectedRows, setSelectedRows] = useState([]);
 
     useEffect(() => {
         const company_code = sessionStorage.getItem('selectedCompanyCode');
@@ -110,119 +112,134 @@ const YJKCustomerScreen = () => {
 
 
     const columnDefs = [
-    {
-        headerCheckboxSelection: true,
-      checkboxSelection: true,
-        headerName: "Customer ID",
-        field: "customer_id",
-        editable: false
-    },
-    {
-        headerName: "Customer Name",
-        field: "customer_name",
-        editable: true
-    },
-    {
-        headerName: "Company Name",
-        field: "company_name",
-        editable: true
-    },
-    {
-        headerName: "Phone",
-        field: "phone",
-        editable: true
-    },
-    {
-        headerName: "Email",
-        field: "email",
-        editable: true
-    },
-    {
-        headerName: "Regarding",
-        field: "regarding",
-        editable: true
-    },
-    {
-        headerName: "URL",
-        field: "url",
-        editable: true
-    },
-    {
-        headerName: "Demo Status",
-        field: "demo_status",
-        editable: true
-    },
-    {
-        headerName: "Feedback",
-        field: "feedback",
-        editable: true
-    },
-    {
-        headerName: "Website URL",
-        field: "website_url",
-        editable: true
-    },
-    {
-        headerName: "Website Date",
-        field: "website_date",
-        editable: true
-    },
-    {
-        headerName: "No of Users",
-        field: "no_of_users",
-        editable: true
-    },
-    {
-        headerName: "Reference",
-        field: "reference",
-        editable: true
-    },
-    {
-        headerName: "Live Date",
-        field: "live_date",
-        editable: true
-    },
-    {
-        headerName: "Amount",
-        field: "amount",
-        editable: true
-    },
-    {
-        headerName: "New Requirement 1",
-        field: "new_requirement_1",
-        editable: true
-    },
-    {
-        headerName: "New Requirement 2",
-        field: "new_requirement_2",
-        editable: true
-    },
-    {
-        headerName: "Development Status",
-        field: "development_status",
-        editable: true
-    },
-    {
-        headerName: "Status",
-        field: "status",
-        editable: true
-    },
-    {
-        headerName: "Website Renewal",
-        field: "WebsiteRenewal",
-        editable: true
-    },
-    {
-        headerName: "Renewal Reminder",
-        field: "RenewalRemaider",
-        editable: true
-    },
-    {
-        headerName: "Renewal Expired",
-        field: "RenewalExpired",
-        editable: true
-    }
-];
+        {
+            headerCheckboxSelection: true,
+            checkboxSelection: true,
+            headerName: "Customer ID",
+            field: "customer_id",
+            editable: false,
+            cellClass: "ag-link-cell",
+            cellRenderer: (params) => {
+                const handleClick = () => {
+                    handleNavigateWithRowData(params.data);
+                };
+
+                return (
+                    <span
+                        style={{ cursor: "pointer" }}
+                        onClick={handleClick}
+                    >
+                        {params.value}
+                    </span>
+                );
+            }
+        },
+        {
+            headerName: "Customer Name",
+            field: "customer_name",
+            editable: true
+        },
+        {
+            headerName: "Company Name",
+            field: "company_name",
+            editable: true
+        },
+        {
+            headerName: "Phone",
+            field: "phone",
+            editable: true
+        },
+        {
+            headerName: "Email",
+            field: "email",
+            editable: true
+        },
+        {
+            headerName: "Regarding",
+            field: "regarding",
+            editable: true
+        },
+        {
+            headerName: "URL",
+            field: "url",
+            editable: true
+        },
+        {
+            headerName: "Demo Status",
+            field: "demo_status",
+            editable: true
+        },
+        {
+            headerName: "Feedback",
+            field: "feedback",
+            editable: true
+        },
+        {
+            headerName: "Website URL",
+            field: "website_url",
+            editable: true
+        },
+        {
+            headerName: "Website Date",
+            field: "website_date",
+            editable: true
+        },
+        {
+            headerName: "No of Users",
+            field: "no_of_users",
+            editable: true
+        },
+        {
+            headerName: "Reference",
+            field: "reference",
+            editable: true
+        },
+        {
+            headerName: "Live Date",
+            field: "live_date",
+            editable: true
+        },
+        {
+            headerName: "Amount",
+            field: "amount",
+            editable: true
+        },
+        {
+            headerName: "New Requirement 1",
+            field: "new_requirement_1",
+            editable: true
+        },
+        {
+            headerName: "New Requirement 2",
+            field: "new_requirement_2",
+            editable: true
+        },
+        {
+            headerName: "Development Status",
+            field: "development_status",
+            editable: true
+        },
+        {
+            headerName: "Status",
+            field: "status",
+            editable: true
+        },
+        {
+            headerName: "Website Renewal",
+            field: "WebsiteRenewal",
+            editable: true
+        },
+        {
+            headerName: "Renewal Reminder",
+            field: "RenewalRemaider",
+            editable: true
+        },
+        {
+            headerName: "Renewal Expired",
+            field: "RenewalExpired",
+            editable: true
+        }
+    ];
 
     const onGridReady = (params) => {
         setGridApi(params.api);
@@ -239,7 +256,7 @@ const YJKCustomerScreen = () => {
         setLoading(true);
 
         try {
-            const response = await fetch(`${config.apiBaseUrl}/getYJKcustomer_Details`, {
+            const response = await fetch(`${config.apiBaseUrl}/getYJKcustomerDetailsSearch`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -301,214 +318,163 @@ const YJKCustomerScreen = () => {
         navigate("/AddYjkCustomer", { state: { mode: "create" } }); // Pass selectedRows as props to the Input component
     };
 
- const handleNavigateWithRowData = (selectedRow) => {
-    navigate("/AddYjkCustomer", {
-        state: {
-            mode: "update",
-            customer_id: selectedRow.customer_id,
+    const handleNavigateWithRowData = (selectedRow) => {
+        navigate("/AddYjkCustomer", {
+            state: {
+                mode: "update",
+                customer_id: selectedRow.customer_id,
 
-            preservedInputs: {
-                customerName,
-                companyName,
-                phone,
-                email,
-                regarding,
-                url,
-                From_RenewalExpired,
-                To_RenewalExpired,
-                status
+                preservedInputs: {
+                    customerName,
+                    companyName,
+                    phone,
+                    email,
+                    regarding,
+                    url,
+                    From_RenewalExpired,
+                    To_RenewalExpired,
+                    status
+                }
             }
+        });
+    };
+
+    const onCellValueChanged = (params) => {
+        const updatedRowData = [...rowData];
+        const rowIndex = updatedRowData.findIndex(
+            (row) => row.customer_id === params.data.customer_id
+        );
+
+        if (rowIndex !== -1) {
+            updatedRowData[rowIndex][params.colDef.field] = params.newValue;
+            setRowData(updatedRowData);
+
+            setEditedData((prevData) => {
+                const existingIndex = prevData.findIndex(
+                    (item) => item.customer_id === params.data.customer_id
+                );
+
+                if (existingIndex !== -1) {
+                    const updatedEdited = [...prevData];
+                    updatedEdited[existingIndex] = updatedRowData[rowIndex];
+                    return updatedEdited;
+                } else {
+                    // Add new edited row
+                    return [...prevData, updatedRowData[rowIndex]];
+                }
+            });
         }
-    });
-};
+    };
 
-const handleUpdate = () => {
-    const selectedRows = gridApi.getSelectedRows();
+    const onSelectionChanged = () => {
+        const selectedNodes = gridApi.getSelectedNodes();
+        const selectedData = selectedNodes.map((node) => node.data);
+        setSelectedRows(selectedData);
+    };
 
-    if (selectedRows.length !== 1) {
-        toast.warning("Please select one customer to update");
-        return;
-    }
+    const handleUpdate = () => {
+        const selectedRowsData = editedData.filter((row) =>
+            selectedRows.some(
+                (selectedRow) => selectedRow.customer_id === row.customer_id
+            )
+        );
 
-    const selectedRow = selectedRows[0];
+        if (selectedRowsData.length === 0) {
+            toast.warning("Please select a row to update its data")
+            return;
+        }
 
-    showConfirmationToast(
-        "Are you sure you want to update the selected customer?",
-        async () => {
-            setLoading(true);
+        showConfirmationToast(
+            "Are you sure you want to update the data in the selected rows?",
+            async () => {
 
-            try {
-                const modified_by =
-                    sessionStorage.getItem("selectedUserCode");
+                try {
+                    const company_code = sessionStorage.getItem("selectedCompanyCode");
+                    const modified_by = sessionStorage.getItem("selectedUserCode");
 
-                const company_code =
-                    sessionStorage.getItem("selectedCompanyCode");
 
-                const payload = {
-                    customer_id: selectedRow.customer_id,
-                    customer_name: selectedRow.customer_name,
-                    company_name: selectedRow.company_name,
-                    phone: selectedRow.phone,
-                    email: selectedRow.email,
-                    regarding: selectedRow.regarding,
-                    url: selectedRow.url,
-                    demo_status: selectedRow.demo_status,
-                    feedback: selectedRow.feedback,
-                    website_url: selectedRow.website_url,
-                    website_date: selectedRow.website_date,
-                    no_of_users: selectedRow.no_of_users,
-                    reference: selectedRow.reference,
-                    live_date: selectedRow.live_date,
-                    amount: selectedRow.amount,
-                    new_requirement_1: selectedRow.new_requirement_1,
-                    new_requirement_2: selectedRow.new_requirement_2,
-                    development_status: selectedRow.development_status,
-                    status: selectedRow.status,
-                    WebsiteRenewal: selectedRow.WebsiteRenewal,
-                    RenewalRemaider: selectedRow.RenewalRemaider,
-                    RenewalExpired: selectedRow.RenewalExpired,
-                    company_code: company_code,
-                    modified_by: modified_by,
-                    modified_date: new Date()
-                };
-
-                console.log("Update Customer Payload:", payload);
-
-                const response = await fetch(
-                    `${config.apiBaseUrl}/YJKcustomer_DetailsUpdate`,
-                    {
+                    const response = await fetch(`${config.apiBaseUrl}/YJKcustomer_DetailsLoopUpdate`, {
                         method: "POST",
                         headers: {
-                            "Content-Type": "application/json"
+                            "Content-Type": "application/json",
+                            company_code: company_code,
+                            "modified-by": modified_by,
                         },
-                        body: JSON.stringify(payload)
+                        body: JSON.stringify({ YJKcustomer_DetailsData: selectedRowsData }),
+                    });
+
+                    if (response.status === 200) {
+                        setTimeout(() => {
+                            toast.success("Data Updated Successfully")
+                            handleSearch();
+                        }, 1000);
+                        return;
+                    } else {
+                        const errorResponse = await response.json();
+                        toast.warning(errorResponse.message || "Failed to insert sales data");
                     }
-                );
-
-                const result = await response.json();
-
-                if (response.status === 200) {
-                    toast.success(
-                        result.message || "Customer data updated successfully"
-                    );
-
-                    handleSearch();
-                } else {
-                    toast.warning(
-                        result.message || "Failed to update customer data"
-                    );
+                } catch (error) {
+                    console.error("Error saving data:", error);
+                    toast.error("Error Updating Data: " + error.message);
                 }
-
-            } catch (error) {
-                console.error("Error updating customer:", error);
-
-                toast.error(
-                    "Error Updating Data: " + error.message
-                );
-            } finally {
-                setLoading(false);
+            },
+            () => {
+                toast.info("Data update cancelled.");
             }
-        },
-        () => {
-            toast.info("Data update cancelled.");
-        }
-    );
-};
-const handleDelete = async () => {
-    const selectedRows = gridApi.getSelectedRows();
+        );
+    };
 
-    if (selectedRows.length === 0) {
-        toast.warning("Please select at least one customer to delete");
-        return;
-    }
+    const handleDelete = async () => {
+        const selectedRows = gridApi.getSelectedRows();
 
-    const confirmDelete = window.confirm(
-        "Are you sure you want to delete the selected customer?"
-    );
-
-    if (!confirmDelete) {
-        return;
-    }
-
-    try {
-        setLoading(true);
-
-        const company_code =
-            sessionStorage.getItem("selectedCompanyCode");
-
-        const modified_by =
-            sessionStorage.getItem("selectedUserCode");
-
-        for (const row of selectedRows) {
-
-            const payload = {
-                mode: "D",
-                customer_id: row.customer_id,
-
-                customer_name: "",
-                company_name: "",
-                phone: "",
-                email: "",
-                regarding: "",
-                url: "",
-                demo_status: "",
-                feedback: "",
-                website_url: "",
-                website_date: "",
-                no_of_users: 0,
-                reference: "",
-                live_date: "",
-                amount: 0,
-                new_requirement_1: "",
-                new_requirement_2: "",
-                development_status: "",
-                status: "",
-                WebsiteRenewal: "",
-                RenewalRemaider: "",
-                RenewalExpired: "",
-
-                company_code: company_code,
-
-                created_by: "",
-                created_date: "",
-
-                modified_by: modified_by,
-                modified_date: "",
-
-                From_RenewalExpired: "",
-                To_RenewalExpired: ""
-            };
-
-            const response = await fetch(
-                `${config.apiBaseUrl}/getYJKcustomer_Details`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(payload)
-                }
-            );
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(
-                    errorData.message || "Failed to delete customer"
-                );
-            }
+        if (selectedRows.length === 0) {
+            toast.warning("Please select atleast One Row to Delete");
+            return;
         }
 
-        toast.success("Customer deleted successfully");
+        const company_code = sessionStorage.getItem("selectedCompanyCode");
+        const modified_by = sessionStorage.getItem("selectedUserCode");
+        const customerIDToDelete = selectedRows.map((row) => row.customer_id);
 
-        handleSearch();
+        showConfirmationToast(
+            "Are you sure you want to Delete the data in the selected rows?",
+            async () => {
 
-    } catch (error) {
-        console.error("Delete Customer Error:", error);
-        toast.error(error.message || "Something went wrong");
-    } finally {
-        setLoading(false);
-    }
-};
+                try {
+                    const response = await fetch(`${config.apiBaseUrl}/YJKcustomer_DetailsLoopDelete`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                company_code: company_code,
+                                "Modified-By": modified_by,
+                            },
+                            body: JSON.stringify({ YJKcustomer_DetailsData: customerIDToDelete }),
+                            company_code: company_code,
+                            modified_by: modified_by,
+                        }
+                    );
+
+                    if (response.ok) {
+                        console.log("Rows deleted successfully:", customerIDToDelete);
+                        setTimeout(() => {
+                            toast.success("Data Deleted successfully")
+                            handleSearch();
+                        }, 1000);
+                    } else {
+                        const errorResponse = await response.json();
+                        toast.warning(errorResponse.message || "Failed to insert sales data");
+                    }
+                } catch (error) {
+                    console.error("Error saving data:", error);
+                    toast.error("Error Deleting Data: " + error.message);
+                }
+            },
+            () => {
+                toast.info("Data Delete cancelled.");
+            }
+        );
+    };
 
     const generateReport = () => {
         const selectedRows = gridApi.getSelectedRows();
@@ -656,12 +622,12 @@ const handleDelete = async () => {
                             </addbutton>
                         )}
                         {['delete', 'all permission'].some(permission => YjkCustomerPermission.includes(permission)) && (
-                            <delbutton className="purbut" title="Delete Selected Customer"onClick={handleDelete}>
+                            <delbutton className="purbut" title="Delete Selected Customer" onClick={handleDelete}>
                                 <i className="fa-solid fa-user-minus"></i>
                             </delbutton>
                         )}
                         {['update', 'all permission'].some(permission => YjkCustomerPermission.includes(permission)) && (
-                            <savebutton className="purbut" title="Update Customer Records"onClick={handleUpdate}>
+                            <savebutton className="purbut" title="Update Customer Records" onClick={handleUpdate}>
                                 <i className="fa-solid fa-floppy-disk"></i>
                             </savebutton>
                         )}
@@ -694,14 +660,14 @@ const handleDelete = async () => {
                                     </li>
                                     <li class="iconbutton  d-flex justify-content-center text-danger">
                                         {['delete', 'all permission'].some(permission => YjkCustomerPermission.includes(permission)) && (
-                                            <icon class="icon"onClick={handleDelete}>
+                                            <icon class="icon" onClick={handleDelete}>
                                                 <i class="fa-solid fa-user-minus"></i>
                                             </icon>
                                         )}
                                     </li>
                                     <li class="iconbutton  d-flex justify-content-center text-primary ">
                                         {['update', 'all permission'].some(permission => YjkCustomerPermission.includes(permission)) && (
-                                            <icon class="icon"onClick={handleUpdate}>
+                                            <icon class="icon" onClick={handleUpdate}>
                                                 <i class="fa-solid fa-floppy-disk"></i>
                                             </icon>
                                         )}
@@ -809,11 +775,12 @@ const handleDelete = async () => {
 
                     <div className="col-md-3 form-group mb-2">
                         <div className="exp-form-floating">
-                            <label className="exp-form-labels">RenewalExpired From</label>
+                            <label className="exp-form-labels">Renewal Expired From</label>
                             <input
                                 className="exp-input-field form-control"
-                                placeholder="Enter URL"
-                                title="Search by Project or Website URL"
+                                placeholder="Enter Renewal Expired To"
+                                type="date"
+                                title="Search by Renewal Expired From"
                                 value={From_RenewalExpired}
                                 onChange={(e) => setFrom_RenewalExpired(e.target.value)}
                                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -823,11 +790,12 @@ const handleDelete = async () => {
 
                     <div className="col-md-3 form-group mb-2">
                         <div className="exp-form-floating">
-                            <label className="exp-form-labels">RenewalExpired To</label>
+                            <label className="exp-form-labels">Renewal Expired To</label>
                             <input
                                 className="exp-input-field form-control"
-                                placeholder="Enter URL"
-                                title="Search by Project or Website URL"
+                                placeholder="Enter Renewal Expired To"
+                                type="date"
+                                title="Search by Renewal Expired To"
                                 value={To_RenewalExpired}
                                 onChange={(e) => setTo_RenewalExpired(e.target.value)}
                                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -878,6 +846,8 @@ const handleDelete = async () => {
                         onGridReady={onGridReady}
                         rowSelection="multiple"
                         rowMultiSelectWithClick={true}
+                        onCellValueChanged={onCellValueChanged}
+                        onSelectionChanged={onSelectionChanged}
                     />
                 </div>
             </div>

@@ -19,8 +19,10 @@ const AddYJKCustomerScreen = () => {
     const locationState = location.state || {};
     const mode = locationState.mode || "create";
     const customer_id = locationState.customer_id;
-    const customerData = locationState.customerData || {};
+    const company_code = sessionStorage.getItem('selectedCompanyCode');
+
     // Form Field States
+    const [customerId, setCustomerId] = useState("");
     const [customerName, setCustomerName] = useState("");
     const [companyName, setCompanyName] = useState("");
     const [phone, setPhone] = useState("");
@@ -46,7 +48,6 @@ const AddYJKCustomerScreen = () => {
     const [renewalRemainder, setRenewalRemainder] = useState("");
     const [renewalExpired, setRenewalExpired] = useState("");
     const [statusDrop, setStatusDrop] = useState([]);
-    
 
     useEffect(() => {
         const company_code = sessionStorage.getItem('selectedCompanyCode');
@@ -69,61 +70,108 @@ const AddYJKCustomerScreen = () => {
     }));
 
     useEffect(() => {
-    if (mode === "update" && customerData.customer_id) {
+        if (!location.state) {
+            clearInputFields(); // ensure fresh create mode
+        }
+    }, []);
 
-        setCustomerName(customerData.customer_name || "");
-        setCompanyName(customerData.company_name || "");
-        setPhone(customerData.phone || "");
-        setEmail(customerData.email || "");
-        setRegarding(customerData.regarding || "");
-        setUrl(customerData.url || "");
+    useEffect(() => {
+        if (mode === "update" && customer_id) {
+            fetchYjkCustomerData();
+        }
+    }, [mode, customer_id]);
 
-        setDemoStatus(customerData.demo_status || "");
-        setSelectedDemoStatus(
-            customerData.demo_status
-                ? {
+    const fetchYjkCustomerData = async () => {
+        try {
+            setLoading(true);
+
+            const response = await fetch(`${config.apiBaseUrl}/getYJKcustomerDetails`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    customer_id: customer_id,
+                    company_code
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.length > 0) {
+                const customerData = data[0];
+
+                setCustomerId(customerData.customer_id || "");
+                setCustomerName(customerData.customer_name || "");
+                setCompanyName(customerData.company_name || "");
+                setPhone(customerData.phone || "");
+                setEmail(customerData.email || "");
+                setRegarding(customerData.regarding || "");
+                setUrl(customerData.url || "");
+                setDemoStatus(customerData.demo_status || "");
+                setFeedback(customerData.feedback || "");
+                setWebsiteUrl(customerData.website_url || "");
+                setWebsiteDate(customerData.website_date || "");
+                setNoOfUsers(customerData.no_of_users || "");
+                setReference(customerData.reference || "");
+                setLiveDate(customerData.live_date || "");
+                setAmount(customerData.amount || "");
+                setNewRequirement1(customerData.new_requirement_1 || "");
+                setNewRequirement2(customerData.new_requirement_2 || "");
+                setDevelopmentStatus(customerData.development_status || "");
+                setStatus(customerData.status || "");
+                setWebsiteRenewal(customerData.WebsiteRenewal || "");
+                setRenewalRemainder(customerData.RenewalRemaider || "");
+                setRenewalExpired(customerData.RenewalExpired || "");
+
+                setSelectedDemoStatus({
                     value: customerData.demo_status,
                     label: customerData.demo_status
-                }
-                : null
-        );
-
-        setFeedback(customerData.feedback || "");
-        setWebsiteUrl(customerData.website_url || "");
-        setWebsiteDate(customerData.website_date || "");
-        setNoOfUsers(customerData.no_of_users || "");
-        setReference(customerData.reference || "");
-        setLiveDate(customerData.live_date || "");
-        setAmount(customerData.amount || "");
-
-        setNewRequirement1(customerData.new_requirement_1 || "");
-        setNewRequirement2(customerData.new_requirement_2 || "");
-
-        setDevelopmentStatus(customerData.development_status || "");
-        setSelectedDevelopmentStatus(
-            customerData.development_status
-                ? {
+                });
+                setSelectedDevelopmentStatus({
                     value: customerData.development_status,
                     label: customerData.development_status
-                }
-                : null
-        );
-
-        setStatus(customerData.status || "");
-        setSelectedStatus(
-            customerData.status
-                ? {
+                });
+                setSelectedStatus({
                     value: customerData.status,
                     label: customerData.status
-                }
-                : null
-        );
+                });
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to fetch company mapping details");
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        setWebsiteRenewal(customerData.WebsiteRenewal || "");
-        setRenewalRemainder(customerData.RenewalRemaider || "");
-        setRenewalExpired(customerData.RenewalExpired || "");
-    }
-}, [mode, customerData]);
+    const clearInputFields = () => {
+        setCustomerId("");
+        setCustomerName("");
+        setCompanyName("");
+        setPhone("");
+        setEmail("");
+        setRegarding("");
+        setUrl("");
+        setSelectedDemoStatus("");
+        setDemoStatus("");
+        setFeedback("");
+        setWebsiteUrl("");
+        setWebsiteDate("");
+        setNoOfUsers("");
+        setReference("");
+        setLiveDate("");
+        setAmount("");
+        setNewRequirement1("");
+        setNewRequirement2("");
+        setSelectedDevelopmentStatus("");
+        setDevelopmentStatus("");
+        setSelectedStatus("");
+        setStatus("");
+        setWebsiteRenewal("");
+        setRenewalRemainder("");
+        setRenewalExpired("");
+    };
 
     const handleChangeDemoStatus = (selectedDemoStatus) => {
         setSelectedDemoStatus(selectedDemoStatus);
@@ -141,273 +189,127 @@ const AddYJKCustomerScreen = () => {
     };
 
     const handleAdd = async () => {
-    try {
-        setLoading(true);
+        try {
+            setLoading(true);
+            const company_code = sessionStorage.getItem("selectedCompanyCode");
+            const created_by = sessionStorage.getItem("selectedUserCode");
+            const payload = {
+                customer_name: customerName,
+                company_name: companyName,
+                phone: phone,
+                email: email,
+                regarding: regarding,
+                url: url,
+                demo_status: demoStatus,
+                feedback: feedback,
+                website_url: websiteUrl,
+                website_date: websiteDate || null,
+                no_of_users: Number(noOfUsers) || 0,
+                reference: reference,
+                live_date: liveDate || null,
+                amount: Number(amount) || 0,
+                new_requirement_1: newRequirement1,
+                new_requirement_2: newRequirement2,
+                development_status: developmentStatus,
+                status: status,
+                WebsiteRenewal: websiteRenewal || null,
+                RenewalRemaider: renewalRemainder,
+                RenewalExpired: renewalExpired || null,
+                company_code: company_code,
+                created_by: created_by,
+            };
 
-        const company_code =
-            sessionStorage.getItem("selectedCompanyCode");
-
-        const created_by =
-            sessionStorage.getItem("selectedUserCode");
-
-        const payload = {
-            customer_name: customerName,
-            company_name: companyName,
-            phone: phone,
-            email: email,
-            regarding: regarding,
-            url: url,
-            demo_status: demoStatus,
-            feedback: feedback,
-            website_url: websiteUrl,
-            website_date: websiteDate || "",
-            no_of_users: Number(noOfUsers) || 0,
-            reference: reference,
-            live_date: liveDate || "",
-            amount: Number(amount) || 0,
-            new_requirement_1: newRequirement1,
-            new_requirement_2: newRequirement2,
-            development_status: developmentStatus,
-            status: status,
-
-            WebsiteRenewal: websiteRenewal || "",
-            RenewalRemaider: renewalRemainder,
-            RenewalExpired: renewalExpired || "",
-
-            company_code: company_code,
-
-            created_by: created_by,
-            
-        };
-
-        const response = await fetch(
-            `${config.apiBaseUrl}/YJKcustomer_DetailsInsert`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(payload)
-            }
-        );
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            throw new Error(
-                result.message || "Failed to add customer"
+            const response = await fetch(`${config.apiBaseUrl}/YJKcustomer_DetailsInsert`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                }
             );
+
+            if (response.ok) {
+                toast.success("Data inserted Successfully", {
+                    onClose: () => clearInputFields()
+                });
+            } else {
+                const errorResponse = await response.json();
+                console.error(errorResponse.message);
+                toast.warning(errorResponse.message);
+            }
+        } catch (error) {
+            console.error("Add Customer Error:", error);
+            toast.error(error.message || "Something went wrong");
+        } finally {
+            setLoading(false);
         }
+    };
 
-        toast.success("Customer added successfully");
-
-        
-    } catch (error) {
-        console.error("Add Customer Error:", error);
-        toast.error(error.message || "Something went wrong");
-    } finally {
-        setLoading(false);
-    }
-};
-const handleUpdate = async () => {
-    try {
+    const handleUpdate = async () => {
         setLoading(true);
 
-        const company_code =
-            sessionStorage.getItem("selectedCompanyCode");
+        try {
+            const company_code = sessionStorage.getItem("selectedCompanyCode");
+            const modified_by = sessionStorage.getItem("selectedUserCode");
+            const payload = {
+                customer_id: customerId,
+                customer_name: customerName,
+                company_name: companyName,
+                phone: phone,
+                email: email,
+                regarding: regarding,
+                url: url,
+                demo_status: demoStatus,
+                feedback: feedback,
+                website_url: websiteUrl,
+                website_date: websiteDate || null,
+                no_of_users: Number(noOfUsers) || 0,
+                reference: reference,
+                live_date: liveDate || null,
+                amount: Number(amount) || 0,
+                new_requirement_1: newRequirement1,
+                new_requirement_2: newRequirement2,
+                development_status: developmentStatus,
+                status: status,
+                WebsiteRenewal: websiteRenewal || null,
+                RenewalRemaider: renewalRemainder,
+                RenewalExpired: renewalExpired || null,
+                company_code: company_code,
+                modified_by: modified_by,
+            };
 
-        const modified_by =
-            sessionStorage.getItem("selectedUserCode");
-
-        const payload = {
-            customer_id: customerData.customer_id,
-            customer_name: customerName,
-            company_name: companyName,
-            phone: phone,
-            email: email,
-            regarding: regarding,
-            url: url,
-            demo_status: demoStatus,
-            feedback: feedback,
-            website_url: websiteUrl,
-            website_date: websiteDate || "",
-            no_of_users: Number(noOfUsers) || 0,
-            reference: reference,
-            live_date: liveDate || "",
-            amount: Number(amount) || 0,
-            new_requirement_1: newRequirement1,
-            new_requirement_2: newRequirement2,
-            development_status: developmentStatus,
-            status: status,
-            WebsiteRenewal: websiteRenewal || "",
-            RenewalRemaider: renewalRemainder,
-            RenewalExpired: renewalExpired || "",
-            company_code: company_code,
-            modified_by: modified_by,
-        };
-
-        const response = await fetch(
-            `${config.apiBaseUrl}/getYJKcustomer_Details`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(payload)
-            }
-        );
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            throw new Error(
-                result.message || "Failed to update customer"
+            const response = await fetch(`${config.apiBaseUrl}/YJKcustomer_DetailsUpdate`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                }
             );
-        }
 
-        toast.success("Customer updated successfully");
-
-        setTimeout(() => {
-            handleNavigate();
-        }, 1000);
-
-    } catch (error) {
-        console.error("Update Customer Error:", error);
-        toast.error(error.message || "Something went wrong");
-    } finally {
-        setLoading(false);
-    }
-};
-
-const fetchCustomerData = async () => {
-    try {
-        setLoading(true);
-
-        const response = await fetch(
-            `${config.apiBaseUrl}/getYJKcustomer_Details`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    customerName: "",
-                    companyName: "",
-                    phone: "",
-                    email: "",
-                    regarding: "",
-                    url: "",
-                    From_RenewalExpired: "",
-                    To_RenewalExpired: "",
-                    status: "",
-                    company_code: sessionStorage.getItem("selectedCompanyCode")
-                })
+            if (response.ok) {
+                toast.success("Data updated successfully", {
+                    // onClose: () => clearInputFields()
+                });
+            } else {
+                const errorResponse = await response.json();
+                console.error(errorResponse.message);
+                toast.warning(errorResponse.message);
             }
-        );
-
-        if (!response.ok) {
-            throw new Error("Failed to fetch customer data");
+        } catch (error) {
+            console.error("Update Customer Error:", error);
+            toast.error(error.message || "Something went wrong");
+        } finally {
+            setLoading(false);
         }
-
-        const data = await response.json();
-
-        const selectedCustomer = data.find(
-            (item) => String(item.customer_id) === String(customer_id)
-        );
-
-        if (!selectedCustomer) {
-            toast.error("Customer data not found");
-            return;
-        }
-
-        console.log("Selected Customer:", selectedCustomer);
-
-        setCustomerName(selectedCustomer.customer_name || "");
-        setCompanyName(selectedCustomer.company_name || "");
-        setPhone(selectedCustomer.phone || "");
-        setEmail(selectedCustomer.email || "");
-        setRegarding(selectedCustomer.regarding || "");
-        setUrl(selectedCustomer.url || "");
-
-        setDemoStatus(selectedCustomer.demo_status || "");
-        setSelectedDemoStatus(
-            selectedCustomer.demo_status
-                ? {
-                    value: selectedCustomer.demo_status,
-                    label: selectedCustomer.demo_status
-                }
-                : null
-        );
-
-        setFeedback(selectedCustomer.feedback || "");
-        setWebsiteUrl(selectedCustomer.website_url || "");
-        setWebsiteDate(
-            selectedCustomer.website_date
-                ? selectedCustomer.website_date.split("T")[0]
-                : ""
-        );
-
-        setNoOfUsers(selectedCustomer.no_of_users || "");
-        setReference(selectedCustomer.reference || "");
-
-        setLiveDate(
-            selectedCustomer.live_date
-                ? selectedCustomer.live_date.split("T")[0]
-                : ""
-        );
-
-        setAmount(selectedCustomer.amount || "");
-
-        setNewRequirement1(selectedCustomer.new_requirement_1 || "");
-        setNewRequirement2(selectedCustomer.new_requirement_2 || "");
-
-        setDevelopmentStatus(selectedCustomer.development_status || "");
-        setSelectedDevelopmentStatus(
-            selectedCustomer.development_status
-                ? {
-                    value: selectedCustomer.development_status,
-                    label: selectedCustomer.development_status
-                }
-                : null
-        );
-
-        setStatus(selectedCustomer.status || "");
-        setSelectedStatus(
-            selectedCustomer.status
-                ? {
-                    value: selectedCustomer.status,
-                    label: selectedCustomer.status
-                }
-                : null
-        );
-
-        setWebsiteRenewal(selectedCustomer.WebsiteRenewal || "");
-        setRenewalRemainder(selectedCustomer.RenewalRemaider || "");
-        setRenewalExpired(
-            selectedCustomer.RenewalExpired
-                ? selectedCustomer.RenewalExpired.split("T")[0]
-                : ""
-        );
-
-    } catch (error) {
-        console.error("Fetch Customer Data Error:", error);
-        toast.error("Failed to load customer data");
-    } finally {
-        setLoading(false);
-    }
-};
-
-useEffect(() => {
-    if (mode === "update" && customer_id) {
-        fetchCustomerData();
-    }
-}, [mode, customer_id]);
-
+    };
 
     const handleNavigate = () => {
         navigate("/YjkCustomer", {
             state: {
-                preservedRowData: location.state?.preservedRowData,
+                refreshGrid: true,
                 preservedInputs: location.state?.preservedInputs
             }
         });
@@ -723,25 +625,25 @@ useEffect(() => {
                     </div>
 
                     {/* ACTION BUTTONS */}
-{mode === "create" ? (
-    <button
-        type="button"
-        className=""
-        title="Save New Customer Details"
-        onClick={handleAdd}
-    >
-        <i className="fa-solid fa-floppy-disk"></i>
-    </button>
-) : (
-    <button
-        type="button"
-        className=""
-        title="Update Customer Details"
-        onClick={handleUpdate}
-    >
-        <i className="fa-solid fa-pen-to-square"></i>
-    </button>
-)}
+                    {mode === "create" ? (
+                        <button
+                            type="button"
+                            className=""
+                            title="Save New Customer Details"
+                            onClick={handleAdd}
+                        >
+                            <i className="fa-solid fa-floppy-disk"></i>
+                        </button>
+                    ) : (
+                        <button
+                            type="button"
+                            className=""
+                            title="Update Customer Details"
+                            onClick={handleUpdate}
+                        >
+                            <i className="fa-solid fa-pen-to-square"></i>
+                        </button>
+                    )}
 
                 </div>
             </div>

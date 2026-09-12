@@ -1208,7 +1208,8 @@ router.post("/YJKcustomer_DetailsLoopDelete",dataController.YJKcustomer_DetailsL
 router.post("/YJKcustomer_DetailsInsert",dataController.YJKcustomer_DetailsInsert)
 router.post("/YJKcustomer_DetailsUpdate",dataController.YJKcustomer_DetailsUpdate)
 router.post("/YJKcustomer_DetailsDelete",dataController.YJKcustomer_DetailsDelete)
-router.post("/getYJKcustomer_Details",dataController.getYJKcustomer_Details)
+router.post("/getYJKcustomerDetailsSearch",dataController.getYJKcustomerDetailsSearch)
+router.post("/getYJKcustomerDetails",dataController.getYJKcustomerDetails)
 
 
 
