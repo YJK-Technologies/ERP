@@ -36,6 +36,9 @@ const YJKCustomerScreen = () => {
     const [editedData, setEditedData] = useState([]);
     const [selectedRows, setSelectedRows] = useState([]);
 
+    const [statusGridDrop, setStatusGridDrop] = useState([]);
+    const [developmentDemoGridDrop, setDevelopmentDemoStatusGridDrop] = useState([]);
+
     useEffect(() => {
         const company_code = sessionStorage.getItem('selectedCompanyCode');
 
@@ -48,6 +51,42 @@ const YJKCustomerScreen = () => {
         })
             .then((data) => data.json())
             .then((val) => setStatusDrop(val))
+            .catch((error) => console.error('Error fetching data:', error));
+    }, []);
+
+    useEffect(() => {
+        const company_code = sessionStorage.getItem('selectedCompanyCode');
+
+        fetch(`${config.apiBaseUrl}/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ company_code })
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                const statusOption = data.map(option => option.attributedetails_name);
+                setStatusGridDrop(statusOption);
+            })
+            .catch((error) => console.error('Error fetching data:', error));
+    }, []);
+
+    useEffect(() => {
+        const company_code = sessionStorage.getItem('selectedCompanyCode');
+
+        fetch(`${config.apiBaseUrl}/getDevelopmentStatus`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ company_code })
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                const developmentDemoStatusOption = data.map(option => option.attributedetails_name);
+                setDevelopmentDemoStatusGridDrop(developmentDemoStatusOption);
+            })
             .catch((error) => console.error('Error fetching data:', error));
     }, []);
 
@@ -167,7 +206,11 @@ const YJKCustomerScreen = () => {
         {
             headerName: "Demo Status",
             field: "demo_status",
-            editable: true
+            editable: true,
+            cellEditor: "agSelectCellEditor",
+            cellEditorParams: {
+                values: developmentDemoGridDrop,
+            },
         },
         {
             headerName: "Feedback",
@@ -217,12 +260,20 @@ const YJKCustomerScreen = () => {
         {
             headerName: "Development Status",
             field: "development_status",
-            editable: true
+            editable: true,
+            cellEditor: "agSelectCellEditor",
+            cellEditorParams: {
+                values: developmentDemoGridDrop,
+            },
         },
         {
             headerName: "Status",
             field: "status",
-            editable: true
+            editable: true,
+            cellEditor: "agSelectCellEditor",
+            cellEditorParams: {
+                values: statusGridDrop,
+            },
         },
         {
             headerName: "Website Renewal",

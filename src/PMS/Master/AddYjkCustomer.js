@@ -48,6 +48,7 @@ const AddYJKCustomerScreen = () => {
     const [renewalRemainder, setRenewalRemainder] = useState("");
     const [renewalExpired, setRenewalExpired] = useState("");
     const [statusDrop, setStatusDrop] = useState([]);
+    const [developmentDemoDrop, setDevelopmentDemoDrop] = useState([]);
 
     useEffect(() => {
         const company_code = sessionStorage.getItem('selectedCompanyCode');
@@ -64,7 +65,27 @@ const AddYJKCustomerScreen = () => {
             .catch((error) => console.error('Error fetching data:', error));
     }, []);
 
+    useEffect(() => {
+        const company_code = sessionStorage.getItem('selectedCompanyCode');
+
+        fetch(`${config.apiBaseUrl}/getDevelopmentStatus`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ company_code })
+        })
+            .then((data) => data.json())
+            .then((val) => setDevelopmentDemoDrop(val))
+            .catch((error) => console.error('Error fetching data:', error));
+    }, []);
+
     const filteredOptionStatus = statusDrop.map((option) => ({
+        value: option.attributedetails_name,
+        label: option.attributedetails_name,
+    }));
+
+    const filteredOptionDevelopmentDemoStatus = developmentDemoDrop.map((option) => ({
         value: option.attributedetails_name,
         label: option.attributedetails_name,
     }));
@@ -349,6 +370,7 @@ const AddYJKCustomerScreen = () => {
                                     placeholder="Enter Customer Name"
                                     title="Enter full name of the customer"
                                     value={customerName}
+                                    maxLength={20}
                                     onChange={(e) => setCustomerName(e.target.value)}
                                 />
                             </div>
@@ -362,6 +384,7 @@ const AddYJKCustomerScreen = () => {
                                     placeholder="Enter Company Name"
                                     title="Enter company or organization name"
                                     value={companyName}
+                                    maxLength={100}
                                     onChange={(e) => setCompanyName(e.target.value)}
                                 />
                             </div>
@@ -375,6 +398,7 @@ const AddYJKCustomerScreen = () => {
                                     placeholder="Enter Phone"
                                     title="Enter contact phone number"
                                     value={phone}
+                                    maxLength={20}
                                     onChange={(e) => setPhone(e.target.value)}
                                 />
                             </div>
@@ -389,6 +413,7 @@ const AddYJKCustomerScreen = () => {
                                     placeholder="Enter Email"
                                     title="Enter valid email address"
                                     value={email}
+                                    maxLength={255}
                                     onChange={(e) => setEmail(e.target.value)}
                                 />
                             </div>
@@ -402,6 +427,7 @@ const AddYJKCustomerScreen = () => {
                                     placeholder="Enter Regarding"
                                     title="Enter subject or purpose of inquiry"
                                     value={regarding}
+                                    maxLength={250}
                                     onChange={(e) => setRegarding(e.target.value)}
                                 />
                             </div>
@@ -415,6 +441,7 @@ const AddYJKCustomerScreen = () => {
                                     placeholder="Enter URL"
                                     title="Enter primary project or reference URL"
                                     value={url}
+                                    maxLength={500}
                                     onChange={(e) => setUrl(e.target.value)}
                                 />
                             </div>
@@ -425,7 +452,7 @@ const AddYJKCustomerScreen = () => {
                                 <label className="exp-form-labels">Demo Status</label>
                                 <Select
                                     className="exp-input-field"
-                                    options={filteredOptionStatus}
+                                    options={filteredOptionDevelopmentDemoStatus}
                                     placeholder="Select Demo Status"
                                     title="Select current product demo status"
                                     value={selectedDemoStatus}
@@ -442,6 +469,7 @@ const AddYJKCustomerScreen = () => {
                                     placeholder="Enter Feedback"
                                     title="Enter customer feedback or comments"
                                     value={feedback}
+                                    maxLength={200}
                                     onChange={(e) => setFeedback(e.target.value)}
                                 />
                             </div>
@@ -455,6 +483,7 @@ const AddYJKCustomerScreen = () => {
                                     placeholder="Enter Website URL"
                                     title="Enter customer official website web address"
                                     value={websiteUrl}
+                                    maxLength={500}
                                     onChange={(e) => setWebsiteUrl(e.target.value)}
                                 />
                             </div>
@@ -496,6 +525,7 @@ const AddYJKCustomerScreen = () => {
                                     placeholder="Enter Reference"
                                     title="Enter referral source or contact reference"
                                     value={reference}
+                                    maxLength={150}
                                     onChange={(e) => setReference(e.target.value)}
                                 />
                             </div>
@@ -537,6 +567,7 @@ const AddYJKCustomerScreen = () => {
                                     placeholder="Enter New Requirement 1"
                                     title="Enter additional requirement details"
                                     value={newRequirement1}
+                                    // maxLength={500}
                                     onChange={(e) => setNewRequirement1(e.target.value)}
                                 />
                             </div>
@@ -550,6 +581,7 @@ const AddYJKCustomerScreen = () => {
                                     placeholder="Enter New Requirement 2"
                                     title="Enter secondary additional requirement details"
                                     value={newRequirement2}
+                                    // maxLength={500}
                                     onChange={(e) => setNewRequirement2(e.target.value)}
                                 />
                             </div>
@@ -560,7 +592,7 @@ const AddYJKCustomerScreen = () => {
                                 <label className="exp-form-labels">Development Status</label>
                                 <Select
                                     className="exp-input-field"
-                                    options={filteredOptionStatus}
+                                    options={filteredOptionDevelopmentDemoStatus}
                                     placeholder="Select Development Status"
                                     title="Select current development phase"
                                     value={selectedDevelopmentStatus}
@@ -604,6 +636,7 @@ const AddYJKCustomerScreen = () => {
                                     placeholder="Enter Renewal Reminder"
                                     title="Enter notes or days notice needed for renewal"
                                     value={renewalRemainder}
+                                    maxLength={1}
                                     onChange={(e) => setRenewalRemainder(e.target.value)}
                                 />
                             </div>

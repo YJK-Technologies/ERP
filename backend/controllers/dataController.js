@@ -35695,6 +35695,21 @@ const getYJKcustomerDetails = async (req, res) => {
     res.status(500).json({ message: err.message || "Internal Server Error" });
   }
 };
+
+const getDevelopmentStatus = async (req, res) => {
+  const { company_code } = req.body;
+  try {
+    const pool = await connection.connectToDatabase();
+    const result = await pool
+      .request()
+      .input("company_code", sql.NVarChar, company_code)
+      .query("EXEC sp_attribute_Info_pavun 'F',@company_code,'Development','','','', '','','', NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL");
+    res.json(result.recordset);
+  } catch (err) {
+    console.error("Error during update:", err);
+    res.status(500).json({ message: err.message || 'Internal Server Error' });
+  }
+};
 //Code Ended by Pavun on 12-09-2026
 
 module.exports = {
@@ -36876,7 +36891,8 @@ module.exports = {
   YJKcustomer_DetailsUpdate, 
   YJKcustomer_DetailsDelete,
   getYJKcustomerDetailsSearch,
-  getYJKcustomerDetails
+  getYJKcustomerDetails,
+  getDevelopmentStatus
 
 
 };

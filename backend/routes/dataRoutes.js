@@ -1210,6 +1210,7 @@ router.post("/YJKcustomer_DetailsUpdate",dataController.YJKcustomer_DetailsUpdat
 router.post("/YJKcustomer_DetailsDelete",dataController.YJKcustomer_DetailsDelete)
 router.post("/getYJKcustomerDetailsSearch",dataController.getYJKcustomerDetailsSearch)
 router.post("/getYJKcustomerDetails",dataController.getYJKcustomerDetails)
+router.post("/getDevelopmentStatus",dataController.getDevelopmentStatus)
 
 
 
