@@ -1767,9 +1767,7 @@ const addattridetData = async (req, res) => {
       .query(`EXEC sp_attribute_Info_pavun @mode,@company_code,@attributeheader_code, '',@attributedetails_code,@attributedetails_name,@descriptions,@created_by,@modified_by,@tempstr1, @tempstr2, @tempstr3, @tempstr4, 
         @datetime1, @datetime2, @datetime3, @datetime4`);
     // Return success response
-    if (result.rowsAffected && result.rowsAffected[0] > 0) {
-      return res.status(200).json({ success: true, message: 'Data inserted successfully' });
-    }
+    res.status(200).json("Data inserted successfully");
   } catch (err) {
     if (err.class === 16 && err.number === 50000) {
       // Custom error from the stored procedure
@@ -35421,6 +35419,264 @@ const getDefaultUserCompany = async (req, res) => {
 };
 //code ended by sakthi on 08-10-26
 
+//Code Added by Pavun on 09-09-2026
+const YJKcustomer_DetailsInsert = async (req, res) => {
+  const { customer_id, customer_name, company_name, phone, email, regarding, url, demo_status, feedback, website_url, website_date, no_of_users, reference, live_date, amount, new_requirement_1, new_requirement_2, development_status, status, WebsiteRenewal, RenewalRemaider, RenewalExpired, company_code, created_by, created_date } = req.body;
+
+  try {
+    const pool = await sql.connect(dbConfig);
+    await pool.request()
+      .input("mode", sql.NVarChar, "I")
+      .input("customer_id", sql.BigInt, customer_id)
+      .input("customer_name", sql.NVarChar, customer_name)
+      .input("company_name", sql.NVarChar, company_name)
+      .input("phone", sql.NVarChar, phone)
+      .input("email", sql.NVarChar, email)
+      .input("regarding", sql.NVarChar, regarding)
+      .input("url", sql.NVarChar, url)
+      .input("demo_status", sql.NVarChar, demo_status)
+      .input("feedback", sql.NVarChar, feedback)
+      .input("website_url", sql.NVarChar, website_url)
+      .input("website_date", sql.Date, website_date)
+      .input("no_of_users", sql.Int, no_of_users)
+      .input("reference", sql.NVarChar, reference)
+      .input("live_date", sql.Date, live_date)
+      .input("amount", sql.Decimal(18, 2), amount)
+      .input("new_requirement_1", sql.NVarChar, new_requirement_1)
+      .input("new_requirement_2", sql.NVarChar, new_requirement_2)
+      .input("development_status", sql.NVarChar, development_status)
+      .input("status", sql.NVarChar, status)
+      .input("WebsiteRenewal", sql.Date, WebsiteRenewal)
+      .input("RenewalRemaider", sql.NVarChar, RenewalRemaider)
+      .input("RenewalExpired", sql.Date, RenewalExpired)
+      .input("company_code", sql.NVarChar, company_code)
+      .input("created_by", sql.NVarChar, created_by)
+      .input("created_date", sql.DateTime, created_date)
+      .query(`EXEC sp_YJKcustomer_Details @mode, @customer_id, @customer_name, @company_name, @phone, @email, @regarding, @url, 
+	  @demo_status, @feedback, @website_url, @website_date, @no_of_users, @reference, @live_date, @amount, @new_requirement_1, 
+	  @new_requirement_2, @development_status, @status, @WebsiteRenewal, @RenewalRemaider, @RenewalExpired, @company_code, 
+	  @created_by, @created_date, '', '', '', ''`);
+
+    res.status(200).json({ success: true, message: "YJKcustomer Details inserted successfully" });
+  } catch (err) {
+    console.error("Error during YJKcustomer Details insert:", err);
+    res.status(500).json({ message: err.message || "Internal Server Error" });
+  }
+};
+
+const YJKcustomer_DetailsUpdate = async (req, res) => {
+  const { customer_id, customer_name, company_name, phone, email, regarding, url, demo_status, feedback, website_url, website_date, no_of_users, reference, live_date, amount, new_requirement_1, new_requirement_2, development_status, status, WebsiteRenewal, RenewalRemaider, RenewalExpired, company_code, modified_by, modified_date } = req.body;
+
+  try {
+    const pool = await sql.connect(dbConfig);
+    await pool.request()
+      .input("mode", sql.NVarChar, "U")
+      .input("customer_id", sql.BigInt, customer_id)
+      .input("customer_name", sql.NVarChar, customer_name)
+      .input("company_name", sql.NVarChar, company_name)
+      .input("phone", sql.NVarChar, phone)
+      .input("email", sql.NVarChar, email)
+      .input("regarding", sql.NVarChar, regarding)
+      .input("url", sql.NVarChar, url)
+      .input("demo_status", sql.NVarChar, demo_status)
+      .input("feedback", sql.NVarChar, feedback)
+      .input("website_url", sql.NVarChar, website_url)
+      .input("website_date", sql.Date, website_date)
+      .input("no_of_users", sql.Int, no_of_users)
+      .input("reference", sql.NVarChar, reference)
+      .input("live_date", sql.Date, live_date)
+      .input("amount", sql.Decimal(18, 2), amount)
+      .input("new_requirement_1", sql.NVarChar, new_requirement_1)
+      .input("new_requirement_2", sql.NVarChar, new_requirement_2)
+      .input("development_status", sql.NVarChar, development_status)
+      .input("status", sql.NVarChar, status)
+      .input("WebsiteRenewal", sql.Date, WebsiteRenewal)
+      .input("RenewalRemaider", sql.NVarChar, RenewalRemaider)
+      .input("RenewalExpired", sql.Date, RenewalExpired)
+      .input("company_code", sql.NVarChar, company_code)
+      .input("modified_by", sql.NVarChar, modified_by)
+      .input("modified_date", sql.DateTime, modified_date)
+      .query(`EXEC sp_YJKcustomer_Details @mode, @customer_id, @customer_name, @company_name, @phone, @email, @regarding, 
+	  @url, @demo_status, @feedback, @website_url, @website_date, @no_of_users, @reference, @live_date, @amount, 
+	  @new_requirement_1, @new_requirement_2, @development_status, @status, @WebsiteRenewal, @RenewalRemaider, @RenewalExpired, 
+	  @company_code, '', '', @modified_by, @modified_date, '', ''`);
+
+    res.status(200).json({ success: true, message: "YJKcustomer Details updated successfully" });
+  } catch (err) {
+    console.error("Error during YJKcustomer Details update:", err);
+    res.status(500).json({ message: err.message || "Internal Server Error" });
+  }
+};
+
+const YJKcustomer_DetailsDelete = async (req, res) => {
+  const { customer_id, company_code,} = req.body;
+
+  try {
+    const pool = await sql.connect(dbConfig);
+    await pool.request()
+      .input("mode", sql.NVarChar, "D")
+      .input("customer_id", sql.BigInt, customer_id)
+      .input("company_code", sql.NVarChar, company_code)
+      .query(`EXEC sp_YJKcustomer_Details @mode, @customer_id, '', '', '', '', '', '', '', '', '', '', 0, '', '', 0, '', '', '', '', '', '', '', @company_code, '', '', '', '', '', ''`);
+
+    res.status(200).json({ success: true, message: "YJKcustomer Details deleted successfully" });
+  } catch (err) {
+    console.error("Error during YJKcustomer Details delete:", err);
+    res.status(500).json({ message: err.message || "Internal Server Error" });
+  }
+};
+
+const getYJKcustomer_Details = async (req, res) => {
+  const { customer_id, customer_name, company_name, phone, email, regarding, url, status, company_code, Start_Year, End_Year } = req.body;
+  try {
+    const pool = await connection.connectToDatabase();
+    const result = await pool
+      .request()
+      .input("mode", sql.NVarChar, "SC")
+      .input("customer_id", sql.BigInt, customer_id)
+      .input("customer_name", sql.NVarChar, customer_name)
+      .input("company_name", sql.VarChar, company_name)
+      .input("phone", sql.NVarChar, phone)
+      .input("email", sql.NVarChar, email)
+      .input("regarding", sql.NVarChar, regarding)
+      .input("url", sql.NVarChar, url)
+      .input("status", sql.NVarChar, status)
+      .input("company_code", sql.NVarChar, company_code)
+      .input("Start_Year", sql.NVarChar, Start_Year)
+      .input("End_Year", sql.NVarChar, End_Year)
+
+      .query(`EXEC sp_YJKcustomer_Details @mode, @customer_id, @customer_name, @company_name, @phone, @email, @regarding, @url, '', '', '', '', 0, '', '', 0, '', '', '', @status, '', '', '', @company_code, '', '', '', '', @Start_Year, @End_Year`);
+    if (result.recordset.length > 0) {
+      res.status(200).json(result.recordset);
+    } else {
+      res.status(404).json("Data not found");
+    }
+  } catch (err) {
+    console.error("Error", err);
+    res.status(500).json({ message: err.message || "Internal Server Error" });
+  }
+};
+
+// Auto-generated YJKcustomer_DetailsLoopInsert API for sp_YJKcustomer_Details
+const YJKcustomer_DetailsLoopInsert = async (req, res) => {
+  const YJKcustomer_DetailsData = req.body.YJKcustomer_DetailsData;
+  if (!YJKcustomer_DetailsData || !YJKcustomer_DetailsData.length) {
+    return res.status(400).json("Invalid or empty YJKcustomer_DetailsData array.");
+  }
+
+  try {
+    const pool = await sql.connect(dbConfig);
+    for (const item of YJKcustomer_DetailsData) {
+      await pool.request()
+        .input("mode", sql.NVarChar, "I")
+        .input("customer_id", sql.BigInt, item.customer_id)
+        .input("customer_name", sql.NVarChar, item.customer_name)
+        .input("company_name", sql.NVarChar, item.company_name)
+        .input("phone", sql.NVarChar, item.phone)
+        .input("email", sql.NVarChar, item.email)
+        .input("regarding", sql.NVarChar, item.regarding)
+        .input("url", sql.NVarChar, item.url)
+        .input("demo_status", sql.NVarChar, item.demo_status)
+        .input("feedback", sql.NVarChar, item.feedback)
+        .input("website_url", sql.NVarChar, item.website_url)
+        .input("website_date", sql.Date, item.website_date)
+        .input("no_of_users", sql.Int, item.no_of_users)
+        .input("reference", sql.NVarChar, item.reference)
+        .input("live_date", sql.Date, item.live_date)
+        .input("amount", sql.Decimal(18, 2), item.amount)
+        .input("new_requirement_1", sql.NVarChar, item.new_requirement_1)
+        .input("new_requirement_2", sql.NVarChar, item.new_requirement_2)
+        .input("development_status", sql.NVarChar, item.development_status)
+        .input("status", sql.NVarChar, item.status)
+        .input("WebsiteRenewal", sql.Date, item.WebsiteRenewal)
+        .input("RenewalRemaider", sql.NVarChar, item.RenewalRemaider)
+        .input("RenewalExpired", sql.Date, item.RenewalExpired)
+        .input("company_code", sql.NVarChar, item.company_code)
+        .input("created_by", sql.NVarChar, item.created_by)
+        .input("created_date", sql.DateTime, item.created_date)
+        .query(`EXEC sp_YJKcustomer_Details @mode, @customer_id, @customer_name, @company_name, @phone, @email, @regarding, 
+		@url, @demo_status, @feedback, @website_url, @website_date, @no_of_users, @reference, @live_date, @amount, 
+		@new_requirement_1, @new_requirement_2, @development_status, @status, @WebsiteRenewal, @RenewalRemaider, 
+		@RenewalExpired, @company_code, @created_by, @created_date, '', '', '', ''`);
+    }
+    res.status(200).json("YJKcustomer_Details data inserted successfully");
+  } catch (err) {
+    console.error("Error in YJKcustomer_DetailsLoopInsert:", err);
+    res.status(500).json({ message: err.message || "Internal Server Error" });
+  }
+};
+
+const YJKcustomer_DetailsLoopUpdate = async (req, res) => {
+  const YJKcustomer_DetailsData = req.body.YJKcustomer_DetailsData;
+  if (!YJKcustomer_DetailsData || !YJKcustomer_DetailsData.length) {
+    return res.status(400).json("Invalid or empty YJKcustomer_DetailsData array.");
+  }
+
+  try {
+    const pool = await sql.connect(dbConfig);
+    for (const item of YJKcustomer_DetailsData) {
+      await pool.request()
+        .input("mode", sql.NVarChar, "U")
+        .input("customer_id", sql.BigInt, item.customer_id)
+        .input("customer_name", sql.NVarChar, item.customer_name)
+        .input("company_name", sql.NVarChar, item.company_name)
+        .input("phone", sql.NVarChar, item.phone)
+        .input("email", sql.NVarChar, item.email)
+        .input("regarding", sql.NVarChar, item.regarding)
+        .input("url", sql.NVarChar, item.url)
+        .input("demo_status", sql.NVarChar, item.demo_status)
+        .input("feedback", sql.NVarChar, item.feedback)
+        .input("website_url", sql.NVarChar, item.website_url)
+        .input("website_date", sql.Date, item.website_date)
+        .input("no_of_users", sql.Int, item.no_of_users)
+        .input("reference", sql.NVarChar, item.reference)
+        .input("live_date", sql.Date, item.live_date)
+        .input("amount", sql.Decimal(18, 2), item.amount)
+        .input("new_requirement_1", sql.NVarChar, item.new_requirement_1)
+        .input("new_requirement_2", sql.NVarChar, item.new_requirement_2)
+        .input("development_status", sql.NVarChar, item.development_status)
+        .input("status", sql.NVarChar, item.status)
+        .input("WebsiteRenewal", sql.Date, item.WebsiteRenewal)
+        .input("RenewalRemaider", sql.NVarChar, item.RenewalRemaider)
+        .input("RenewalExpired", sql.Date, item.RenewalExpired)
+        .input("company_code", sql.NVarChar, item.company_code)
+        .input("modified_by", sql.NVarChar, item.modified_by)
+        .input("modified_date", sql.DateTime, item.modified_date)
+        .query(`EXEC sp_YJKcustomer_Details @mode, @customer_id, @customer_name, @company_name, @phone, @email, 
+		@regarding, @url, @demo_status, @feedback, @website_url, @website_date, @no_of_users, @reference, @live_date, 
+		@amount, @new_requirement_1, @new_requirement_2, @development_status, @status, @WebsiteRenewal, @RenewalRemaider, 
+		@RenewalExpired, @company_code, '', '', @modified_by, @modified_date, '', ''`);
+    }
+    res.status(200).json("YJKcustomer_Details data updated successfully");
+  } catch (err) {
+    console.error("Error in YJKcustomer_DetailsLoopUpdate:", err);
+    res.status(500).json({ message: err.message || "Internal Server Error" });
+  }
+};
+
+const YJKcustomer_DetailsLoopDelete = async (req, res) => {
+  const YJKcustomer_DetailsData = req.body.YJKcustomer_DetailsData;
+  if (!YJKcustomer_DetailsData || !YJKcustomer_DetailsData.length) {
+    return res.status(400).json("Invalid or empty YJKcustomer_DetailsData array.");
+  }
+
+  try {
+    const pool = await sql.connect(dbConfig);
+    for (const item of YJKcustomer_DetailsData) {
+      await pool.request()
+        .input("mode", sql.NVarChar, "D")
+        .input("customer_id", sql.BigInt, item.customer_id)
+        .input("company_code", sql.NVarChar, item.company_code)
+        .query(`EXEC sp_YJKcustomer_Details @mode, @customer_id, '', '', '', '', '', '', '', '', '', '', 0, '', '', 0, '', '', '', '', '', '', '', @company_code, '', '', '', '', '', ''`);
+    }
+    res.status(200).json("YJKcustomer_Details data deleted successfully");
+  } catch (err) {
+    console.error("Error in YJKcustomer_DetailsLoopDelete:", err);
+    res.status(500).json({ message: err.message || "Internal Server Error" });
+  }
+};
+//Code Ended by Pavun on 09-09-2026
+
 module.exports = {
   login,
   forgetPassword,
@@ -36592,7 +36848,14 @@ module.exports = {
   getDefaultScreens,
   userSettingsInsert,
   getUserSettings,
-  getDefaultUserCompany
+  getDefaultUserCompany,
+  YJKcustomer_DetailsLoopInsert, 
+  YJKcustomer_DetailsLoopUpdate, 
+  YJKcustomer_DetailsLoopDelete,
+  YJKcustomer_DetailsInsert, 
+  YJKcustomer_DetailsUpdate, 
+  YJKcustomer_DetailsDelete,
+  getYJKcustomer_Details
 
 
 };

@@ -231,6 +231,8 @@ import GatePass from "./GatePass.js";
 import FaceAttendance from "./Attendance.js";
 import ItemSettings from "./ItemSettings.js";
 import Openingbalance from "./Transaction/Openingbalance.js";
+import AddYjkCustomer from "./PMS/Master/AddYjkCustomer.js";
+import YjkCustomer from "./PMS/Master/YJKCustomerSearch.js"
 
 function Main() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -500,6 +502,8 @@ function Main() {
      { path: "/FaceAttendance", component: <FaceAttendance /> },
      { path: "/ItemSettings", component: <ItemSettings /> },
      { path: "/OpeningBalance", component: <Openingbalance /> },
+     { path: "/AddYjkCustomer", component: <AddYjkCustomer /> },
+     { path: "/YjkCustomer", component: <YjkCustomer /> },
   ];
  
   return (
