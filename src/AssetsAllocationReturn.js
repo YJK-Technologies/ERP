@@ -208,16 +208,16 @@ function AssetsReturn({ }) {
     },
   ];
 
-  const transformRowData = (data) => {
-    return data.map(row => ({
-      "S.No": row.serialNumber,
-      "Item Code": row.itemCode.toString(),
-      "Item Name": row.itemName.toString(),
-      "Employee No": row.employeeNO.toString(),
-      "Quantity": row.qty.toString(),
-      "Return Quantity": row.returnQty.toString()
-    }));
-  };
+const transformRowData = (data) => {
+  return data.map(row => ({
+    "S.No": row.serialNumber,
+    "Item Code": String(row.itemCode ?? ""),
+    "Item Name": String(row.itemName ?? ""),
+    "Employee No": String(row.employeeNO ?? ""),
+    "Quantity": String(row.qty ?? ""),
+    "Return Quantity": String(row.returnQty ?? "")
+  }));
+};
 
   const onColumnMoved = (params) => {
     const columnState = JSON.stringify(params.columnApi.getColumnState());
@@ -233,33 +233,81 @@ function AssetsReturn({ }) {
   };
 
   const handleExcelDownload = () => {
+  const filteredRowData = rowData.filter(row => row.qty > 0);
 
-    const filteredRowData = rowData.filter(row => row.qty > 0);
-    if (rowData.length === 0 || !Allocationno || !allocationadate) {
-      toast.warning('No Data Available');
-      return;
-    }
+  if (rowData.length === 0 || !Allocationno || !allocationadate) {
+    toast.warning("No Data Available");
+    return;
+  }
 
-    const headerData = [{
-      "Company Code": sessionStorage.getItem('selectedCompanyCode'),
-      "Allocation No": Allocationno,
-      "Allocation Date": allocationadate,
-      "Return No": return_no,
-      "Return Date": return_date,
-      "Return Person": return_person,
-      "Return Reason": return_reason,
-    }];
+  // Header information
+  const headerData = [{
+    "Company Code": sessionStorage.getItem("selectedCompanyCode"),
+    "Allocation No": Allocationno,
+    "Allocation Date": allocationadate,
+    "Return No": return_no,
+    "Return Date": return_date,
+    "Return Person": return_person,
+    "Return Reason": return_reason,
+  }];
 
-    const transformedData = transformRowData(filteredRowData);
-    const rowDataSheet = XLSX.utils.json_to_sheet(transformedData);
-    const headerSheet = XLSX.utils.json_to_sheet(headerData);
+  const transformedData = transformRowData(filteredRowData);
 
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, headerSheet, "Assets Allocation Header");
-    XLSX.utils.book_append_sheet(workbook, rowDataSheet, "Assets Allocation Details");
+  // Create workbook
+  const workbook = XLSX.utils.book_new();
 
-    XLSX.writeFile(workbook, "Assets_Allocation_Return.xlsx");
-  };
+  // ==============================
+  // ASSETS ALLOCATION HEADER
+  // ==============================
+  const headerSheet = XLSX.utils.aoa_to_sheet([ ["ASSETS ALLOCATION HEADER"], [], ]);
+
+  // Add header data starting from row 3
+  XLSX.utils.sheet_add_json(headerSheet, headerData, {origin: "A3",});
+
+  // ==============================
+  // ASSETS ALLOCATION DETAILS
+  // ==============================
+  const detailsSheet = XLSX.utils.aoa_to_sheet([ ["ASSETS ALLOCATION DETAILS"], [], ]);
+
+  // Add details starting from row 3
+  XLSX.utils.sheet_add_json(detailsSheet, transformedData, {origin: "A3",});
+
+  // Add sheets to workbook
+  XLSX.utils.book_append_sheet( workbook, headerSheet, "Assets Allocation Header" );
+  XLSX.utils.book_append_sheet( workbook, detailsSheet, "Assets Allocation Details" );
+
+  // Download
+  XLSX.writeFile( workbook, "Assets_Allocation_Return.xlsx" );
+};
+
+  // const handleExcelDownload = () => {
+
+  //   const filteredRowData = rowData.filter(row => row.qty > 0);
+  //   if (rowData.length === 0 || !Allocationno || !allocationadate) {
+  //     toast.warning('No Data Available');
+  //     return;
+  //   }
+
+  //   const headerData = [{
+  //     "Company Code": sessionStorage.getItem('selectedCompanyCode'),
+  //     "Allocation No": Allocationno,
+  //     "Allocation Date": allocationadate,
+  //     "Return No": return_no,
+  //     "Return Date": return_date,
+  //     "Return Person": return_person,
+  //     "Return Reason": return_reason,
+  //   }];
+
+  //   const transformedData = transformRowData(filteredRowData);
+  //   const rowDataSheet = XLSX.utils.json_to_sheet(transformedData);
+  //   const headerSheet = XLSX.utils.json_to_sheet(headerData);
+
+  //   const workbook = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(workbook, headerSheet, "Assets Allocation Header");
+  //   XLSX.utils.book_append_sheet(workbook, rowDataSheet, "Assets Allocation Details");
+
+  //   XLSX.writeFile(workbook, "Assets_Allocation_Return.xlsx");
+  // };
 
   const handleInsert = async () => {
     if (!allocationadate || !Allocationno || !return_date || !return_person || !return_reason) {
