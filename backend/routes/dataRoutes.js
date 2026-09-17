@@ -1202,6 +1202,17 @@ router.post("/getDefaultScreens",dataController.getDefaultScreens)
 router.post("/userSettingsInsert",dataController.userSettingsInsert)
 router.post("/getUserSettings",dataController.getUserSettings)
 router.post("/getDefaultUserCompany",dataController.getDefaultUserCompany)
+router.post("/YJKcustomer_DetailsLoopInsert",dataController.YJKcustomer_DetailsLoopInsert)
+router.post("/YJKcustomer_DetailsLoopUpdate",dataController.YJKcustomer_DetailsLoopUpdate)
+router.post("/YJKcustomer_DetailsLoopDelete",dataController.YJKcustomer_DetailsLoopDelete)
+router.post("/YJKcustomer_DetailsInsert",dataController.YJKcustomer_DetailsInsert)
+router.post("/YJKcustomer_DetailsUpdate",dataController.YJKcustomer_DetailsUpdate)
+router.post("/YJKcustomer_DetailsDelete",dataController.YJKcustomer_DetailsDelete)
+router.post("/getYJKcustomerDetailsSearch",dataController.getYJKcustomerDetailsSearch)
+router.post("/getYJKcustomerDetails",dataController.getYJKcustomerDetails)
+router.post("/getDevelopmentStatus",dataController.getDevelopmentStatus)
+
+
 
 
 module.exports = router;
