@@ -18,8 +18,11 @@ const AddYJKCustomerScreen = () => {
     const location = useLocation();
     const locationState = location.state || {};
     const mode = locationState.mode || "create";
+    const customer_id = locationState.customer_id;
+    const company_code = sessionStorage.getItem('selectedCompanyCode');
 
     // Form Field States
+    const [customerId, setCustomerId] = useState("");
     const [customerName, setCustomerName] = useState("");
     const [companyName, setCompanyName] = useState("");
     const [phone, setPhone] = useState("");
@@ -45,6 +48,7 @@ const AddYJKCustomerScreen = () => {
     const [renewalRemainder, setRenewalRemainder] = useState("");
     const [renewalExpired, setRenewalExpired] = useState("");
     const [statusDrop, setStatusDrop] = useState([]);
+    const [developmentDemoDrop, setDevelopmentDemoDrop] = useState([]);
 
     useEffect(() => {
         const company_code = sessionStorage.getItem('selectedCompanyCode');
@@ -61,10 +65,134 @@ const AddYJKCustomerScreen = () => {
             .catch((error) => console.error('Error fetching data:', error));
     }, []);
 
+    useEffect(() => {
+        const company_code = sessionStorage.getItem('selectedCompanyCode');
+
+        fetch(`${config.apiBaseUrl}/getDevelopmentStatus`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ company_code })
+        })
+            .then((data) => data.json())
+            .then((val) => setDevelopmentDemoDrop(val))
+            .catch((error) => console.error('Error fetching data:', error));
+    }, []);
+
     const filteredOptionStatus = statusDrop.map((option) => ({
         value: option.attributedetails_name,
         label: option.attributedetails_name,
     }));
+
+    const filteredOptionDevelopmentDemoStatus = developmentDemoDrop.map((option) => ({
+        value: option.attributedetails_name,
+        label: option.attributedetails_name,
+    }));
+
+    useEffect(() => {
+        if (!location.state) {
+            clearInputFields(); // ensure fresh create mode
+        }
+    }, []);
+
+    useEffect(() => {
+        if (mode === "update" && customer_id) {
+            fetchYjkCustomerData();
+        }
+    }, [mode, customer_id]);
+
+    const fetchYjkCustomerData = async () => {
+        try {
+            setLoading(true);
+
+            const response = await fetch(`${config.apiBaseUrl}/getYJKcustomerDetails`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    customer_id: customer_id,
+                    company_code
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.length > 0) {
+                const customerData = data[0];
+
+                setCustomerId(customerData.customer_id || "");
+                setCustomerName(customerData.customer_name || "");
+                setCompanyName(customerData.company_name || "");
+                setPhone(customerData.phone || "");
+                setEmail(customerData.email || "");
+                setRegarding(customerData.regarding || "");
+                setUrl(customerData.url || "");
+                setDemoStatus(customerData.demo_status || "");
+                setFeedback(customerData.feedback || "");
+                setWebsiteUrl(customerData.website_url || "");
+                setWebsiteDate(customerData.website_date || "");
+                setNoOfUsers(customerData.no_of_users || "");
+                setReference(customerData.reference || "");
+                setLiveDate(customerData.live_date || "");
+                setAmount(customerData.amount || "");
+                setNewRequirement1(customerData.new_requirement_1 || "");
+                setNewRequirement2(customerData.new_requirement_2 || "");
+                setDevelopmentStatus(customerData.development_status || "");
+                setStatus(customerData.status || "");
+                setWebsiteRenewal(customerData.WebsiteRenewal || "");
+                setRenewalRemainder(customerData.RenewalRemaider || "");
+                setRenewalExpired(customerData.RenewalExpired || "");
+
+                setSelectedDemoStatus({
+                    value: customerData.demo_status,
+                    label: customerData.demo_status
+                });
+                setSelectedDevelopmentStatus({
+                    value: customerData.development_status,
+                    label: customerData.development_status
+                });
+                setSelectedStatus({
+                    value: customerData.status,
+                    label: customerData.status
+                });
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to fetch company mapping details");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const clearInputFields = () => {
+        setCustomerId("");
+        setCustomerName("");
+        setCompanyName("");
+        setPhone("");
+        setEmail("");
+        setRegarding("");
+        setUrl("");
+        setSelectedDemoStatus("");
+        setDemoStatus("");
+        setFeedback("");
+        setWebsiteUrl("");
+        setWebsiteDate("");
+        setNoOfUsers("");
+        setReference("");
+        setLiveDate("");
+        setAmount("");
+        setNewRequirement1("");
+        setNewRequirement2("");
+        setSelectedDevelopmentStatus("");
+        setDevelopmentStatus("");
+        setSelectedStatus("");
+        setStatus("");
+        setWebsiteRenewal("");
+        setRenewalRemainder("");
+        setRenewalExpired("");
+    };
 
     const handleChangeDemoStatus = (selectedDemoStatus) => {
         setSelectedDemoStatus(selectedDemoStatus);
@@ -81,11 +209,128 @@ const AddYJKCustomerScreen = () => {
         setStatus(selectedStatus ? selectedStatus.value : '');
     };
 
+    const handleAdd = async () => {
+        try {
+            setLoading(true);
+            const company_code = sessionStorage.getItem("selectedCompanyCode");
+            const created_by = sessionStorage.getItem("selectedUserCode");
+            const payload = {
+                customer_name: customerName,
+                company_name: companyName,
+                phone: phone,
+                email: email,
+                regarding: regarding,
+                url: url,
+                demo_status: demoStatus,
+                feedback: feedback,
+                website_url: websiteUrl,
+                website_date: websiteDate || null,
+                no_of_users: Number(noOfUsers) || 0,
+                reference: reference,
+                live_date: liveDate || null,
+                amount: Number(amount) || 0,
+                new_requirement_1: newRequirement1,
+                new_requirement_2: newRequirement2,
+                development_status: developmentStatus,
+                status: status,
+                WebsiteRenewal: websiteRenewal || null,
+                RenewalRemaider: renewalRemainder,
+                RenewalExpired: renewalExpired || null,
+                company_code: company_code,
+                created_by: created_by,
+            };
+
+            const response = await fetch(`${config.apiBaseUrl}/YJKcustomer_DetailsInsert`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                }
+            );
+
+            if (response.ok) {
+                toast.success("Data inserted Successfully", {
+                    onClose: () => clearInputFields()
+                });
+            } else {
+                const errorResponse = await response.json();
+                console.error(errorResponse.message);
+                toast.warning(errorResponse.message);
+            }
+        } catch (error) {
+            console.error("Add Customer Error:", error);
+            toast.error(error.message || "Something went wrong");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleUpdate = async () => {
+        setLoading(true);
+
+        try {
+            const company_code = sessionStorage.getItem("selectedCompanyCode");
+            const modified_by = sessionStorage.getItem("selectedUserCode");
+            const payload = {
+                customer_id: customerId,
+                customer_name: customerName,
+                company_name: companyName,
+                phone: phone,
+                email: email,
+                regarding: regarding,
+                url: url,
+                demo_status: demoStatus,
+                feedback: feedback,
+                website_url: websiteUrl,
+                website_date: websiteDate || null,
+                no_of_users: Number(noOfUsers) || 0,
+                reference: reference,
+                live_date: liveDate || null,
+                amount: Number(amount) || 0,
+                new_requirement_1: newRequirement1,
+                new_requirement_2: newRequirement2,
+                development_status: developmentStatus,
+                status: status,
+                WebsiteRenewal: websiteRenewal || null,
+                RenewalRemaider: renewalRemainder,
+                RenewalExpired: renewalExpired || null,
+                company_code: company_code,
+                modified_by: modified_by,
+            };
+
+            const response = await fetch(`${config.apiBaseUrl}/YJKcustomer_DetailsUpdate`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                }
+            );
+
+            if (response.ok) {
+                toast.success("Data updated successfully", {
+                    // onClose: () => clearInputFields()
+                });
+            } else {
+                const errorResponse = await response.json();
+                console.error(errorResponse.message);
+                toast.warning(errorResponse.message);
+            }
+        } catch (error) {
+            console.error("Update Customer Error:", error);
+            toast.error(error.message || "Something went wrong");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleNavigate = () => {
         navigate("/YjkCustomer", {
             state: {
-                preservedRowData: location.state?.preservedRowData,
+                refreshGrid: true,
                 preservedInputs: location.state?.preservedInputs
             }
         });
@@ -125,6 +370,7 @@ const AddYJKCustomerScreen = () => {
                                     placeholder="Enter Customer Name"
                                     title="Enter full name of the customer"
                                     value={customerName}
+                                    maxLength={20}
                                     onChange={(e) => setCustomerName(e.target.value)}
                                 />
                             </div>
@@ -138,6 +384,7 @@ const AddYJKCustomerScreen = () => {
                                     placeholder="Enter Company Name"
                                     title="Enter company or organization name"
                                     value={companyName}
+                                    maxLength={100}
                                     onChange={(e) => setCompanyName(e.target.value)}
                                 />
                             </div>
@@ -151,6 +398,7 @@ const AddYJKCustomerScreen = () => {
                                     placeholder="Enter Phone"
                                     title="Enter contact phone number"
                                     value={phone}
+                                    maxLength={20}
                                     onChange={(e) => setPhone(e.target.value)}
                                 />
                             </div>
@@ -165,6 +413,7 @@ const AddYJKCustomerScreen = () => {
                                     placeholder="Enter Email"
                                     title="Enter valid email address"
                                     value={email}
+                                    maxLength={255}
                                     onChange={(e) => setEmail(e.target.value)}
                                 />
                             </div>
@@ -178,6 +427,7 @@ const AddYJKCustomerScreen = () => {
                                     placeholder="Enter Regarding"
                                     title="Enter subject or purpose of inquiry"
                                     value={regarding}
+                                    maxLength={250}
                                     onChange={(e) => setRegarding(e.target.value)}
                                 />
                             </div>
@@ -191,6 +441,7 @@ const AddYJKCustomerScreen = () => {
                                     placeholder="Enter URL"
                                     title="Enter primary project or reference URL"
                                     value={url}
+                                    maxLength={500}
                                     onChange={(e) => setUrl(e.target.value)}
                                 />
                             </div>
@@ -201,7 +452,7 @@ const AddYJKCustomerScreen = () => {
                                 <label className="exp-form-labels">Demo Status</label>
                                 <Select
                                     className="exp-input-field"
-                                    options={filteredOptionStatus}
+                                    options={filteredOptionDevelopmentDemoStatus}
                                     placeholder="Select Demo Status"
                                     title="Select current product demo status"
                                     value={selectedDemoStatus}
@@ -218,6 +469,7 @@ const AddYJKCustomerScreen = () => {
                                     placeholder="Enter Feedback"
                                     title="Enter customer feedback or comments"
                                     value={feedback}
+                                    maxLength={200}
                                     onChange={(e) => setFeedback(e.target.value)}
                                 />
                             </div>
@@ -231,6 +483,7 @@ const AddYJKCustomerScreen = () => {
                                     placeholder="Enter Website URL"
                                     title="Enter customer official website web address"
                                     value={websiteUrl}
+                                    maxLength={500}
                                     onChange={(e) => setWebsiteUrl(e.target.value)}
                                 />
                             </div>
@@ -272,6 +525,7 @@ const AddYJKCustomerScreen = () => {
                                     placeholder="Enter Reference"
                                     title="Enter referral source or contact reference"
                                     value={reference}
+                                    maxLength={150}
                                     onChange={(e) => setReference(e.target.value)}
                                 />
                             </div>
@@ -313,6 +567,7 @@ const AddYJKCustomerScreen = () => {
                                     placeholder="Enter New Requirement 1"
                                     title="Enter additional requirement details"
                                     value={newRequirement1}
+                                    // maxLength={500}
                                     onChange={(e) => setNewRequirement1(e.target.value)}
                                 />
                             </div>
@@ -326,6 +581,7 @@ const AddYJKCustomerScreen = () => {
                                     placeholder="Enter New Requirement 2"
                                     title="Enter secondary additional requirement details"
                                     value={newRequirement2}
+                                    // maxLength={500}
                                     onChange={(e) => setNewRequirement2(e.target.value)}
                                 />
                             </div>
@@ -336,7 +592,7 @@ const AddYJKCustomerScreen = () => {
                                 <label className="exp-form-labels">Development Status</label>
                                 <Select
                                     className="exp-input-field"
-                                    options={filteredOptionStatus}
+                                    options={filteredOptionDevelopmentDemoStatus}
                                     placeholder="Select Development Status"
                                     title="Select current development phase"
                                     value={selectedDevelopmentStatus}
@@ -380,6 +636,7 @@ const AddYJKCustomerScreen = () => {
                                     placeholder="Enter Renewal Reminder"
                                     title="Enter notes or days notice needed for renewal"
                                     value={renewalRemainder}
+                                    maxLength={1}
                                     onChange={(e) => setRenewalRemainder(e.target.value)}
                                 />
                             </div>
@@ -401,17 +658,25 @@ const AddYJKCustomerScreen = () => {
                     </div>
 
                     {/* ACTION BUTTONS */}
-                    <div className="d-flex justify-content-end gap-2 mt-3">
-                        {mode === "create" ? (
-                            <button type="button" className="" title="Save New Customer Details">
-                                <i class="fa-solid fa-floppy-disk"></i>
-                            </button>
-                        ) : (
-                            <button type="button" className="" title="Update Customer Details">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-                        )}
-                    </div>
+                    {mode === "create" ? (
+                        <button
+                            type="button"
+                            className=""
+                            title="Save New Customer Details"
+                            onClick={handleAdd}
+                        >
+                            <i className="fa-solid fa-floppy-disk"></i>
+                        </button>
+                    ) : (
+                        <button
+                            type="button"
+                            className=""
+                            title="Update Customer Details"
+                            onClick={handleUpdate}
+                        >
+                            <i className="fa-solid fa-pen-to-square"></i>
+                        </button>
+                    )}
 
                 </div>
             </div>
