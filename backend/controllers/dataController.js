@@ -16339,8 +16339,8 @@ const JournalDeletedet = async (req, res) => {
     await pool.request()
       .input("journal_no", journal_no)
       .input("company_code", company_code)
-        .input("Location_Code", Location_Code)
-      .query(`EXEC [sp_journal_details_Mathu] 'D',@journal_no,@company_code,Location_Code,'','','','',0,0,'','','','','','','',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL`);
+      .input("Location_Code", Location_Code)
+      .query(`EXEC [sp_journal_details_Mathu] 'D',@journal_no,@company_code,@Location_Code,'','','','',0,0,'','','','','','','',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL`);
 
     res.status(200).json("Journal Data deleted successfully");
   } catch (err) {
@@ -17028,7 +17028,7 @@ const JournalDetPrint = async (req, res) => {
 };
 
 const Journalsearch = async (req, res) => {
-  const { journal_no, transaction_date } = req.body;
+  const { journal_no, transaction_date,Location_Code ,company_code } = req.body;
 
   try {
     const pool = await connection.connectToDatabase();
@@ -17037,7 +17037,9 @@ const Journalsearch = async (req, res) => {
       .input("mode", sql.NVarChar, "SC")
       .input("journal_no", sql.NVarChar, journal_no)
       .input("transaction_date", sql.NVarChar, transaction_date)
-      .query(`EXEC [sp_journal_hdr_Mathu] 'sc',@journal_no,'','','',,'','',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL
+      .input("company_code", sql.NVarChar, company_code)
+      .input("Location_Code", sql.NVarChar, Location_Code)
+      .query(`EXEC [sp_journal_hdr_Mathu] 'sc',@journal_no,@company_code,@Location_Code,'','','',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL
 `);
     if (result.recordset.length > 0) {
       res.status(200).json(result.recordset);

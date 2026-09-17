@@ -198,13 +198,14 @@ export default function ProductPopup({ open, handleClose, ProductData }) {
         setRowData(updatedData);
         console.log("data fetched successfully")
       } else if (response.status === 404) {
-        toast.error("Data Not found")
-          .then(() => {
-            setRowData([]);
-            clearInputs([])
-          });
-        console.log("Data not found"); // Log the message for 404 Not Found
-      } else {
+
+      // Clear existing AG Grid data
+      setRowData([]);
+
+      toast.warning("Data Not found");
+
+      console.log("Data not found");
+    } else {
         const errorResponse = await response.json();
         console.error(errorResponse.message);
         toast.error(errorResponse.message);
@@ -216,6 +217,7 @@ export default function ProductPopup({ open, handleClose, ProductData }) {
       setLoading(false);
     }
   };
+  
   const handleReload = () => {
     clearInputs([])
     setRowData([])
