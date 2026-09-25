@@ -313,6 +313,50 @@ export default function PurchaseOrderPopup({ open, handleClose, handlePoData }) 
     setRowData([]);
   }
 
+  const handleRowDoubleClick = (params) => {
+    const row = params.data;
+
+    if (!row) return;
+
+    const selectedData = [{
+      TransactionNo: row.transaction_no,
+      EntryDate: row.Entry_date,
+      VendorName: row.vendor_name,
+      VendorAddr1: row.vendor_addr_1,
+      VendorAddr2: row.vendor_addr_2,
+      VendorAddr3: row.vendor_addr_3,
+      VendorAddr4: row.vendor_addr_4,
+      VendorState: row.state,
+      VendorCountry: row.country,
+      ContactPerson: row.contact_person,
+      ContactMobileNo: row.contact_number,
+      ShipToCustomerName: row.ShipTo_customer_name,
+      ShipToCustomerAddr1: row.ShipTo_customer_addr_1,
+      ShipToCustomerAddr2: row.ShipTo_customer_addr_2,
+      ShipToCustomerAddr3: row.ShipTo_customer_addr_3,
+      ShipToCustomerAddr4: row.ShipTo_customer_addr_4,
+      ShipToCustomerState: row.ship_to_state,
+      ShipToCustomerCountry: row.ship_to_country,
+      ShipToContactPerson: row.ship_to_contact_person,
+      ShipToContactMobileNo: row.ship_to_contact_number,
+      PurchaseAmount: row.purchase_amount,
+      RoundOff: row.rounded_off,
+      TotalAmount: row.total_amount,
+      TaxAmount: row.tax_amount,
+      VendorCode: row.vendor_code,
+      ShipToCustomerCode: row.ShipTo_customer_code,
+      GSTNo: row.vendor_gst_no,
+      ShipToGSTNo: row.ShipTo_vendor_gst_no,
+      deliveryDate: row.delivery_date,
+      credit: row.remarks,
+      remarks: row.credit,
+    }];
+    handlePoData(selectedData);
+    handleClose();
+    clearInputs([]);
+    setRowData([]);
+  };
+
   return (
     <div>
       {open && (
@@ -409,6 +453,7 @@ export default function PurchaseOrderPopup({ open, handleClose, handlePoData }) 
                             rowSelection="single"
                             pagination='true'
                             onSelectionChanged={handleRowSelected}
+                            onRowDoubleClicked={handleRowDoubleClick}
                           />
                         </div>
                       </div>
@@ -508,6 +553,7 @@ export default function PurchaseOrderPopup({ open, handleClose, handlePoData }) 
                               rowSelection="single"
                               pagination='true'
                               onSelectionChanged={handleRowSelected}
+                              onRowDoubleClicked={handleRowDoubleClick}
                             />
                           </div>
                         </div>

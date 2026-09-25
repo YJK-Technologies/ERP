@@ -302,6 +302,31 @@ export default function SalesVendorPopup({ open, handleClose, handleVendor }) {
     setSelectedRows([]);
   }
 
+  const handleRowDoubleClick = (params) => {
+    const row = params.data;
+
+    if (!row) return;
+
+    const selectedData = [{
+      CustomerCode: row.customer_code,
+      CustomerName: row.customer_name,
+      Address1: row.customer_addr_1,
+      Address2: row.customer_addr_2,
+      Address3: row.customer_addr_3,
+      Address4: row.customer_addr_4,
+      State: row.customer_state,
+      Country: row.customer_country,
+      MobileNo: row.customer_mobile_no,
+      ContactPerson: row.contact_person,
+      GSTNo: row.customer_gst_no,
+    }];
+    handleVendor(selectedData);
+    handleClose();
+    clearInputs([]);
+    setRowData([]);
+    setSelectedRows([]);
+  };
+
   return (
     <div>
       {open && (
@@ -401,6 +426,7 @@ export default function SalesVendorPopup({ open, handleClose, handleVendor }) {
                             rowSelection="multiple"
                             pagination
                             onSelectionChanged={handleRowSelected}
+                            onRowDoubleClicked={handleRowDoubleClick}
                           />
                         </div>
                       </div>
@@ -503,6 +529,7 @@ export default function SalesVendorPopup({ open, handleClose, handleVendor }) {
                               rowSelection="multiple"
                               pagination
                               onSelectionChanged={handleRowSelected}
+                              onRowDoubleClicked={handleRowDoubleClick}
                             />
                           </div>
                         </div>

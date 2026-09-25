@@ -78,7 +78,8 @@ export default function AdjustmentPopup({ open, handleClose, adjustmentData }) {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ transaction_no, transaction_date, transaction_type,
+        body: JSON.stringify({
+          transaction_no, transaction_date, transaction_type,
           company_code: sessionStorage.getItem('selectedCompanyCode'),
           Location_Code: sessionStorage.getItem('selectedLocationCode'),
         })
@@ -133,6 +134,23 @@ export default function AdjustmentPopup({ open, handleClose, adjustmentData }) {
     setRowData([]);
     setSelectedRows([]);
   }
+
+  const handleRowDoubleClick = (params) => {
+    const row = params.data;
+
+    if (!row) return;
+
+    const selectedData = [{
+      transactionNo: row.transaction_no,
+      transactionDate: row.transaction_date,
+      transactionType: row.transaction_type
+    }];
+    adjustmentData(selectedData);
+    handleClose();
+    clearInputs([]);
+    setRowData([]);
+    setSelectedRows([]);
+  };
 
   return (
     <div>
@@ -220,6 +238,7 @@ export default function AdjustmentPopup({ open, handleClose, adjustmentData }) {
                             rowSelection="multiple"
                             pagination
                             onSelectionChanged={handleRowSelected}
+                            onRowDoubleClicked={handleRowDoubleClick}
                           />
                         </div>
                       </div>
@@ -307,6 +326,7 @@ export default function AdjustmentPopup({ open, handleClose, adjustmentData }) {
                               rowSelection="multiple"
                               pagination
                               onSelectionChanged={handleRowSelected}
+                              onRowDoubleClicked={handleRowDoubleClick}
                             />
                           </div>
                         </div>

@@ -291,8 +291,8 @@ export default function TaxInvoicePopup({ open, handleClose, handletaxinvoice, i
         console.log("data fetched successfully")
       } else if (response.status === 404) {
         toast.warning("Data Not Found")
-            setRowData([]);
-            clearInputs([])
+        setRowData([]);
+        clearInputs([])
         console.log("Data not found");
       } else {
         const errorResponse = await response.json();
@@ -300,7 +300,7 @@ export default function TaxInvoicePopup({ open, handleClose, handletaxinvoice, i
       }
     } catch (error) {
       console.error("Error fetching search data:", error);
-    }finally {
+    } finally {
       setLoading(false);
     }
 
@@ -360,16 +360,16 @@ export default function TaxInvoicePopup({ open, handleClose, handletaxinvoice, i
       balAmount: row.bal_amt,
       BillToGSTNo: row.billTo_customer_gst_no,
       ShipToGSTNo: row.ShipTo_customer_gst_no,
-      po_no:row.po_no,
-      document_type:row.document_type,
-      po_date:row.po_date,
-      delivery_note:row.delivery_note,
-      dispatched_through:row.dispatched_through,
-      Destination:row.Destination,
-      Performa_bill_no:row.Performa_bill_no,
-      Eway_bill_no:row.Eway_bill_no,
-      supplier_ref:row.supplier_ref,
-      delivered_through:row.delivered_through
+      po_no: row.po_no,
+      document_type: row.document_type,
+      po_date: row.po_date,
+      delivery_note: row.delivery_note,
+      dispatched_through: row.dispatched_through,
+      Destination: row.Destination,
+      Performa_bill_no: row.Performa_bill_no,
+      Eway_bill_no: row.Eway_bill_no,
+      supplier_ref: row.supplier_ref,
+      delivered_through: row.delivered_through
     }));
     handletaxinvoice(selectedData);
     handleClose();
@@ -377,6 +377,62 @@ export default function TaxInvoicePopup({ open, handleClose, handletaxinvoice, i
     setRowData([]);
     setSelectedRows([]);
   }
+
+  const handleRowDoubleClick = (params) => {
+    const row = params.data;
+
+    if (!row) return;
+
+    const selectedData = [{
+      billno: row.bill_no,
+      billdate: row.bill_date,
+      salestype: row.sales_type,
+      Paytype: row.pay_type,
+      billtocustomercode: row.customer_code,
+      Shiptocustomercode: row.shipTo_customer_code,
+      billtocustomername: row.billTo_customer_name,
+      Shiptocustomername: row.shipTo_customer_name,
+      BillTo_customer_addr_1: row.billTo_customer_addr_1,
+      BillTo_customer_addr_2: row.billTo_customer_addr_2,
+      BillTo_customer_addr_3: row.billTo_customer_addr_3,
+      BillTo_customer_addr_4: row.billTo_customer_addr_4,
+      ShipTo_customer_addr_1: row.shipTo_customer_addr_1,
+      ShipTo_customer_addr_2: row.shipTo_customer_addr_2,
+      ShipTo_customer_addr_3: row.shipTo_customer_addr_3,
+      ShipTo_customer_addr_4: row.shipTo_customer_addr_4,
+      BillTo_customer_state: row.billTo_customer_state,
+      ShipTo_customer_state: row.shipTo_customer_state,
+      BillTo_customer_country: row.billTo_customer_country,
+      ShipTo_customer_country: row.shipTo_customer_country,
+      BillTo_customer_mobile_no: row.billTo_customer_mobile_no,
+      ShipTo_customer_mobile_no: row.shipTo_customer_mobile_no,
+      BillTo_contact_person: row.billTo_contact_person,
+      ShipTo_contact_person: row.shipTo_contact_person,
+      Saleamt: row.sale_amt,
+      Taxamt: row.tax_amount,
+      Billamt: row.bill_amt,
+      RoffAmt: row.roff_amt,
+      adAmount: row.Advance_Amount,
+      balAmount: row.bal_amt,
+      BillToGSTNo: row.billTo_customer_gst_no,
+      ShipToGSTNo: row.ShipTo_customer_gst_no,
+      po_no: row.po_no,
+      document_type: row.document_type,
+      po_date: row.po_date,
+      delivery_note: row.delivery_note,
+      dispatched_through: row.dispatched_through,
+      Destination: row.Destination,
+      Performa_bill_no: row.Performa_bill_no,
+      Eway_bill_no: row.Eway_bill_no,
+      supplier_ref: row.supplier_ref,
+      delivered_through: row.delivered_through
+    }];
+    handletaxinvoice(selectedData);
+    handleClose();
+    clearInputs([]);
+    setRowData([]);
+    setSelectedRows([]);
+  };
 
   return (
     <div>
@@ -496,6 +552,7 @@ export default function TaxInvoicePopup({ open, handleClose, handletaxinvoice, i
                             rowSelection="single"
                             pagination='true'
                             onSelectionChanged={handleRowSelected}
+                            onRowDoubleClicked={handleRowDoubleClick}
                           />
                         </div>
                       </div>
@@ -619,6 +676,7 @@ export default function TaxInvoicePopup({ open, handleClose, handletaxinvoice, i
                               rowSelection="single"
                               pagination='true'
                               onSelectionChanged={handleRowSelected}
+                              onRowDoubleClicked={handleRowDoubleClick}
                             />
                           </div>
                         </div>

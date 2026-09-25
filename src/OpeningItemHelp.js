@@ -80,9 +80,11 @@ export default function OIPopup({ open, handleClose, handleOb }) {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ company_code: sessionStorage.getItem('selectedCompanyCode'),
+        body: JSON.stringify({
+          company_code: sessionStorage.getItem('selectedCompanyCode'),
           Location_Code: sessionStorage.getItem('selectedLocationCode'),
-           transaction_no, transaction_date, Item_code, Item_name, }) // Send company_no and company_name as search criteria
+          transaction_no, transaction_date, Item_code, Item_name,
+        }) // Send company_no and company_name as search criteria
       });
       if (response.ok) {
         const searchData = await response.json();
@@ -134,6 +136,22 @@ export default function OIPopup({ open, handleClose, handleOb }) {
     setRowData([]);
     setSelectedRows([]);
   }
+
+  const handleRowDoubleClick = (params) => {
+    const row = params.data;
+
+    if (!row) return;
+
+    const selectedData = [{
+      transactionNo: row.transaction_no,
+      transactionDate: row.transaction_date,
+    }];
+    handleOb(selectedData);
+    handleClose();
+    clearInputs([]);
+    setRowData([]);
+    setSelectedRows([]);
+  };
 
   return (
     <div>
@@ -234,6 +252,7 @@ export default function OIPopup({ open, handleClose, handleOb }) {
                             rowSelection="multiple"
                             pagination
                             onSelectionChanged={handleRowSelected}
+                            onRowDoubleClicked={handleRowDoubleClick}
                           />
                         </div>
                       </div>
@@ -332,6 +351,7 @@ export default function OIPopup({ open, handleClose, handleOb }) {
                               rowSelection="multiple"
                               pagination
                               onSelectionChanged={handleRowSelected}
+                              onRowDoubleClicked={handleRowDoubleClick}
                             />
                           </div>
                         </div>

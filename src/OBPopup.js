@@ -154,27 +154,53 @@ export default function ObPopup({ open, handleClose, handleOb }) {
     setSelectedRows(event.api.getSelectedRows());
   };
 
-const handleConfirm = () => {
-  const selectedData = selectedRows.map((row) => ({
-    transaction_no: row.transaction_no,
-    financial_year: row.financial_year,
-    entry_date: row.entry_date,
-    party_type: row.party_type,
-    party_code: row.party_code,
-    opening_amount: row.opening_amount,
-    balance_type: row.balance_type,
-    remarks: row.remarks,
-    status: row.status,
-    keyfield: row.keyfield,
-    company_code: row.company_code,
-  }));
+  const handleConfirm = () => {
+    const selectedData = selectedRows.map((row) => ({
+      transaction_no: row.transaction_no,
+      financial_year: row.financial_year,
+      entry_date: row.entry_date,
+      party_type: row.party_type,
+      party_code: row.party_code,
+      opening_amount: row.opening_amount,
+      balance_type: row.balance_type,
+      remarks: row.remarks,
+      status: row.status,
+      keyfield: row.keyfield,
+      company_code: row.company_code,
+    }));
 
-  handleOb(selectedData);
-  handleClose();
-  clearInputs();
-  setRowData([]);
-  setSelectedRows([]);
-};
+    handleOb(selectedData);
+    handleClose();
+    clearInputs();
+    setRowData([]);
+    setSelectedRows([]);
+  };
+
+  const handleRowDoubleClick = (params) => {
+    const row = params.data;
+
+    if (!row) return;
+
+    const selectedData = [{
+      transaction_no: row.transaction_no,
+      financial_year: row.financial_year,
+      entry_date: row.entry_date,
+      party_type: row.party_type,
+      party_code: row.party_code,
+      opening_amount: row.opening_amount,
+      balance_type: row.balance_type,
+      remarks: row.remarks,
+      status: row.status,
+      keyfield: row.keyfield,
+      company_code: row.company_code,
+    }];
+    handleOb(selectedData);
+    handleClose();
+    clearInputs();
+    setRowData([]);
+    setSelectedRows([]);
+  };
+
   return (
     <div>
       {open && (
@@ -319,6 +345,7 @@ const handleConfirm = () => {
                             rowSelection="multiple"
                             pagination
                             onSelectionChanged={handleRowSelected}
+                            onRowDoubleClicked={handleRowDoubleClick}
                           />
                         </div>
                       </div>
@@ -458,6 +485,7 @@ const handleConfirm = () => {
                               rowSelection="multiple"
                               pagination
                               onSelectionChanged={handleRowSelected}
+                              onRowDoubleClicked={handleRowDoubleClick}
                             />
                           </div>
                         </div>

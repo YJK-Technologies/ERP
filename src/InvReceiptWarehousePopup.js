@@ -104,6 +104,20 @@ export default function InventoryReceiptWarehousePopup({ open, handleClose, hand
     setSelectedRows([]);
   }
 
+  const handleRowDoubleClick = (params) => {
+    const row = params.data;
+
+    if (!row) return;
+
+    const selectedData = [{
+      warehouse: row.warehouse_code
+    }];
+    handleWarehouse(selectedData);
+    handleClose();
+    clearInputs([]);
+    setRowData([]);
+    setSelectedRows([]);
+  };
 
   const handleReload = () => {
     clearInputs([])
@@ -216,6 +230,7 @@ export default function InventoryReceiptWarehousePopup({ open, handleClose, hand
                             rowSelection="single"
                             pagination
                             onSelectionChanged={handleRowSelected}
+                            onRowDoubleClicked={handleRowDoubleClick}
                           />
                         </div>
                       </div>
@@ -315,6 +330,7 @@ export default function InventoryReceiptWarehousePopup({ open, handleClose, hand
                               rowSelection="single"
                               pagination
                               onSelectionChanged={handleRowSelected}
+                              onRowDoubleClicked={handleRowDoubleClick}
                             />
                           </div>
                         </div>
