@@ -112,6 +112,21 @@ export default function PurchaseWarehousePopup({ open, handleClose, handleWareho
     setSelectedRows([]);
   }
 
+  const handleRowDoubleClick = (params) => {
+    const row = params.data;
+
+    if (!row) return;
+
+    const selectedData = [{
+      warehouse: row.warehouse_code
+    }];
+    handleWarehouse(selectedData);
+    handleClose();
+    clearInputs([]);
+    setRowData([]);
+    setSelectedRows([]);
+  };
+
   const handleReload = () => {
     clearInputs([])
     setRowData([])
@@ -220,6 +235,7 @@ export default function PurchaseWarehousePopup({ open, handleClose, handleWareho
                             rowSelection="single"
                             pagination
                             onSelectionChanged={handleRowSelected}
+                            onRowDoubleClicked={handleRowDoubleClick}
                           />
                         </div>
                       </div>
@@ -318,6 +334,7 @@ export default function PurchaseWarehousePopup({ open, handleClose, handleWareho
                               rowSelection="single"
                               pagination
                               onSelectionChanged={handleRowSelected}
+                              onRowDoubleClicked={handleRowDoubleClick}
                             />
                           </div>
                         </div>

@@ -172,6 +172,22 @@ export default function JournalPopup({ open, handleClose, handlejournal }) {
     setSelectedRows([]);
   }
 
+  const handleRowDoubleClick = (params) => {
+    const row = params.data;
+
+    if (!row) return;
+
+    const selectedData = [{
+      JournalNo: row.journal_no,
+      Transactiondate: row.transaction_date,
+    }];
+    handlejournal(selectedData);
+    handleClose();
+    clearInputs([]);
+    setRowData([]);
+    setSelectedRows([]);
+  };
+
   return (
     <div>
       {open && (
@@ -278,6 +294,7 @@ export default function JournalPopup({ open, handleClose, handlejournal }) {
                             rowSelection="multiple"
                             pagination
                             onSelectionChanged={handleRowSelected}
+                            onRowDoubleClicked={handleRowDoubleClick}
                           />
                         </div>
                       </div>
@@ -388,6 +405,7 @@ export default function JournalPopup({ open, handleClose, handlejournal }) {
                               rowSelection="multiple"
                               pagination
                               onSelectionChanged={handleRowSelected}
+                              onRowDoubleClicked={handleRowDoubleClick}
                             />
                           </div>
                         </div>

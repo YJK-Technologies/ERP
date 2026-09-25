@@ -247,6 +247,34 @@ export default function PurchaseReturnView({ open, handleClose, handleItemView }
     setRowData([])
   }
 
+  const handleRowDoubleClick = (params) => {
+    const row = params.data;
+
+    if (!row) return;
+
+    const selectedData = [{
+      TransactionNo: row.transaction_no,
+      TransactionDate: row.transaction_date,
+      PurchaseType: row.purchase_type,
+      PayType: row.pay_type,
+      TotalTax: row.tax_amount,
+      TotalAmount: row.total_amount,
+      VendorName: row.vendor_name,
+      Vendorcode: row.vendor_code,
+      Entrydate: row.entry_date,
+      ReturnReason: row.return_reason,
+      ReturnPerson: row.return_person,
+      ReturnNo: row.return_no,
+      ReturnDate: row.return_date,
+      PurchaseReTurnAmount: row.purchase_amount_returne,
+      RoundOff: row.rounded_off
+    }];
+    handleItemView(selectedData);
+    handleClose();
+    clearInputs([])
+    setRowData([])
+  };
+
   return (
     <div>
       {open && (
@@ -379,6 +407,7 @@ export default function PurchaseReturnView({ open, handleClose, handleItemView }
                             rowSelection="multiple"
                             pagination='true'
                             onSelectionChanged={handleRowSelected}
+                            onRowDoubleClicked={handleRowDoubleClick}
                           />
                         </div>
                       </div>
@@ -519,6 +548,7 @@ export default function PurchaseReturnView({ open, handleClose, handleItemView }
                               rowSelection="multiple"
                               pagination='true'
                               onSelectionChanged={handleRowSelected}
+                              onRowDoubleClicked={handleRowDoubleClick}
                             />
                           </div>
                         </div>

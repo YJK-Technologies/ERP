@@ -120,6 +120,19 @@ export default function StockTransferToWarehousePopup({ open, handleClose, handl
     setRowData([])
   }
 
+  const handleRowDoubleClick = (params) => {
+    const row = params.data;
+
+    if (!row) return;
+
+    const selectedData = [{
+      warehouse: row.warehouse_code
+    }];
+    handleWarehouse(selectedData);
+    handleClose();
+    clearInputs([])
+    setRowData([])
+  };
 
   const handleReload = () => {
     clearInputs([])
@@ -232,6 +245,7 @@ export default function StockTransferToWarehousePopup({ open, handleClose, handl
                             rowSelection="single"
                             pagination
                             onSelectionChanged={handleRowSelected}
+                            onRowDoubleClicked={handleRowDoubleClick}
                           />
                         </div>
                       </div>
@@ -334,6 +348,7 @@ export default function StockTransferToWarehousePopup({ open, handleClose, handl
                               rowSelection="single"
                               pagination
                               onSelectionChanged={handleRowSelected}
+                              onRowDoubleClicked={handleRowDoubleClick}
                             />
                           </div>
                         </div>

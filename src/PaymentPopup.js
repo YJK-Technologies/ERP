@@ -333,6 +333,38 @@ export default function PaymentPopup({ open, handleClose, ProductData }) {
     setRowData([]);
   }
 
+  const handleRowDoubleClick = (params) => {
+    const row = params.data;
+
+    if (!row) return;
+
+    const selectedData = [{
+      productCode: row.Client_code,
+      productName: row.Contact_ID,
+      productName: row.Company_or_Personal,
+      productName: row.CompanyName,
+      productName: row.Payment_Type,
+      productName: row.Payment_Mode,
+      productName: row.Payment,
+      productName: row.Payment_Date,
+      productName: row.Client_Company_code,
+      productName: row.Client_Database,
+      productName: row.Notes,
+      productName: row.Email,
+      productName: row.Phone,
+      productName: row.ExpectedRevenue,
+      productName: row.GSTIn,
+      headerDescription: row.Last_Payment,
+      status: row.Live_Date,
+      TaxName: row.Payment_Date,
+      TaxPercentage: row.Product,
+    }];
+    ProductData(selectedData);
+    handleClose();
+    clearInputs([]);
+    setRowData([]);
+  };
+
   return (
     <div >
       {open && (
@@ -430,6 +462,7 @@ export default function PaymentPopup({ open, handleClose, ProductData }) {
                               rowSelection="single"
                               pagination='true'
                               onSelectionChanged={handleRowSelected}
+                              onRowDoubleClicked={handleRowDoubleClick}
                             />
                           </div>
                         </div>
@@ -534,6 +567,7 @@ export default function PaymentPopup({ open, handleClose, ProductData }) {
                               rowSelection="single"
                               pagination='true'
                               onSelectionChanged={handleRowSelected}
+                              onRowDoubleClicked={handleRowDoubleClick}
                             />
                           </div>
                         </div>
