@@ -231,6 +231,27 @@ export default function InventoryReturnItemPopup({ open, handleClose, handleItem
     setSelectedRows([]);
   }
 
+  const handleRowDoubleClick = (params) => {
+    const row = params.data;
+
+    if (!row) return;
+
+    const selectedData = [{
+      itemCode: row.Item_code,
+      itemName: row.Item_name,
+      unitWeight: row.Item_wigh,
+      purchaseAmt: row.Item_std_purch_price,
+      taxType: row.Item_purch_tax_type,
+      taxDetails: row.combined_tax_details,
+      taxPer: row.combined_tax_percent,
+    }];
+    handleItem(selectedData);
+    handleClose();
+    clearInputs([]);
+    setRowData([]);
+    setSelectedRows([]);
+  };
+
   return (
     <div>      
       {open && (
@@ -356,6 +377,7 @@ export default function InventoryReturnItemPopup({ open, handleClose, handleItem
                             rowSelection="multiple"
                             pagination
                             onSelectionChanged={handleRowSelected}
+                            onRowDoubleClicked={handleRowDoubleClick}
                           />
                         </div>
                       </div>
@@ -479,6 +501,7 @@ export default function InventoryReturnItemPopup({ open, handleClose, handleItem
                               rowSelection="multiple"
                               pagination
                               onSelectionChanged={handleRowSelected}
+                              onRowDoubleClicked={handleRowDoubleClick}
                             />
                           </div>
                         </div>

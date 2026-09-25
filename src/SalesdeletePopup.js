@@ -239,6 +239,35 @@ export default function SalesDeletedPopup({ open, handleClose, handleDeletedData
     setSelectedRows([]);
   }
 
+  const handleRowDoubleClick = (params) => {
+    const row = params.data;
+
+    if (!row) return;
+
+    const selectedData = [{
+      BillNo: row.bill_no,
+      BillDate: row.bill_date,
+      SalesType: row.sales_type,
+      PayType: row.pay_type,
+      TotalTax: row.tax_amount,
+      TotalAmount: row.bill_amt,
+      CustomerName: row.customer_name,
+      SaleAmount: row.sale_amt,
+      CustomerCode: row.customer_code,
+      RoundOff: row.roff_amt,
+      OrderType: row.order_type,
+      DCNo: row.dely_chlno,
+      PaidAmount: row.paid_amount,
+      ReturnAmount: row.return_amount,
+      SalesMode: row.sales_mode,
+    }];
+    handleDeletedData(selectedData);
+    handleClose();
+    clearInputs([]);
+    setRowData([]);
+    setSelectedRows([]);
+  };
+
 
   return (
     <div>
@@ -385,6 +414,7 @@ export default function SalesDeletedPopup({ open, handleClose, handleDeletedData
                             rowSelection="single"
                             pagination
                             onSelectionChanged={handleRowSelected}
+                            onRowDoubleClicked={handleRowDoubleClick}
                           />
                         </div>
                       </div>
@@ -533,6 +563,7 @@ export default function SalesDeletedPopup({ open, handleClose, handleDeletedData
                               rowSelection="single"
                               pagination
                               onSelectionChanged={handleRowSelected}
+                              onRowDoubleClicked={handleRowDoubleClick}
                             />
                           </div>
                         </div>

@@ -288,6 +288,42 @@ export default function EmployeeInfoPopup({ open, handleClose, EmployeeInfo }) {
     setRowData([]);
   }
 
+  const handleRowDoubleClick = (params) => {
+    const row = params.data;
+
+    if (!row) return;
+
+    const selectedData = [{
+      EmployeeId: row.EmployeeId,
+      DOB: row.DOB,
+      First_Name: row.First_Name,
+      Middle_Name: row.Middle_Name,
+      Last_Name: row.Last_Name,
+      Father_Name: row.father_name,
+      Mother_Name: row.mother_name,
+      Gender: row.Gender,
+      Email: row.email,
+      grade_id: row.Grade_id,
+      phone1: row.phone1,
+      phone2: row.phone2,
+      Address1: row.address1,
+      Address2: row.address2,
+      Address3: row.address3,
+      PermanantAddress: row.PermanantAddress,
+      Reference_Name: row.Reference_name,
+      Reference_Phone: row.Reference_Phone,
+      Marital_Status: row.marital_status,
+      Pan_No: row.Pan_No,
+      Aadhar_no: row.Aadhar_no,
+      Kids: row.Kids,
+      Photos:row.Photos
+    }];
+    EmployeeInfo(selectedData);
+    handleClose();
+    clearInputs([]);
+    setRowData([]);
+  };
+
   return (
     <div>
       {open && (
@@ -388,6 +424,7 @@ export default function EmployeeInfoPopup({ open, handleClose, EmployeeInfo }) {
                             paginationAutoPageSize={true}
                             gridOptions={gridOptions}
                             onSelectionChanged={handleRowSelected}
+                            onRowDoubleClicked={handleRowDoubleClick}
                           />
                         </div>
                       </div>
@@ -478,6 +515,7 @@ export default function EmployeeInfoPopup({ open, handleClose, EmployeeInfo }) {
                             paginationAutoPageSize={true}
                             gridOptions={gridOptions}
                             onSelectionChanged={handleRowSelected}
+                            onRowDoubleClicked={handleRowDoubleClick}
                           />
                           </div>
                         </div>

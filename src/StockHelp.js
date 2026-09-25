@@ -187,6 +187,22 @@ export default function StockItemPopup({ open, handleClose, handlePurchaseData }
     setRowData([])
   }
 
+  const handleRowDoubleClick = (params) => {
+    const row = params.data;
+
+    if (!row) return;
+
+    const selectedData = [{
+      TransactionNo: row.transaction_no,
+      TransactionDate: row.transaction_date,
+      itemCode: row.item_code,
+    }];
+    handlePurchaseData(selectedData);
+    handleClose();
+    clearInputs([])
+    setRowData([])
+  };
+
   return (
     <div>
       {open && (
@@ -307,6 +323,7 @@ export default function StockItemPopup({ open, handleClose, handlePurchaseData }
                             rowSelection="single"
                             pagination='true'
                             onSelectionChanged={handleRowSelected}
+                            onRowDoubleClicked={handleRowDoubleClick}
                           />
                         </div>
                       </div>
@@ -428,6 +445,7 @@ export default function StockItemPopup({ open, handleClose, handlePurchaseData }
                               rowSelection="single"
                               pagination='true'
                               onSelectionChanged={handleRowSelected}
+                              onRowDoubleClicked={handleRowDoubleClick}
                             />
                           </div>
                         </div>

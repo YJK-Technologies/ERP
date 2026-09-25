@@ -131,7 +131,7 @@ export default function ItemPopup({ open, handleClose, handlePurchaseDeleteData 
 
 
   const handleSearch = async () => {
-        setLoading(true);
+    setLoading(true);
 
     try {
       const response = await fetch(`${config.apiBaseUrl}/getpurDeleteDetails`, {
@@ -147,9 +147,9 @@ export default function ItemPopup({ open, handleClose, handlePurchaseDeleteData 
         console.log(searchData)
         console.log("data fetched successfully")
       } else if (response.status === 404) {
-          toast.warning('Data not found')
-          setRowData([]);
-          clearInputs([])
+        toast.warning('Data not found')
+        setRowData([]);
+        clearInputs([])
         console.log("Data not found"); // Log the message for 404 Not Found
       } else {
         console.log("Bad request"); // Log the message for other errors
@@ -202,14 +202,38 @@ export default function ItemPopup({ open, handleClose, handlePurchaseDeleteData 
     setRowData([])
   }
 
+  const handleRowDoubleClick = (params) => {
+    const row = params.data;
+
+    if (!row) return;
+
+    const selectedData = [{
+      TransactionNo: row.transaction_no,
+      TransactionDate: row.transaction_date,
+      PurchaseType: row.purchase_type,
+      PayType: row.pay_type,
+      TotalTax: row.tax_amount,
+      TotalAmount: row.total_amount,
+      VendorName: row.vendor_name,
+      Amount: row.purchase_amount,
+      Vendorcode: row.vendor_code,
+      Entrydate: row.Entry_date,
+      RoundOff: row.rounded_off
+    }];
+    handlePurchaseDeleteData(selectedData);
+    handleClose();
+    clearInputs([])
+    setRowData([])
+  };
+
   return (
     <div>
       {open && (
         <fieldset>
           <div>
-                    {loading && <LoadingScreen />}
-            
-          {/* <ToastContainer position="top-right" className="toast-design" theme="colored" /> */}
+            {loading && <LoadingScreen />}
+
+            {/* <ToastContainer position="top-right" className="toast-design" theme="colored" /> */}
             <div className="purbut">
               <div className="modal mt-5 Topnav-screen popup popupadj" tabIndex="-1" role="dialog" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
                 <div className="modal-dialog modal-xl ps-5 p-1 pe-5" role="document">
@@ -220,7 +244,7 @@ export default function ItemPopup({ open, handleClose, handlePurchaseDeleteData 
                           <div className="purbut mb-0 d-flex justify-content-between" >
                             <h1 align="left" className="purbut">Deleted Purchase Help</h1>
                             <button onClick={handleClose} className="purbut btn btn-danger shadow-none rounded-0 h-70 fs-5" required title="Close">
-                            <i class="fa-solid fa-xmark"></i>
+                              <i class="fa-solid fa-xmark"></i>
                             </button>
                           </div>
                           <div class="d-flex justify-content-between">
@@ -328,6 +352,7 @@ export default function ItemPopup({ open, handleClose, handlePurchaseDeleteData 
                             rowSelection="single"
                             pagination='true'
                             onSelectionChanged={handleRowSelected}
+                            onRowDoubleClicked={handleRowDoubleClick}
                           />
                         </div>
                       </div>
@@ -348,7 +373,7 @@ export default function ItemPopup({ open, handleClose, handlePurchaseDeleteData 
                           </div>
                           <div className="mb-0 d-flex justify-content-end" >
                             <button onClick={handleClose} className="closebtn2" required title="Close">
-                            <i class="fa-solid fa-xmark"></i>
+                              <i class="fa-solid fa-xmark"></i>
                             </button>
                           </div>
                         </div>
@@ -455,6 +480,7 @@ export default function ItemPopup({ open, handleClose, handlePurchaseDeleteData 
                               rowSelection="single"
                               pagination='true'
                               onSelectionChanged={handleRowSelected}
+                              onRowDoubleClicked={handleRowDoubleClick}
                             />
                           </div>
                         </div>

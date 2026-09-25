@@ -291,6 +291,21 @@ export default function ReceivedGoodsPopup({ open, handleClose, handleRGData }) 
     setRowData([]);
   }
 
+  const handleRowDoubleClick = (params) => {
+    const row = params.data;
+
+    if (!row) return;
+
+    const selectedData = [{
+      TransactionNo: row.bill_no,
+      EntryDate: row.bill_date,
+    }];
+    handleRGData(selectedData);
+    handleClose();
+    clearInputs([]);
+    setRowData([]);
+  };
+
   return (
     <div>
       {open && (
@@ -385,6 +400,7 @@ export default function ReceivedGoodsPopup({ open, handleClose, handleRGData }) 
                             rowSelection="single"
                             pagination='true'
                             onSelectionChanged={handleRowSelected}
+                            onRowDoubleClicked={handleRowDoubleClick}
                           />
                         </div>
                       </div>
@@ -483,6 +499,7 @@ export default function ReceivedGoodsPopup({ open, handleClose, handleRGData }) 
                               rowSelection="single"
                               pagination='true'
                               onSelectionChanged={handleRowSelected}
+                              onRowDoubleClicked={handleRowDoubleClick}
                             />
                           </div>
                         </div>
