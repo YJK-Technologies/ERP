@@ -10,8 +10,18 @@ import Select from 'react-select';
 import { ToastContainer, toast } from 'react-toastify';
 import LoadingScreen from './Loading';
 import LZString from "lz-string";
+import { useNavigate } from 'react-router-dom';
 
 const DCanalysis = () => {
+  const navigate = useNavigate();
+
+  const handleTransactionClick = (transactionNo) => {
+    // SessionStorage illama Direct React Router State pass panroam
+    navigate("/DeliveryChallan", {
+      state: { transactionNo: transactionNo }
+    });
+  };
+
   const formatDate = (isoDateString) => {
     const date = new Date(isoDateString);
     const year = date.getFullYear();
@@ -30,6 +40,22 @@ const DCanalysis = () => {
     {
       headerName: "Transaction No",
       field: "transaction_no",
+      cellRenderer: (params) => {
+        if (!params.value) return "";
+        return (
+          <span
+            style={{
+              color: "#1890ff",
+              cursor: "pointer",
+              textDecoration: "underline",
+              fontWeight: "500"
+            }}
+            onClick={() => handleTransactionClick(params.value)}
+          >
+            {params.value}
+          </span>
+        );
+      }
     },
     {
       headerName: "Bill to Customer Name",
@@ -282,13 +308,13 @@ const DCanalysis = () => {
     const printWindow = window.open(url, '_blank');
 
     if (printWindow) {
-        printWindow.addEventListener("beforeunload", () => {
-            sessionStorage.removeItem(headerKey);
-            sessionStorage.removeItem(detailKey);
-            console.log("Session storage cleared after print window closed.");
-        });
+      printWindow.addEventListener("beforeunload", () => {
+        sessionStorage.removeItem(headerKey);
+        sessionStorage.removeItem(detailKey);
+        console.log("Session storage cleared after print window closed.");
+      });
     }
-};
+  };
 
   const handlePrint = async () => {
     const selectedRows = gridApi.getSelectedRows();
@@ -615,17 +641,17 @@ const DCanalysis = () => {
           <div className="col-md-3 form-group">
             <label className="form-label">Select Period</label>
             <div title='Please select the period'>
-            <Select
-              id="wcode"
-              value={selectedPeriod}
-              onChange={handleChangePeriod}
-              options={filteredOptionPeriod}
-              className="border-secondary"
-              placeholder=""
-              required title="Please select a item code"
-              maxLength={18}
-              styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
-            />
+              <Select
+                id="wcode"
+                value={selectedPeriod}
+                onChange={handleChangePeriod}
+                options={filteredOptionPeriod}
+                className="border-secondary"
+                placeholder=""
+                required title="Please select a item code"
+                maxLength={18}
+                styles={{ menu: (provided) => ({ ...provided, zIndex: 9999 }) }}
+              />
             </div>
           </div>
           {selectedPeriod.label === "Custom Date" && (
@@ -703,17 +729,17 @@ const DCanalysis = () => {
             />
           </div>
           <div className="col-md-1">
-              <div class="exp-form-floating">
-                <div class=" d-flex justify-content-center mt-5">
-                    <icon className="popups-btn fs-6 p-3" onClick={fetchDCData} required title="Search">
-                      <i className="fas fa-search"></i>
-                    </icon>
-                    {/* <icon className="popups-btn fs-6 p-3" required title="Refresh">
+            <div class="exp-form-floating">
+              <div class=" d-flex justify-content-center mt-5">
+                <icon className="popups-btn fs-6 p-3" onClick={fetchDCData} required title="Search">
+                  <i className="fas fa-search"></i>
+                </icon>
+                {/* <icon className="popups-btn fs-6 p-3" required title="Refresh">
                       <FontAwesomeIcon icon="fa-solid fa-arrow-rotate-right" />
                     </icon> */}
-                </div>
               </div>
             </div>
+          </div>
         </div>
         <div className="ag-theme-alpine mb-4" style={{ height: 455, width: '100%' }}>
           <AgGridReact

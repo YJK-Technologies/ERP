@@ -1,4 +1,4 @@
-import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle, useRef } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
@@ -92,6 +92,37 @@ function TaxInvoice() {
     const purchasePermission = permissions
         .filter(permission => permission.screen_type === 'TaxInvoice')
         .map(permission => permission.permission_type.toLowerCase());
+
+    const redirectLoadedRef = useRef(false);
+
+    useEffect(() => {
+        const redirectTransactionNo = location.state?.transactionNo;
+        const redirectInvoiceType = location.state?.invoiceType;
+        console.log("Route Invoice Type:", redirectInvoiceType);
+
+        if (redirectInvoiceType) {
+            setInvoiceType(redirectInvoiceType);
+
+            setselectedInvoice({
+                value: redirectInvoiceType,
+                label: redirectInvoiceType
+            });
+        }
+
+        if (!redirectTransactionNo || redirectLoadedRef.current) {
+            return;
+        }
+
+        redirectLoadedRef.current = true;
+
+        setNew_running_no(redirectTransactionNo);
+
+        handleRefNo(
+            redirectTransactionNo,
+            redirectInvoiceType
+        );
+
+    }, [location.state]);
 
     useEffect(() => {
         const currentPath = location.pathname;
@@ -2104,10 +2135,10 @@ function TaxInvoice() {
         }
     };
 
-    const handleRefNo = async (code) => {
+    const handleRefNo = async (code, invoiceTypeOverride = null) => {
         setLoading(true)
         try {
-            const tempstr1Value = isChecked ? "Proforma Invoice" : invoicetype;
+            const tempstr1Value = isChecked ? "Proforma Invoice" : (invoiceTypeOverride || invoicetype);
             const response = await fetch(`${config.apiBaseUrl}/getTaxInvoiceNo`, {
                 method: "POST",
                 headers: {
@@ -2139,13 +2170,25 @@ function TaxInvoice() {
                     setBalanceAmount(item.bal_amt)
                     setbill_date(formatDate(item.bill_date));
 
+                    // Sales Type
                     const selectedOption = filteredOptionSales.find(option => option.value === item.sales_type);
-                    setSelectedSales(selectedOption);
-                    setSalesType(selectedOption.value)
+                    if (selectedOption) {
+                        setSelectedSales(selectedOption);
+                        setSalesType(selectedOption.value);
+                    } else {
+                        setSelectedSales(null);
+                        setSalesType("");
+                    }
 
+                    // Pay Type
                     const selected = filteredOptionPay.find(option => option.value === item.pay_type);
-                    setSelectedPay(selected);
-                    setPayType(selected.value)
+                    if (selected) {
+                        setSelectedPay(selected);
+                        setPayType(selected.value);
+                    } else {
+                        setSelectedPay(null);
+                        setPayType("");
+                    }
 
                     setHeaderRowData([
                         { fieldName: 'Customer Code', billTo: item.customer_code, shipTo: item.shipTo_customer_code },

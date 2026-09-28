@@ -73,6 +73,7 @@ function DeliveryChallan() {
     const [Screens, setScreens] = useState('');
     const [selectedscreens, setSelectedscreens] = useState(null);
     const [loading, setLoading] = useState(false);
+    const redirectLoadedRef = useRef(false);
 
     const location = useLocation();
     const savedPath = sessionStorage.getItem('currentPath');
@@ -81,6 +82,17 @@ function DeliveryChallan() {
     const DcPermission = permissions
         .filter(permission => permission.screen_type === 'DeliveryChallan')
         .map(permission => permission.permission_type.toLowerCase());
+
+    useEffect(() => {
+        const redirectDCNo = location.state?.transactionNo;
+
+        if (redirectDCNo && !redirectLoadedRef.current) {
+            redirectLoadedRef.current = true;
+
+            setNew_running_no(redirectDCNo);
+            handleRefNo(redirectDCNo);
+        }
+    }, [location.state]);
 
     useEffect(() => {
         const currentPath = location.pathname;
@@ -1526,13 +1538,29 @@ function DeliveryChallan() {
                     setTransactionDate(formatDate(item.transaction_date));
                     setTotalPurchase(parseFloat(item.purchase_amount).toFixed(2));
 
-                    const selectedPayType = filteredOptionPay.find(option => option.value === item.pay_type);
-                    setSelectedPay(selectedPayType);
-                    setPayType(selectedPayType.value);
+                    const selectedPayType = filteredOptionPay.find(
+                        option => option.value === item.pay_type
+                    );
 
-                    const selectedSalesType = filteredOptionSales.find(option => option.value === item.sales_type);
-                    setSelectedSales(selectedSalesType);
-                    setSalesType(selectedSalesType.value);
+                    if (selectedPayType) {
+                        setSelectedPay(selectedPayType);
+                        setPayType(selectedPayType.value);
+                    } else {
+                        setSelectedPay(null);
+                        setPayType("");
+                    }
+
+                    const selectedSalesType = filteredOptionSales.find(
+                        option => option.value === item.sales_type
+                    );
+
+                    if (selectedSalesType) {
+                        setSelectedSales(selectedSalesType);
+                        setSalesType(selectedSalesType.value);
+                    } else {
+                        setSelectedSales(null);
+                        setSalesType("");
+                    }
 
                     setHeaderRowData([
                         { fieldName: 'Customer Code', billTo: item.bill_to_customer_code, shipTo: item.Ship_to_customer_code },

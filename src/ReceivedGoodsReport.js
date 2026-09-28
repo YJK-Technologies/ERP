@@ -11,10 +11,20 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import "./test.css"
 import LoadingScreen from './Loading';
+import { useNavigate } from 'react-router-dom';
 const config = require('./Apiconfig');
 
 
 function ReceivedGoodsRt() {
+    const navigate = useNavigate();
+
+    const handleTransactionClick = (transactionNo) => {
+        // SessionStorage illama Direct React Router State pass panroam
+        navigate("/ReceivedGoods", {
+            state: { transactionNo: transactionNo }
+        });
+    };
+
     const [rowData, setRowData] = useState([]);
     const [gridApi, setGridApi] = useState(null);
     const [gridColumnApi, setGridColumnApi] = useState(null);
@@ -154,73 +164,54 @@ function ReceivedGoodsRt() {
         {
             headerName: 'Transaction No',
             field: 'bill_no',
-            editable: true,
-            filter: true,
-            sortable: false,
-            editable: false
+            cellRenderer: (params) => {
+                if (!params.value) return "";
+                return (
+                    <span
+                        style={{
+                            color: "#1890ff",
+                            cursor: "pointer",
+                            textDecoration: "underline",
+                            fontWeight: "500"
+                        }}
+                        onClick={() => handleTransactionClick(params.value)}
+                    >
+                        {params.value}
+                    </span>
+                );
+            }
         },
         {
             headerName: 'Item S.No',
             field: 'item_sno',
-            editable: true,
-            filter: true,
-            sortable: false,
-            editable: false
         },
         {
             headerName: 'Item Code',
             field: 'item_code',
-            editable: true,
-            filter: true,
-            sortable: false,
-            editable: false
         },
         {
             headerName: 'Item Name',
             field: 'item_name',
-            editable: true,
-            filter: true,
-            sortable: false,
-            editable: false
         },
         {
             headerName: 'Bill Qty',
             field: 'bill_qty',
-            editable: true,
-            filter: true,
-            sortable: false,
-            editable: false
         },
         {
             headerName: 'Received Qty',
             field: 'rec_qty',
-            editable: true,
-            filter: true,
-            sortable: false
         },
         {
             headerName: 'Balance Qty',
             field: 'bal_qty',
-            editable: true,
-            filter: true,
-            sortable: false,
-            editable: false
         },
         {
             headerName: 'Pending',
             field: 'pending',
-            editable: true,
-            filter: true,
-            sortable: false,
-            editable: false
         },
         {
             headerName: 'Description',
             field: 'description',
-            editable: true,
-            filter: true,
-            sortable: false,
-            editable: false
         }
 
     ];

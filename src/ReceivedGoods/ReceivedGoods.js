@@ -5,6 +5,7 @@ import { AgGridReact } from 'ag-grid-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ReceivedGoodsPopup from './ReceivedGoodsHelp';
+import { useLocation } from 'react-router-dom';
 const config = require('../Apiconfig');
 
 function AssetsReturn({ }) {
@@ -12,11 +13,24 @@ function AssetsReturn({ }) {
     const [transactionDate, setTransactionDate] = useState('');
     const [transactionNo, setTransactionNo] = useState('');
     const [gridApi, setGridApi] = useState(null);
+    const redirectLoadedRef = useRef(false);
+    const location = useLocation();
 
     const permissions = JSON.parse(sessionStorage.getItem('permissions')) || {};
     const purchasePermission = permissions
         .filter(permission => permission.screen_type === 'ReceivedGoods')
         .map(permission => permission.permission_type.toLowerCase());
+
+    useEffect(() => {
+        const redirectDCNo = location.state?.transactionNo;
+
+        if (redirectDCNo && !redirectLoadedRef.current) {
+            redirectLoadedRef.current = true;
+
+            setTransactionNo(redirectDCNo);
+            fetchReceivedGoodsData(redirectDCNo);
+        }
+    }, [location.state]);
 
 
     const formatDate = (isoDateString) => {
