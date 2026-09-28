@@ -1596,6 +1596,7 @@ const Product = () => {
                 <input
                   id="description"
                   className="exp-input-field form-control"
+                  title="Description"
                   type="text"
                   placeholder=""
                   required
