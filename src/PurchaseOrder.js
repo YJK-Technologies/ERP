@@ -1,4 +1,4 @@
-import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle, useRef } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
@@ -76,6 +76,7 @@ function PurchaseOrder() {
   const [screensDrop, setScreensDrop] = useState([]);
   const [Screens, setScreens] = useState('');
   const [selectedscreens, setSelectedscreens] = useState(null);
+  const redirectLoadedRef = useRef(false);
 
   const location = useLocation();
   const savedPath = sessionStorage.getItem('currentPath');
@@ -85,6 +86,17 @@ function PurchaseOrder() {
   const purchaseOrderPermission = permissions
     .filter(permission => permission.screen_type === 'PurchaseOrder')
     .map(permission => permission.permission_type.toLowerCase());
+
+  useEffect(() => {
+    const redirectDCNo = location.state?.transactionNo;
+
+    if (redirectDCNo && !redirectLoadedRef.current) {
+      redirectLoadedRef.current = true;
+
+      setTransactionNo(redirectDCNo);
+      handleRefNo(redirectDCNo);
+    }
+  }, [location.state]);
 
 
   useEffect(() => {
@@ -3366,7 +3378,7 @@ function PurchaseOrder() {
                       <div title="Select a Ship To">
                         <Select
                           id="status"
-                          styles={{menu: (provided) => ({ ...provided, zIndex: 9999 })}}
+                          styles={{ menu: (provided) => ({ ...provided, zIndex: 9999 }) }}
                           value={selectedParty}
                           onChange={handleChangeParty}
                           options={filteredOptionParty}

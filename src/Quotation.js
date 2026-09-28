@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -62,6 +62,7 @@ function Quotation() {
   const [screensDrop, setScreensDrop] = useState([]);
   const [Screens, setScreens] = useState('');
   const [selectedscreens, setSelectedscreens] = useState(null);
+  const redirectLoadedRef = useRef(false);
 
   const location = useLocation();
   const savedPath = sessionStorage.getItem('currentPath');
@@ -71,6 +72,17 @@ function Quotation() {
   const quotationPermission = permissions
     .filter((permission) => permission.screen_type === "Quotation")
     .map((permission) => permission.permission_type.toLowerCase());
+
+  useEffect(() => {
+    const redirectDCNo = location.state?.transactionNo;
+
+    if (redirectDCNo && !redirectLoadedRef.current) {
+      redirectLoadedRef.current = true;
+
+      setTransactionNo(redirectDCNo);
+      handleRefNo(redirectDCNo);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     const currentPath = location.pathname;
